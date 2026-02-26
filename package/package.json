@@ -28,10 +28,6 @@
     "./utils": {
       "types": "./dist/utils.d.ts",
       "import": "./dist/utils.js"
-    },
-    "./country-codes": {
-      "types": "./dist/country-codes.d.ts",
-      "import": "./dist/country-codes.js"
     }
   },
   "scripts": {

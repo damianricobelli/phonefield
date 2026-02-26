@@ -1,213 +1,246 @@
-Welcome to your new TanStack Start app! 
+<p align="center">
+  <img src="https://img.shields.io/npm/v/phonefield?style=flat-square" alt="npm" />
+  <img src="https://img.shields.io/bundlephobia/minzip/phonefield?style=flat-square" alt="size" />
+  <img src="https://img.shields.io/npm/l/phonefield?style=flat-square" alt="license" />
+</p>
 
-# Getting Started
+# PhoneField
 
-To run this application:
+**A primitive phone input for design systems.**
+
+Compose country picker + number input with [Base UI](https://base-ui.com), while keeping parsing and validation aligned with [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js) through a clean primitive API.
+
+- **Composable primitive** — `PhoneField.Root`, `PhoneField.Country`, `PhoneField.Input`
+- **Built with Base UI** — slots, motion, and popup behavior
+- **E.164 + validation** — `PhoneFieldUtils` for parse, format, and FormData
+
+**[Demo](https://phonefield.vercel.app)** · **[GitHub](https://github.com/damianricobelli/phonefield)**
+
+---
+
+## Installation
+
+```bash
+# npm
+npm install phonefield
+
+# pnpm
+pnpm add phonefield
+
+# bun
+bun add phonefield
+```
+
+**Peer dependencies:** `react` and `react-dom` (≥18). You also need `@base-ui/react` and `libphonenumber-js`; they are declared as dependencies of `phonefield`, so they install automatically.
+
+---
+
+## Emitted value
+
+The controlled value (and what you get from FormData) has this shape:
+
+```ts
+type PhoneField.Value = {
+  countryIso2: string;      // e.g. "US"
+  countryDialCode: string; // e.g. "1"
+  nationalNumber: string;  // e.g. "(201) 555-0123"
+  e164: string | null;     // e.g. "+12015550123"
+  isValid: boolean;
+};
+```
+
+Store this, validate with it, and submit it.
+
+---
+
+## Quick Start
+
+```tsx
+import { PhoneField } from "phonefield";
+
+export function SignupPhone() {
+  return (
+    <PhoneField.Root defaultCountry="US" lang="en">
+      <PhoneField.Country />
+      <PhoneField.Input />
+    </PhoneField.Root>
+  );
+}
+```
+
+Root can run **uncontrolled** by default; it still gives normalized output, and the input placeholder adapts to the selected country.
+
+---
+
+## Controlled mode
+
+Use when your form or global state owns the value:
+
+```tsx
+import * as React from "react";
+import { PhoneField } from "phonefield";
+
+export function CheckoutPhone() {
+  const [phone, setPhone] = React.useState<PhoneField.Value>({
+    countryIso2: "US",
+    countryDialCode: "1",
+    nationalNumber: "",
+    e164: null,
+    isValid: false,
+  });
+
+  return (
+    <PhoneField.Root value={phone} onValueChange={setPhone}>
+      <PhoneField.Country />
+      <PhoneField.Input />
+    </PhoneField.Root>
+  );
+}
+```
+
+Use **uncontrolled** for simple forms; switch to **controlled** when you need validation, multi-step flows, or async orchestration.
+
+---
+
+## Uncontrolled + FormData (client / server)
+
+Set a `name` on `Root` to serialize the full `PhoneField.Value` as JSON in a hidden input. Read it from FormData on client or server.
+
+```tsx
+import { PhoneField } from "phonefield";
+import { PhoneFieldUtils } from "phonefield/utils";
+
+// Uncontrolled: omit value and onValueChange
+<form
+  onSubmit={(event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const phone = PhoneFieldUtils.fromFormData(formData, "phone");
+    // phone -> PhoneField.Value | null
+  }}
+>
+  <PhoneField.Root name="phone" defaultCountry="US">
+    <PhoneField.Country />
+    <PhoneField.Input />
+  </PhoneField.Root>
+</form>
+
+// Server side:
+const formData = await request.formData();
+const phone = PhoneFieldUtils.fromFormData(formData, "phone");
+```
+
+---
+
+## Country subset (type-safe)
+
+Limit countries with an array of ISO codes; IntelliSense stays type-safe:
+
+```tsx
+<PhoneField.Root countries={["US", "CA", "MX"]}>
+  <PhoneField.Country />
+  <PhoneField.Input />
+</PhoneField.Root>
+```
+
+---
+
+## Styling with country slots
+
+Country picker styling lives in `PhoneField.Country` via **slots**; `Root` and `Input` use normal `className`.
+
+```tsx
+const countrySlots: PhoneField.CountrySlots = {
+  trigger: "h-10 rounded-md border border-gray-200 px-3",
+  popup: "rounded-lg shadow-lg",
+  item: "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
+};
+
+<PhoneField.Root className="flex items-center gap-2">
+  <PhoneField.Country slots={countrySlots} />
+  <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
+</PhoneField.Root>
+```
+
+---
+
+## Validity (`data-valid` / `data-invalid`)
+
+Pair with [Base UI Field](https://base-ui.com/react/docs/components/field) for invalid state and error messages:
+
+```tsx
+import { Field } from "@base-ui/react/field";
+
+const hasNumber = value.nationalNumber.trim().length > 0;
+const showError = hasNumber && !value.isValid;
+
+<Field.Root invalid={showError} className="space-y-2">
+  <Field.Label>Phone</Field.Label>
+
+  <PhoneField.Root value={value} onValueChange={setValue}>
+    <PhoneField.Country />
+    <PhoneField.Input className="data-invalid:border-red-500 data-valid:border-emerald-500" />
+  </PhoneField.Root>
+
+  <Field.Error match={showError}>Invalid phone number</Field.Error>
+</Field.Root>
+```
+
+---
+
+## Formatting + utils
+
+Validate and format on frontend or backend with `PhoneFieldUtils`:
+
+```tsx
+import { PhoneFieldUtils } from "phonefield/utils";
+
+const parsed = PhoneFieldUtils.parse(value);
+
+const output = {
+  isValid: PhoneFieldUtils.isValid(value),
+  e164: value.e164,
+  national: parsed?.formatNational(),
+  international: parsed?.formatInternational(),
+};
+
+// Anywhere (frontend or backend):
+PhoneFieldUtils.isValid("+14155552671");
+PhoneFieldUtils.fromFormData(formData, "phone");
+PhoneFieldUtils.getCountries("es-AR"); // Map<iso2, country>
+```
+
+---
+
+## API summary
+
+| Export | Description |
+|--------|-------------|
+| `PhoneField.Root` | Container; `value` / `onValueChange`, `defaultCountry`, `countries`, `name`, `lang` |
+| `PhoneField.Country` | Country combobox; `slots`, `inputPlaceholder`, `renderCountryValue`, `renderCountryItem` |
+| `PhoneField.Input` | Number input; `className`, `onBlur`, `onValueChange`; exposes `data-valid` / `data-invalid` |
+| `PhoneFieldUtils.parse(value)` | Parse `Value` or E.164 string → libphonenumber `PhoneNumber` (formatNational, formatInternational, getURI) |
+| `PhoneFieldUtils.isValid(value)` | Validate `Value` or raw string |
+| `PhoneFieldUtils.fromFormData(formData, name)` | Read serialized value from FormData |
+| `PhoneFieldUtils.getCountries(locale?)` | Map of ISO2 → country (name, dialCode, flag) |
+
+---
+
+## Development (this repo)
 
 ```bash
 bun install
-bun --bun run dev
+bun --bun run dev    # app + package watch
+bun --bun run build  # production build
+bun --bun run test   # Vitest
+bun --bun run lint   # Biome
+bun --bun run format # Biome format
 ```
 
-# Building For Production
+The app at `src/routes` is the demo site; the library lives in `package/`. New UI components (e.g. Shadcn): `pnpm dlx shadcn@latest add <component>`.
 
-To build this application for production:
+---
 
-```bash
-bun --bun run build
-```
+## License
 
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
-
-```bash
-bun --bun run test
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
-```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
-```
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-# Demo files
-
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+MIT · [damianricobelli/phonefield](https://github.com/damianricobelli/phonefield)

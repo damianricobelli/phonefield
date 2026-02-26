@@ -61,22 +61,7 @@ import { PhoneFieldUtils } from "phonefield/utils";
 const formData = await request.formData();
 const phone = PhoneFieldUtils.fromFormData(formData, "phone");`;
 
-const subsetSnippet = `// Option A: ISO codes (shortest)
-<PhoneField.Root countries={["US", "CA", "MX"]}>
-  <PhoneField.Country />
-  <PhoneField.Input />
-</PhoneField.Root>
-
-// Option B: named constants (clearer IntelliSense)
-import { COUNTRY_CODES } from "phonefield/country-codes";
-
-<PhoneField.Root
-  countries={[
-    COUNTRY_CODES.UnitedStates,
-    COUNTRY_CODES.Canada,
-    COUNTRY_CODES.Mexico,
-  ]}
->
+const subsetSnippet = `<PhoneField.Root countries={["US", "CA", "MX"]}>
   <PhoneField.Country />
   <PhoneField.Input />
 </PhoneField.Root>
@@ -245,7 +230,7 @@ function App() {
 }`}
               </pre>
               <p className="mt-2 text-xs text-slate-300">
-                This exact payload is what you store, validate, and submit.
+                This kind of payload is what you can store, validate, and submit.
               </p>
             </div>
           </div>
@@ -381,7 +366,7 @@ function App() {
         />
         <DocBlock
           title="Country Subset (Type-safe IntelliSense)"
-          description="Limit the available countries from Root using ISO codes or named constants."
+          description="Limit the available countries from Root using ISO codes."
           code={subsetSnippet}
         />
         <DocBlock
