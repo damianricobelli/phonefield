@@ -1,254 +1,135 @@
-<p align="center">
-  <img src="https://img.shields.io/npm/v/phonefield?style=flat-square" alt="npm" />
-  <img src="https://img.shields.io/bundlephobia/minzip/phonefield?style=flat-square" alt="size" />
-  <img src="https://img.shields.io/npm/l/phonefield?style=flat-square" alt="license" />
-</p>
+# Turborepo starter
 
-# PhoneField
+This Turborepo starter is maintained by the Turborepo core team.
 
-**A primitive phone input for design systems.**
+## Using this example
 
-Compose country picker + number input with [Base UI](https://base-ui.com), while keeping parsing and validation aligned with [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js) through a clean primitive API.
+Run the following command:
 
-- **Composable primitive** — `PhoneField.Root`, `PhoneField.Country`, `PhoneField.Input`
-- **Built with Base UI** — slots, motion, and popup behavior
-- **E.164 + validation** — `PhoneFieldUtils` for parse, format, and FormData
-
-**[Demo](https://phonefield.vercel.app)** · **[GitHub](https://github.com/damianricobelli/phonefield)**
-
----
-
-## Installation
-
-```bash
-# npm
-npm install phonefield
-
-# pnpm
-pnpm add phonefield
-
-# bun
-bun add phonefield
+```sh
+npx create-turbo@latest
 ```
 
-**Peer dependencies:** `react` and `react-dom` (≥18). You also need `@base-ui/react` and `libphonenumber-js`; they are declared as dependencies of `phonefield`, so they install automatically.
+## What's inside?
 
----
+This Turborepo includes the following packages/apps:
 
-## Emitted value
+### Apps and Packages
 
-The controlled value (and what you get from FormData) has this shape:
+- `docs`: a [Next.js](https://nextjs.org/) app
+- `web`: another [Next.js](https://nextjs.org/) app
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
 
-```ts
-type PhoneField.Value = {
-  countryIso2: string;      // e.g. "US"
-  countryDialCode: string; // e.g. "1"
-  nationalNumber: string;  // e.g. "(201) 555-0123"
-  e164: string | null;     // e.g. "+12015550123"
-  isValid: boolean;
-};
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Utilities
+
+This Turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+
+### Build
+
+To build all apps and packages, run the following command:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build
+
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build
+yarn dlx turbo build
+pnpm exec turbo build
 ```
 
-Store this, validate with it, and submit it.
+You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
----
+```
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo build --filter=docs
 
-## Quick Start
-
-```tsx
-import { PhoneField } from "phonefield";
-
-export function SignupPhone() {
-  return (
-    <PhoneField.Root defaultCountry="US" lang="en">
-      <PhoneField.Country />
-      <PhoneField.Input />
-    </PhoneField.Root>
-  );
-}
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo build --filter=docs
+yarn exec turbo build --filter=docs
+pnpm exec turbo build --filter=docs
 ```
 
-Root can run **uncontrolled** by default; it still gives normalized output, and the input placeholder adapts to the selected country.
+### Develop
 
----
+To develop all apps and packages, run the following command:
 
-## Controlled mode
+```
+cd my-turborepo
 
-Use when your form or global state owns the value:
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev
 
-```tsx
-import * as React from "react";
-import { PhoneField } from "phonefield";
-
-export function CheckoutPhone() {
-  const [phone, setPhone] = React.useState<PhoneField.Value>({
-    countryIso2: "US",
-    countryDialCode: "1",
-    nationalNumber: "",
-    e164: null,
-    isValid: false,
-  });
-
-  return (
-    <PhoneField.Root value={phone} onValueChange={setPhone}>
-      <PhoneField.Country />
-      <PhoneField.Input />
-    </PhoneField.Root>
-  );
-}
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev
+yarn exec turbo dev
+pnpm exec turbo dev
 ```
 
-Use **uncontrolled** for simple forms; switch to **controlled** when you need validation, multi-step flows, or async orchestration.
+You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
----
+```
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo dev --filter=web
 
-## Uncontrolled + FormData (client / server)
-
-Set a `name` on `Root` to serialize the full `PhoneField.Value` as JSON in a hidden input. Read it from FormData on client or server.
-
-```tsx
-import { PhoneField } from "phonefield";
-import { PhoneFieldUtils } from "phonefield/utils";
-
-// Uncontrolled: omit value and onValueChange
-<form
-  onSubmit={(event) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const phone = PhoneFieldUtils.fromFormData(formData, "phone");
-    // phone -> PhoneField.Value | null
-  }}
->
-  <PhoneField.Root name="phone" defaultCountry="US">
-    <PhoneField.Country />
-    <PhoneField.Input />
-  </PhoneField.Root>
-</form>
-
-// Server side:
-const formData = await request.formData();
-const phone = PhoneFieldUtils.fromFormData(formData, "phone");
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo dev --filter=web
+yarn exec turbo dev --filter=web
+pnpm exec turbo dev --filter=web
 ```
 
----
+### Remote Caching
 
-## Country subset (type-safe)
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
 
-Limit countries with an array of ISO codes; IntelliSense stays type-safe:
+Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
 
-```tsx
-<PhoneField.Root countries={["US", "CA", "MX"]}>
-  <PhoneField.Country />
-  <PhoneField.Input />
-</PhoneField.Root>
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+```
+cd my-turborepo
+
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo login
+
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo login
+yarn exec turbo login
+pnpm exec turbo login
 ```
 
----
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
 
-## Styling with country slots
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
 
-Country picker styling lives in `PhoneField.Country` via **slots**; `Root` and `Input` use normal `className`.
+```
+# With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended)
+turbo link
 
-```tsx
-const countrySlots: PhoneField.CountrySlots = {
-  trigger: "h-10 rounded-md border border-gray-200 px-3",
-  popup: "rounded-lg shadow-lg",
-  item: "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
-};
-
-<PhoneField.Root className="flex items-center gap-2">
-  <PhoneField.Country slots={countrySlots} />
-  <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
-</PhoneField.Root>
+# Without [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation), use your package manager
+npx turbo link
+yarn exec turbo link
+pnpm exec turbo link
 ```
 
----
+## Useful Links
 
-## Validity (`data-valid` / `data-invalid`)
+Learn more about the power of Turborepo:
 
-Pair with [Base UI Field](https://base-ui.com/react/docs/components/field) for invalid state and error messages:
-
-```tsx
-import { Field } from "@base-ui/react/field";
-
-const hasNumber = value.nationalNumber.trim().length > 0;
-const showError = hasNumber && !value.isValid;
-
-<Field.Root invalid={showError} className="space-y-2">
-  <Field.Label>Phone</Field.Label>
-
-  <PhoneField.Root value={value} onValueChange={setValue}>
-    <PhoneField.Country />
-    <PhoneField.Input className="data-invalid:border-red-500 data-valid:border-emerald-500" />
-  </PhoneField.Root>
-
-  <Field.Error match={showError}>Invalid phone number</Field.Error>
-</Field.Root>
-```
-
----
-
-## Formatting + utils
-
-Validate and format on frontend or backend with `PhoneFieldUtils`:
-
-```tsx
-import { PhoneFieldUtils } from "phonefield/utils";
-
-const parsed = PhoneFieldUtils.parse(value);
-
-const output = {
-  isValid: PhoneFieldUtils.isValid(value),
-  e164: value.e164,
-  national: parsed?.formatNational(),
-  international: parsed?.formatInternational(),
-};
-
-// Anywhere (frontend or backend):
-PhoneFieldUtils.isValid("+14155552671");
-PhoneFieldUtils.fromFormData(formData, "phone");
-PhoneFieldUtils.getCountries("es-AR"); // Map<iso2, country>
-```
-
----
-
-## API summary
-
-**Package `phonefield`:** components and types only.
-
-| Export | Description |
-|--------|-------------|
-| `PhoneField.Root` | Container; `value` / `onValueChange`, `defaultCountry`, `countries`, `name`, `lang` |
-| `PhoneField.Country` | Country combobox; `slots`, `inputPlaceholder`, `renderCountryValue`, `renderCountryItem` |
-| `PhoneField.Input` | Number input; `className`, `onBlur`, `onValueChange`; exposes `data-valid` / `data-invalid` |
-
-**Package `phonefield/utils`:** parsing, validation, FormData, country list.
-
-| Export | Description |
-|--------|-------------|
-| `PhoneFieldUtils.parse(value)` | Parse `Value` or E.164 string → libphonenumber `PhoneNumber` (formatNational, formatInternational, getURI) |
-| `PhoneFieldUtils.isValid(value)` | Validate `Value` or raw string |
-| `PhoneFieldUtils.fromFormData(formData, name)` | Read serialized value from FormData |
-| `PhoneFieldUtils.getCountries(locale?)` | Map of ISO2 → country (name, dialCode, flag) |
-| `PhoneFieldUtils.countries` | Default country map (en) |
-
----
-
-## Development (this repo)
-
-```bash
-bun install
-bun --bun run dev    # app + package watch
-bun --bun run build  # production build
-bun --bun run test   # Vitest
-bun --bun run lint   # Biome
-bun --bun run format # Biome format
-```
-
-The app at `src/routes` is the demo site; the library lives in `package/`. New UI components (e.g. Shadcn): `pnpm dlx shadcn@latest add <component>`.
-
----
-
-## License
-
-MIT · [damianricobelli/phonefield](https://github.com/damianricobelli/phonefield)
+- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
+- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
+- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
+- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
+- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
+- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
