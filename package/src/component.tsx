@@ -15,11 +15,7 @@ import type {
 import {
   buildValue,
   defaultCountrySearchText,
-  fromFormData as fromPhoneFieldFormData,
   getCountriesMap,
-  getDefaultCountriesMap,
-  isValidPhoneField,
-  parsePhoneField,
   resolveCountry,
   toAvailableCountries,
 } from "./utils";
@@ -66,6 +62,10 @@ function ChevronUpDownIcon(props: React.ComponentProps<"svg">) {
   );
 }
 
+/**
+ * Root container for the phone field. Provides context to Country and Input.
+ * Supports controlled and uncontrolled usage, optional FormData serialization via `name`, and country subset.
+ */
 function Root({
   value,
   defaultValue,
@@ -138,6 +138,9 @@ function Root({
   );
 }
 
+/**
+ * Country combobox: trigger + searchable list. Use `slots` to style trigger, popup, list, item, etc.
+ */
 function Country({
   label,
   placeholder = "Select country",
@@ -240,6 +243,9 @@ function Country({
   );
 }
 
+/**
+ * Number input bound to the selected country. Exposes `data-valid` / `data-invalid` from Base UI Input.
+ */
 const Input = ({
   className,
   onValueChange,
@@ -270,27 +276,29 @@ const Input = ({
 export const PhoneField = {
   Root,
   Country,
-  Input,
-  parse: parsePhoneField,
-  isValid: isValidPhoneField,
-  fromFormData: fromPhoneFieldFormData,
-  getCountries: getCountriesMap,
-  get countries() {
-    return getDefaultCountriesMap();
-  },
+  Input
 };
 
 export namespace PhoneField {
+  /** Country descriptor: iso2, name, dialCode, flag. */
   export type Country = PhoneFieldCountry;
+  /** Read-only map of ISO2 to country. */
   export type CountryMap = PhoneFieldCountryMap;
+  /** ISO2 country code (e.g. "US", "GB"). */
   export type CountryCodeValue = PhoneFieldCountryCodeValue;
+  /** Alias for ISO2 country code. */
   export type CountryName = PhoneFieldCountryName;
+  /** BCP 47 locale for country names and sorting. */
   export type Lang = PhoneFieldLang;
+  /** Emitted/controlled value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
   export type Value = PhoneFieldValue;
 
+  /** Renders a single country in the dropdown list. */
   export type RenderCountryItem = (country: Country) => React.ReactNode;
+  /** Renders the selected country in the trigger. */
   export type RenderCountryValue = (country: Country) => React.ReactNode;
 
+  /** Class names for Country sub-parts (trigger, popup, searchInput, list, item, etc.). */
   export type CountrySlots = {
     root?: string;
     label?: string;
@@ -305,6 +313,10 @@ export namespace PhoneField {
     empty?: string;
   };
 
+  /**
+   * Props for `PhoneField.Root`. Extends div. Use `value`/`onValueChange` for controlled mode,
+   * or `defaultValue`/`defaultCountry` for uncontrolled. Set `name` to serialize value into FormData.
+   */
   export type RootProps = Omit<
     React.ComponentPropsWithoutRef<"div">,
     "defaultValue"
@@ -321,6 +333,7 @@ export namespace PhoneField {
     renderCountryValue?: RenderCountryValue;
   };
 
+  /** Props for `PhoneField.Country`: label, placeholders, icon, and `slots` for styling. */
   export type CountryProps = {
     label?: React.ReactNode;
     placeholder?: React.ReactNode;
@@ -330,5 +343,6 @@ export namespace PhoneField {
     slots?: CountrySlots;
   };
 
+  /** Props for `PhoneField.Input`. Extends Base UI Input (className, onValueChange, etc.). */
   export type InputProps = BaseInput.Props;
 }

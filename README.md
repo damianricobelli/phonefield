@@ -214,15 +214,23 @@ PhoneFieldUtils.getCountries("es-AR"); // Map<iso2, country>
 
 ## API summary
 
+**Package `phonefield`:** components and types only.
+
 | Export | Description |
 |--------|-------------|
 | `PhoneField.Root` | Container; `value` / `onValueChange`, `defaultCountry`, `countries`, `name`, `lang` |
 | `PhoneField.Country` | Country combobox; `slots`, `inputPlaceholder`, `renderCountryValue`, `renderCountryItem` |
 | `PhoneField.Input` | Number input; `className`, `onBlur`, `onValueChange`; exposes `data-valid` / `data-invalid` |
+
+**Package `phonefield/utils`:** parsing, validation, FormData, country list.
+
+| Export | Description |
+|--------|-------------|
 | `PhoneFieldUtils.parse(value)` | Parse `Value` or E.164 string → libphonenumber `PhoneNumber` (formatNational, formatInternational, getURI) |
 | `PhoneFieldUtils.isValid(value)` | Validate `Value` or raw string |
 | `PhoneFieldUtils.fromFormData(formData, name)` | Read serialized value from FormData |
 | `PhoneFieldUtils.getCountries(locale?)` | Map of ISO2 → country (name, dialCode, flag) |
+| `PhoneFieldUtils.countries` | Default country map (en) |
 
 ---
 
