@@ -83,7 +83,7 @@ export function DocSection() {
 
 					<DocBlock
 						title="Internationalization"
-						description="Localize country names/sorting with lang. Accepts a single locale or a fallback list."
+						description="Localize country names/sorting with lang"
 						code={i18nSnippet}
 					/>
 				</DocSubsection>
