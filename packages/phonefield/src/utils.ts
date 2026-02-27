@@ -50,6 +50,9 @@ function countryFlag(iso2: CountryCode) {
     .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
 }
 
+/**
+ * Normalizes a BCP 47 locale (string or array) to a single canonical locale string. Returns `"en"` when missing or invalid.
+ */
 export function normalizeLang(lang?: PhoneFieldLang) {
   if (!lang) {
     return "en";
@@ -88,6 +91,9 @@ function buildCountriesMap(lang: string) {
 
 const countriesMapByLang = new Map<string, PhoneFieldCountryMap>();
 
+/**
+ * Returns a cached map of ISO2 → PhoneFieldCountry for the given locale. Used for country names and sorting.
+ */
 export function getCountriesMap(lang?: PhoneFieldLang) {
   const normalizedLang = normalizeLang(lang);
   const cached = countriesMapByLang.get(normalizedLang);
@@ -100,12 +106,15 @@ export function getCountriesMap(lang?: PhoneFieldLang) {
   return countriesMap;
 }
 
+/** Default country code used when none is specified (e.g. "US"). */
 export const DEFAULT_COUNTRY: CountryCode = "US";
 
+/** Returns the default countries map for locale "en". */
 export function getDefaultCountriesMap() {
   return getCountriesMap("en");
 }
 
+/** Strips all non-digit characters from a string. */
 export function onlyDigits(value: string) {
   return value.replace(/\D+/g, "");
 }
@@ -114,6 +123,10 @@ function dialCodeDigits(country: PhoneFieldCountry) {
   return onlyDigits(country.dialCode);
 }
 
+/**
+ * Filters a countries map to the given ISO2 codes, or returns all countries if none provided.
+ * @throws If the resulting list is empty.
+ */
 export function toAvailableCountries(
   countriesMap: PhoneFieldCountryMap,
   countries?: readonly PhoneFieldCountryCodeValue[],
@@ -153,6 +166,10 @@ export function toAvailableCountries(
   return entries;
 }
 
+/**
+ * Resolves an ISO2 code to a country from the available list. Falls back to US if present, else first country.
+ * @throws If availableCountries is empty.
+ */
 export function resolveCountry(
   availableCountries: readonly PhoneFieldCountry[],
   iso2?: CountryCode,
@@ -176,6 +193,10 @@ export function resolveCountry(
   return fallbackCountry;
 }
 
+/**
+ * Builds a PhoneFieldValue from country, raw national number string, and formatOnType flag.
+ * When formatOnType is true, national number is formatted as-you-type.
+ */
 export function buildValue(
   country: PhoneFieldCountry,
   rawNumber: string,
@@ -202,10 +223,15 @@ export function buildValue(
   };
 }
 
+/** Default search text for a country (name, iso2, dialCode) used by the combobox. */
 export function defaultCountrySearchText(country: PhoneFieldCountry) {
   return `${country.name} ${country.iso2} ${country.dialCode}`;
 }
 
+/**
+ * Parses a PhoneFieldValue or E.164 string into a libphonenumber PhoneNumber.
+ * Use for formatNational(), formatInternational(), getURI(). Options.defaultCountry for national-number strings.
+ */
 export function parsePhoneField(
   value: string | PhoneFieldValue,
   options?: { defaultCountry?: CountryCode },
@@ -225,6 +251,10 @@ export function parsePhoneField(
   return parsePhoneNumberFromString(raw, value.countryIso2);
 }
 
+/**
+ * Returns whether the value is a valid phone number. Accepts PhoneFieldValue or E.164 string.
+ * Options.defaultCountry for national-number strings.
+ */
 export function isValidPhoneField(
   value: string | PhoneFieldValue,
   options?: { defaultCountry?: CountryCode },
@@ -232,6 +262,7 @@ export function isValidPhoneField(
   return parsePhoneField(value, options)?.isValid() ?? false;
 }
 
+/** Type guard: true if the value has the PhoneFieldValue shape. */
 export function isPhoneFieldValue(value: unknown): value is PhoneFieldValue {
   if (!value || typeof value !== "object") {
     return false;
@@ -247,6 +278,9 @@ export function isPhoneFieldValue(value: unknown): value is PhoneFieldValue {
   );
 }
 
+/**
+ * Reads a serialized PhoneField.Value from FormData (JSON string). Returns null if missing or invalid.
+ */
 export function fromFormData(formData: FormData, name: string) {
   const raw = formData.get(name);
   if (typeof raw !== "string") {
@@ -261,6 +295,10 @@ export function fromFormData(formData: FormData, name: string) {
   }
 }
 
+/**
+ * Helper facade for parse, isValid, fromFormData, getCountries, and default countries map.
+ * Use from "phonefield/utils" on client or server.
+ */
 export const PhoneFieldUtils = {
   parse: parsePhoneField,
   isValid: isValidPhoneField,

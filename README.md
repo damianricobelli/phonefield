@@ -1,213 +1,299 @@
-Welcome to your new TanStack Start app! 
+# PhoneField
 
-# Getting Started
+**Composable phone field primitive built with Base UI and libphonenumber-js.**
 
-To run this application:
+- **Country picker**: localized names, dial codes, and flag emojis from `libphonenumber-js` + `Intl.DisplayNames`.
+- **As-you-type formatting**: optional `formatOnType` flag powered by `AsYouType`.
+- **Controlled / uncontrolled**: `PhoneField.Root` works with or without external state.
+- **FormData ready**: `name` serializes the full `PhoneField.Value` into a hidden input.
+- **Utils on client & server**: `phonefield/utils` exposes a small facade over libphonenumber for parsing, validation, and country metadata.
 
-```bash
-bun install
-bun --bun run dev
-```
+The public docs live at [`https://phonefield.vercel.app`](https://phonefield.vercel.app).
 
-# Building For Production
+---
 
-To build this application for production:
-
-```bash
-bun --bun run build
-```
-
-## Testing
-
-This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
+### Installation
 
 ```bash
-bun --bun run test
+pnpm add phonefield
+# or
+npm install phonefield
+yarn add phonefield
+bun add phonefield
 ```
 
-## Styling
+Peer deps:
 
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
+- `react >= 18`
+- `react-dom >= 18`
 
-### Removing Tailwind CSS
+---
 
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Uninstall the packages: `bun install @tailwindcss/vite tailwindcss -D`
-
-## Linting & Formatting
-
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. The following scripts are available:
-
-
-```bash
-bun --bun run lint
-bun --bun run format
-bun --bun run check
-```
-
-
-## Shadcn
-
-Add components using the latest version of [Shadcn](https://ui.shadcn.com/).
-
-```bash
-pnpm dlx shadcn@latest add button
-```
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
+### Quick start
 
 ```tsx
-import { Link } from "@tanstack/react-router";
-```
+import { PhoneField } from "phonefield";
 
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
+export function SignupPhone() {
   return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
+    <PhoneField.Root defaultCountry="US" lang="en">
+      <PhoneField.Country />
+      <PhoneField.Input />
+    </PhoneField.Root>
+  );
 }
 ```
 
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
+`PhoneField.Root` is uncontrolled by default (`defaultValue` / `defaultCountry`), emits a normalized `PhoneField.Value`, and provides context to `PhoneField.Country` and `PhoneField.Input`.
 
-# Demo files
+---
 
-Files prefixed with `demo` can be safely deleted. They are there to provide a starting point for you to play around with the features you've installed.
+### Controlled mode
 
-# Learn More
+```tsx
+import * as React from "react";
+import { PhoneField } from "phonefield";
 
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
+export function CheckoutPhone() {
+  const [phone, setPhone] = React.useState<PhoneField.Value>({
+    countryIso2: "US",
+    countryDialCode: "1",
+    nationalNumber: "",
+    e164: null,
+    isValid: false,
+  });
 
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+  return (
+    <PhoneField.Root value={phone} onValueChange={setPhone}>
+      <PhoneField.Country />
+      <PhoneField.Input />
+    </PhoneField.Root>
+  );
+}
+```
+
+The controlled value shape is:
+
+```ts
+type PhoneFieldValue = {
+  countryIso2: CountryCode; // ISO2, e.g. "US"
+  countryDialCode: string; // digits only, e.g. "1"
+  nationalNumber: string; // formatted or raw, depending on formatOnType
+  e164: string | null; // e.g. "+14155552671"
+  isValid: boolean;
+};
+```
+
+---
+
+### Forms + FormData
+
+`PhoneField.Root` accepts a `name` prop. When set, it renders a hidden input containing a JSON-serialized `PhoneField.Value` that you can read from `FormData` on client or server using `PhoneFieldUtils.fromFormData`.
+
+```tsx
+import { PhoneField } from "phonefield";
+import { PhoneFieldUtils } from "phonefield/utils";
+
+// Uncontrolled is the default: omit `value` and `onValueChange`.
+function ExampleForm() {
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const phone = PhoneFieldUtils.fromFormData(formData, "phone");
+        // phone -> PhoneField.Value | null
+      }}
+    >
+      <PhoneField.Root name="phone" defaultCountry="US">
+        <PhoneField.Country />
+        <PhoneField.Input />
+      </PhoneField.Root>
+    </form>
+  );
+}
+```
+
+Server side:
+
+```ts
+const formData = await request.formData();
+const phone = PhoneFieldUtils.fromFormData(formData, "phone");
+```
+
+---
+
+### Country subset & locales
+
+Limit countries from `PhoneField.Root` and localize display names with `lang`:
+
+```tsx
+<PhoneField.Root
+  countries={["US", "CA", "MX"]}
+  defaultCountry="US"
+  lang="es-AR"
+>
+  <PhoneField.Country />
+  <PhoneField.Input />
+</PhoneField.Root>
+```
+
+Internally, `lang` is normalized via `Intl.getCanonicalLocales`. Country metadata is built once per locale and cached.
+
+---
+
+### Styling `PhoneField.Country` (slots)
+
+`PhoneField.Country` exposes `slots` that map 1:1 to Base UI Combobox parts:
+
+```ts
+type CountrySlots<Value extends PhoneField.Country = PhoneField.Country> = {
+  root?: Combobox.Root.Props<Value>;
+  placeholder?: React.HTMLAttributes<HTMLSpanElement>;
+  trigger?: Combobox.Trigger.Props;
+  value?: Combobox.Value.Props;
+  icon?: Combobox.Icon.Props;
+  popup?: Combobox.Popup.Props;
+  positioner?: Combobox.Positioner.Props;
+  searchInput?: Combobox.Input.Props;
+  list?: Combobox.List.Props;
+  item?: Combobox.Item.Props;
+  empty?: Combobox.Empty.Props;
+};
+```
+
+Example:
+
+```tsx
+import { PhoneField } from "phonefield";
+
+const countrySlots: PhoneField.CountrySlots = {
+  trigger: { className: "h-10 rounded-md border border-gray-200 px-3" },
+  popup: { className: "rounded-lg shadow-lg" },
+  searchInput: {
+    className: "h-9 rounded-md border border-gray-200 px-2",
+  },
+  item: {
+    className:
+      "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
+  },
+};
+
+<PhoneField.Root className="flex items-center gap-2">
+  <PhoneField.Country slots={countrySlots} />
+  <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
+</PhoneField.Root>;
+```
+
+---
+
+### `PhoneField.Country` props
+
+```ts
+type CountryProps = {
+  placeholder?: React.ReactNode; // default: "Select country"
+  noResultsText?: React.ReactNode; // default: "No countries found"
+  inputPlaceholder?: string; // default: "Search country"
+  icon?: React.ReactNode; // default: internal chevron
+  slots?: PhoneField.CountrySlots;
+  renderCountryItem?: (country: PhoneField.Country) => React.ReactNode;
+  renderCountryValue?: (country: PhoneField.Country) => React.ReactNode;
+};
+```
+
+`renderCountryItem` and `renderCountryValue` let you fully customize the trigger and list item content while still reusing the built-in country data.
+
+---
+
+### `PhoneField.Input` props
+
+`PhoneField.Input` is a very thin wrapper around Base UI `Input`:
+
+```ts
+type InputProps = BaseInput.Props;
+```
+
+Key behavior:
+
+- Binds `value` to `PhoneField.Value["nationalNumber"]`.
+- Always uses `inputMode="tel"`, `autoComplete="tel"`, and `pattern="[0-9]*"`.
+- Emits `onValueChange(nextValue, eventDetails)` and calls `setNumber` in context.
+- Mirrors Base UI validity attributes: `data-valid` / `data-invalid` based on `Input` state.
+
+You can use these data attributes to style borders, backgrounds, etc.
+
+---
+
+### Validation + formatting utils
+
+Import from `phonefield/utils`:
+
+```ts
+import { PhoneFieldUtils } from "phonefield/utils";
+
+// parse() returns libphonenumber PhoneNumber: formatNational(), formatInternational(), getURI()
+const parsed = PhoneFieldUtils.parse(value);
+
+const output = {
+  isValid: PhoneFieldUtils.isValid(value),
+  e164: value.e164,
+  national: parsed?.formatNational(),
+  international: parsed?.formatInternational(),
+};
+
+// Frontend or backend:
+PhoneFieldUtils.isValid("+14155552671");
+PhoneFieldUtils.fromFormData(formData, "phone");
+PhoneFieldUtils.getCountries("es-AR"); // ReadonlyMap<iso2, country>
+PhoneFieldUtils.countries; // default map ("en")
+```
+
+API surface:
+
+- **`PhoneFieldUtils.parse(value, options?)`**: `value` is `PhoneField.Value` or string (E.164 or national). Returns libphonenumber `PhoneNumber | undefined`. `options.defaultCountry` is used when parsing national-number strings.
+- **`PhoneFieldUtils.isValid(value, options?)`**: boolean validity check. Same inputs/options as `parse`.
+- **`PhoneFieldUtils.fromFormData(formData, name)`**: reads a serialized `PhoneField.Value` JSON string from `FormData` and returns `Value | null`.
+- **`PhoneFieldUtils.getCountries(locale?)`**: returns a `ReadonlyMap<iso2, PhoneField.Country>` for the given locale (BCP 47). Used internally by `lang`, but you can call it directly.
+- **`PhoneFieldUtils.countries`**: default `ReadonlyMap` for `"en"`.
+
+---
+
+### `PhoneField.Root` props
+
+```ts
+type RootProps = Omit<React.ComponentPropsWithoutRef<"div">, "defaultValue"> & {
+  value?: PhoneField.Value;
+  defaultValue?: PhoneField.Value;
+  onValueChange?: (value: PhoneField.Value) => void;
+  defaultCountry?: PhoneField.CountryCodeValue; // e.g. "US"
+  countries?: readonly PhoneField.CountryCodeValue[]; // subset
+  lang?: PhoneField.Lang; // BCP 47 string or string[]
+  name?: string; // enables hidden input + FormData integration
+  formatOnType?: boolean; // default: true
+};
+```
+
+When `formatOnType` is `true`, the national number is formatted as-you-type using libphonenumber; when `false`, you get the raw input string.
+
+---
+
+### Types
+
+```ts
+import type {
+  PhoneFieldCountry,
+  PhoneFieldCountryCodeValue,
+  PhoneFieldCountryMap,
+  PhoneFieldCountryName,
+  PhoneFieldLang,
+  PhoneFieldValue,
+} from "phonefield";
+```
+
+These types are re-exported from the package entry so you can use them in your own components and APIs.
+
+---
+
+### License
+
+MIT © Damian Ricobelli

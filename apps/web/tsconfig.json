@@ -7,8 +7,6 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "phonefield": ["./package/src/index.ts"],
-      "phonefield/*": ["./package/src/*"],
     },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
