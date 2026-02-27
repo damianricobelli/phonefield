@@ -1,18 +1,46 @@
-# PhoneField
+<div align="center">
+  <h1>PhoneField</h1>
 
-**Composable phone field primitive built with Base UI and libphonenumber-js.**
+  <p><strong>Composable React phone input primitive</strong> powered by Base UI + libphonenumber-js.</p>
 
-- **Country picker**: localized names, dial codes, and flag emojis from `libphonenumber-js` + `Intl.DisplayNames`.
-- **As-you-type formatting**: optional `formatOnType` flag powered by `AsYouType`.
-- **Controlled / uncontrolled**: `PhoneField.Root` works with or without external state.
-- **FormData ready**: `name` serializes the full `PhoneField.Value` into a hidden input.
-- **Utils on client & server**: `phonefield/utils` exposes a small facade over libphonenumber for parsing, validation, and country metadata.
+  <p>
+    <a href="https://phonefield.vercel.app"><img src="https://img.shields.io/badge/docs-phonefield.vercel.app-0f172a?style=for-the-badge" alt="Docs" /></a>
+    <a href="https://www.npmjs.com/package/phonefield"><img src="https://img.shields.io/npm/v/phonefield?style=for-the-badge" alt="NPM version" /></a>
+    <a href="https://www.npmjs.com/package/phonefield"><img src="https://img.shields.io/npm/dm/phonefield?style=for-the-badge" alt="NPM downloads" /></a>
+    <a href="https://bundlephobia.com/package/phonefield"><img src="https://img.shields.io/bundlephobia/minzip/phonefield?style=for-the-badge" alt="Bundlephobia minzip" /></a>
+    <img src="https://img.shields.io/badge/license-MIT-16a34a?style=for-the-badge" alt="MIT" />
+  </p>
+</div>
 
-The public docs live at [`https://phonefield.vercel.app`](https://phonefield.vercel.app).
+## Table of Contents
 
----
+- [Why PhoneField](#why-phonefield)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Controlled Mode](#controlled-mode)
+- [Forms + FormData](#forms--formdata)
+- [Country Filtering + Localization](#country-filtering--localization)
+- [Styling with Slots](#styling-with-slots)
+- [Utilities (`phonefield/utils`)](#utilities-phonefieldutils)
+- [API Reference (At a Glance)](#api-reference-at-a-glance)
+- [Monorepo Development](#monorepo-development)
+- [License](#license)
 
-### Installation
+## Why PhoneField
+
+PhoneField gives you a production-ready phone UX without locking you into a visual design system.
+
+| Feature | What you get |
+| --- | --- |
+| Country picker | Localized country names, dial codes, and flag emoji |
+| Smart formatting | As-you-type formatting with `formatOnType` |
+| Flexible state | Controlled or uncontrolled usage |
+| Form-friendly | Hidden input JSON + `FormData` parser |
+| Shared logic | Parse/validate helpers for frontend and backend |
+
+Live docs: [phonefield.vercel.app](https://phonefield.vercel.app)
+
+## Installation
 
 ```bash
 pnpm add phonefield
@@ -22,14 +50,12 @@ yarn add phonefield
 bun add phonefield
 ```
 
-Peer deps:
+Peer dependencies:
 
 - `react >= 18`
 - `react-dom >= 18`
 
----
-
-### Quick start
+## Quick Start
 
 ```tsx
 import { PhoneField } from "phonefield";
@@ -44,11 +70,9 @@ export function SignupPhone() {
 }
 ```
 
-`PhoneField.Root` is uncontrolled by default (`defaultValue` / `defaultCountry`), emits a normalized `PhoneField.Value`, and provides context to `PhoneField.Country` and `PhoneField.Input`.
+`PhoneField.Root` is uncontrolled by default and exposes context to `PhoneField.Country` and `PhoneField.Input`.
 
----
-
-### Controlled mode
+## Controlled Mode
 
 ```tsx
 import * as React from "react";
@@ -72,29 +96,24 @@ export function CheckoutPhone() {
 }
 ```
 
-The controlled value shape is:
+Value shape:
 
 ```ts
 type PhoneFieldValue = {
-  countryIso2: CountryCode; // ISO2, e.g. "US"
-  countryDialCode: string; // digits only, e.g. "1"
-  nationalNumber: string; // formatted or raw, depending on formatOnType
-  e164: string | null; // e.g. "+14155552671"
+  countryIso2: CountryCode;
+  countryDialCode: string;
+  nationalNumber: string;
+  e164: string | null;
   isValid: boolean;
 };
 ```
 
----
-
-### Forms + FormData
-
-`PhoneField.Root` accepts a `name` prop. When set, it renders a hidden input containing a JSON-serialized `PhoneField.Value` that you can read from `FormData` on client or server using `PhoneFieldUtils.fromFormData`.
+## Forms + FormData
 
 ```tsx
 import { PhoneField } from "phonefield";
 import { PhoneFieldUtils } from "phonefield/utils";
 
-// Uncontrolled is the default: omit `value` and `onValueChange`.
 function ExampleForm() {
   return (
     <form
@@ -102,7 +121,7 @@ function ExampleForm() {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const phone = PhoneFieldUtils.fromFormData(formData, "phone");
-        // phone -> PhoneField.Value | null
+        // phone => PhoneField.Value | null
       }}
     >
       <PhoneField.Root name="phone" defaultCountry="US">
@@ -121,11 +140,7 @@ const formData = await request.formData();
 const phone = PhoneFieldUtils.fromFormData(formData, "phone");
 ```
 
----
-
-### Country subset & locales
-
-Limit countries from `PhoneField.Root` and localize display names with `lang`:
+## Country Filtering + Localization
 
 ```tsx
 <PhoneField.Root
@@ -138,31 +153,12 @@ Limit countries from `PhoneField.Root` and localize display names with `lang`:
 </PhoneField.Root>
 ```
 
-Internally, `lang` is normalized via `Intl.getCanonicalLocales`. Country metadata is built once per locale and cached.
+- `countries`: limit available ISO2 countries
+- `lang`: BCP 47 locale(s), normalized via `Intl.getCanonicalLocales`
 
----
+## Styling with Slots
 
-### Styling `PhoneField.Country` (slots)
-
-`PhoneField.Country` exposes `slots` that map 1:1 to Base UI Combobox parts:
-
-```ts
-type CountrySlots<Value extends PhoneField.Country = PhoneField.Country> = {
-  root?: Combobox.Root.Props<Value>;
-  placeholder?: React.HTMLAttributes<HTMLSpanElement>;
-  trigger?: Combobox.Trigger.Props;
-  value?: Combobox.Value.Props;
-  icon?: Combobox.Icon.Props;
-  popup?: Combobox.Popup.Props;
-  positioner?: Combobox.Positioner.Props;
-  searchInput?: Combobox.Input.Props;
-  list?: Combobox.List.Props;
-  item?: Combobox.Item.Props;
-  empty?: Combobox.Empty.Props;
-};
-```
-
-Example:
+`PhoneField.Country` exposes Base UI-aligned slots so you can style each part independently.
 
 ```tsx
 import { PhoneField } from "phonefield";
@@ -170,130 +166,102 @@ import { PhoneField } from "phonefield";
 const countrySlots: PhoneField.CountrySlots = {
   trigger: { className: "h-10 rounded-md border border-gray-200 px-3" },
   popup: { className: "rounded-lg shadow-lg" },
-  searchInput: {
-    className: "h-9 rounded-md border border-gray-200 px-2",
-  },
+  searchInput: { className: "h-9 rounded-md border border-gray-200 px-2" },
   item: {
     className:
       "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
   },
 };
 
-<PhoneField.Root className="flex items-center gap-2">
-  <PhoneField.Country slots={countrySlots} />
-  <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
-</PhoneField.Root>;
+export function StyledPhoneField() {
+  return (
+    <PhoneField.Root className="flex items-center gap-2">
+      <PhoneField.Country slots={countrySlots} />
+      <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
+    </PhoneField.Root>
+  );
+}
 ```
 
----
-
-### `PhoneField.Country` props
-
-```ts
-type CountryProps = {
-  placeholder?: React.ReactNode; // default: "Select country"
-  noResultsText?: React.ReactNode; // default: "No countries found"
-  inputPlaceholder?: string; // default: "Search country"
-  icon?: React.ReactNode; // default: internal chevron
-  slots?: PhoneField.CountrySlots;
-  renderCountryItem?: (country: PhoneField.Country) => React.ReactNode;
-  renderCountryValue?: (country: PhoneField.Country) => React.ReactNode;
-};
-```
-
-`renderCountryItem` and `renderCountryValue` let you fully customize the trigger and list item content while still reusing the built-in country data.
-
----
-
-### `PhoneField.Input` props
-
-`PhoneField.Input` is a very thin wrapper around Base UI `Input`:
-
-```ts
-type InputProps = BaseInput.Props;
-```
-
-Key behavior:
-
-- Binds `value` to `PhoneField.Value["nationalNumber"]`.
-- Always uses `inputMode="tel"`, `autoComplete="tel"`, and `pattern="[0-9]*"`.
-- Emits `onValueChange(nextValue, eventDetails)` and calls `setNumber` in context.
-- Mirrors Base UI validity attributes: `data-valid` / `data-invalid` based on `Input` state.
-
-You can use these data attributes to style borders, backgrounds, etc.
-
----
-
-### Validation + formatting utils
-
-Import from `phonefield/utils`:
+## Utilities (`phonefield/utils`)
 
 ```ts
 import { PhoneFieldUtils } from "phonefield/utils";
 
-// parse() returns libphonenumber PhoneNumber: formatNational(), formatInternational(), getURI()
-const parsed = PhoneFieldUtils.parse(value);
+const parsed = PhoneFieldUtils.parse("+14155552671");
 
 const output = {
-  isValid: PhoneFieldUtils.isValid(value),
-  e164: value.e164,
+  isValid: PhoneFieldUtils.isValid("+14155552671"),
   national: parsed?.formatNational(),
   international: parsed?.formatInternational(),
 };
-
-// Frontend or backend:
-PhoneFieldUtils.isValid("+14155552671");
-PhoneFieldUtils.fromFormData(formData, "phone");
-PhoneFieldUtils.getCountries("es-AR"); // ReadonlyMap<iso2, country>
-PhoneFieldUtils.countries; // default map ("en")
 ```
 
-API surface:
+Utility surface:
 
-- **`PhoneFieldUtils.parse(value, options?)`**: `value` is `PhoneField.Value` or string (E.164 or national). Returns libphonenumber `PhoneNumber | undefined`. `options.defaultCountry` is used when parsing national-number strings.
-- **`PhoneFieldUtils.isValid(value, options?)`**: boolean validity check. Same inputs/options as `parse`.
-- **`PhoneFieldUtils.fromFormData(formData, name)`**: reads a serialized `PhoneField.Value` JSON string from `FormData` and returns `Value | null`.
-- **`PhoneFieldUtils.getCountries(locale?)`**: returns a `ReadonlyMap<iso2, PhoneField.Country>` for the given locale (BCP 47). Used internally by `lang`, but you can call it directly.
-- **`PhoneFieldUtils.countries`**: default `ReadonlyMap` for `"en"`.
+- `PhoneFieldUtils.parse(value, options?)`
+- `PhoneFieldUtils.isValid(value, options?)`
+- `PhoneFieldUtils.fromFormData(formData, name)`
+- `PhoneFieldUtils.getCountries(locale?)`
+- `PhoneFieldUtils.countries`
 
----
-
-### `PhoneField.Root` props
+## API Reference (At a Glance)
 
 ```ts
 type RootProps = Omit<React.ComponentPropsWithoutRef<"div">, "defaultValue"> & {
   value?: PhoneField.Value;
   defaultValue?: PhoneField.Value;
   onValueChange?: (value: PhoneField.Value) => void;
-  defaultCountry?: PhoneField.CountryCodeValue; // e.g. "US"
-  countries?: readonly PhoneField.CountryCodeValue[]; // subset
-  lang?: PhoneField.Lang; // BCP 47 string or string[]
-  name?: string; // enables hidden input + FormData integration
+  defaultCountry?: PhoneField.CountryCodeValue;
+  countries?: readonly PhoneField.CountryCodeValue[];
+  lang?: PhoneField.Lang;
+  name?: string;
   formatOnType?: boolean; // default: true
 };
 ```
 
-When `formatOnType` is `true`, the national number is formatted as-you-type using libphonenumber; when `false`, you get the raw input string.
-
----
-
-### Types
-
 ```ts
-import type {
-  PhoneFieldCountry,
-  PhoneFieldCountryCodeValue,
-  PhoneFieldCountryMap,
-  PhoneFieldCountryName,
-  PhoneFieldLang,
-  PhoneFieldValue,
-} from "phonefield";
+type CountryProps = {
+  placeholder?: React.ReactNode;
+  noResultsText?: React.ReactNode;
+  inputPlaceholder?: string;
+  icon?: React.ReactNode;
+  slots?: PhoneField.CountrySlots;
+  renderCountryItem?: (country: PhoneField.Country) => React.ReactNode;
+  renderCountryValue?: (country: PhoneField.Country) => React.ReactNode;
+};
 ```
 
-These types are re-exported from the package entry so you can use them in your own components and APIs.
+```ts
+type InputProps = BaseInput.Props;
+```
 
----
+## Monorepo Development
 
-### License
+```bash
+# install deps
+pnpm install
+
+# run all dev tasks (turbo)
+pnpm dev
+
+# build everything
+pnpm build
+
+# lint all packages/apps
+pnpm lint
+```
+
+Workspace layout:
+
+```text
+.
+├─ apps/web                # docs site
+├─ packages/phonefield     # published package
+├─ README.md
+└─ turbo.json
+```
+
+## License
 
 MIT © Damian Ricobelli
