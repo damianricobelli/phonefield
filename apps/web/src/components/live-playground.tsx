@@ -50,11 +50,16 @@ export function LivePlayground() {
   ] as const;
 
   return (
-    <article className="rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur md:p-8">
-      <h2 className="text-xl font-semibold">Live Playground</h2>
+    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50 ring-1 ring-slate-200/50 md:p-8">
+      <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-2.5 py-0.5 text-xs font-medium text-sky-700">
+        <span className="size-1.5 rounded-full bg-sky-500" />
+        Live
+      </div>
+      <h2 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
+        Playground
+      </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Base UI-like motion and popup behavior, while using the PhoneField
-        primitive API.
+        Base UI–like motion and popup behavior using the PhoneField primitive API.
       </p>
 
       <div className="mt-6">
@@ -117,10 +122,10 @@ export function LivePlayground() {
 
       <div className="mt-6">
         <h3 className="text-sm font-semibold text-slate-900">
-          Number Format Lens
+          Number format lens
         </h3>
         <p className="mt-1 text-xs text-slate-600">
-          Real-time outputs from <code>PhoneFieldUtils.parse</code> and{" "}
+          Real-time output from <code>PhoneFieldUtils.parse</code> and{" "}
           <code>PhoneFieldUtils.isValid</code>.
         </p>
         <div className="mt-3 space-y-2">

@@ -1,3 +1,5 @@
+import { CopyButton } from "@/components/copy-button";
+
 type TokenType = "plain" | "keyword" | "string" | "comment" | "type" | "tag";
 
 type TokenPart = {
@@ -25,6 +27,7 @@ const KEYWORDS = new Set([
   "default",
   "new",
   "as",
+  "useState",
 ]);
 
 const KNOWN_TYPES = new Set([
@@ -96,6 +99,50 @@ function tokenClass(type: TokenType) {
   return "text-slate-100";
 }
 
+export function HighlightedCode({
+  code,
+  lineNumbers = true,
+  className = "",
+}: {
+  code: string;
+  lineNumbers?: boolean;
+  className?: string;
+}) {
+  const lines = code.replace(/\n$/, "").split("\n");
+  return (
+    <pre
+      className={`overflow-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-xs sm:text-sm shadow-sm ${className}`}
+    >
+      <code>
+        {lines.map((line, lineIndex) => (
+          <div
+            key={lineIndex}
+            className={
+              lineNumbers ? "grid grid-cols-[1.2rem_1fr] gap-3" : "block"
+            }
+          >
+            {lineNumbers && (
+              <span className="select-none text-right text-xs text-slate-500 mr-1">
+                {lineIndex + 1}
+              </span>
+            )}
+            <span className="whitespace-pre-wrap break-words">
+              {tokenizeLine(line).map((part, partIndex) => (
+                <span
+                  key={partIndex}
+                  className={tokenClass(part.type)}
+                >
+                  {part.text}
+                </span>
+              ))}
+            </span>
+          </div>
+        ))}
+      </code>
+    </pre>
+  );
+}
+
 export function DocBlock({
   title,
   description,
@@ -105,10 +152,8 @@ export function DocBlock({
   description: string;
   code: string;
 }) {
-  const lines = code.replace(/\n$/, "").split("\n");
-
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur md:p-8">
+    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <h2 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
         {title}
       </h2>
@@ -116,30 +161,13 @@ export function DocBlock({
         {description}
       </p>
 
-      <pre className="overflow-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-sm shadow-sm">
-        <code>
-          {lines.map((line, lineIndex) => (
-            <div
-              key={`${title}-line-${lineIndex + 1}`}
-              className="grid grid-cols-[2.2rem_1fr] gap-3"
-            >
-              <span className="select-none text-right text-xs text-slate-500">
-                {lineIndex + 1}
-              </span>
-              <span className="whitespace-pre-wrap wrap-break-word">
-                {tokenizeLine(line).map((part, partIndex) => (
-                  <span
-                    key={`${title}-line-${lineIndex + 1}-part-${partIndex + 1}`}
-                    className={tokenClass(part.type)}
-                  >
-                    {part.text}
-                  </span>
-                ))}
-              </span>
-            </div>
-          ))}
-        </code>
-      </pre>
+      <div className="relative">
+        <CopyButton
+          text={code}
+          className="absolute right-3 top-3 z-10"
+        />
+        <HighlightedCode code={code} className="pr-24" />
+      </div>
     </article>
   );
 }

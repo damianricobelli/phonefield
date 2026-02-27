@@ -1,78 +1,87 @@
 import { SiGithub as Github } from "@icons-pack/react-simple-icons";
-import { Pill } from "@/components/pill";
+import { CopyButton } from "@/components/copy-button";
+import { HighlightedCode } from "@/components/doc-block";
+
+const snippet = `import { PhoneField } from "phonefield";
+
+export function App() {
+  return (
+    <PhoneField.Root>
+      <PhoneField.Country />
+      <PhoneField.Input />
+    </PhoneField.Root>
+  );
+}`;
 
 export function HeroSection() {
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pb-10 pt-16 md:pt-24">
-      <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-        <div>
+    <section className="relative mx-auto max-w-6xl px-6 pb-16 pt-12 md:pb-20 md:pt-20 lg:pt-28">
+      <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14 items-center">
+        <div className="flex flex-col justify-center">
           <div className="flex items-center gap-3">
-            <p className="text-xs font-semibold tracking-[0.22em] text-slate-500">
-              PHONEFIELD
-            </p>
+            <span className="rounded-full bg-slate-900/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              PhoneField
+            </span>
             <a
               href="https://github.com/damianricobelli/phonefield"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-slate-700 hover:text-slate-900"
-              aria-label="PhoneField GitHub repository"
+              className="inline-flex items-center gap-1.5 rounded-lg p-1.5 text-slate-500 transition-colors hover:bg-slate-200/50 hover:text-slate-800"
+              aria-label="PhoneField on GitHub"
             >
               <Github className="size-4" aria-hidden="true" />
             </a>
           </div>
-          <h1 className="mt-4 text-4xl font-black leading-tight tracking-tight md:text-6xl">
-            A primitive phone input for design systems.
+
+          <h1 className="mt-6 text-4xl font-black leading-[1.1] tracking-tight text-slate-900 md:text-5xl lg:text-6xl">
+            <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-900 bg-clip-text text-transparent">
+              Phone field
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-blue-700 bg-clip-text text-transparent">
+              for design systems
+            </span>
           </h1>
-          <p className="mt-5 max-w-2xl text-base text-slate-600 md:text-lg">
-            Compose country picker + number input with Base UI, while keeping
-            parsing and validation aligned with libphonenumber-js through a
-            clean primitive API.
+
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+            Compose country picker + number input with Base UI. Parsing and
+            validation stay aligned with libphonenumber via a minimal primitive
+            API.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-2">
-            <Pill>Composable Primitive</Pill>
-            <Pill>Built with Base UI</Pill>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a
+              href="#playground"
+              className="inline-flex items-center rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-slate-900/25 transition hover:bg-slate-800 active:scale-[0.98]"
+            >
+              Try it
+            </a>
+            <a
+              href="#docs"
+              className="inline-flex items-center rounded-xl border border-slate-300 bg-white/90 px-5 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-white"
+            >
+              Read docs
+            </a>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-slate-700/70 bg-[linear-gradient(155deg,#0f172a_0%,#111827_50%,#1e293b_100%)] p-5 text-slate-100 shadow-[0_30px_90px_-45px_rgba(15,23,42,0.95)]">
-          <div className="pointer-events-none absolute -right-14 -top-14 size-44 rounded-full bg-sky-400/15 blur-3xl" />
-          <div className="pointer-events-none absolute -left-8 bottom-0 size-32 rounded-full bg-amber-300/15 blur-2xl" />
-
-          <p className="text-[11px] font-semibold tracking-[0.2em] text-slate-300">
-            PRIMITIVE COMPOSITION
-          </p>
-
-          <div className="relative mt-3 rounded-xl border border-slate-700/70 bg-slate-950/70 p-3">
-            <div className="mb-2 flex items-center gap-1.5">
-              <span className="size-2 rounded-full bg-rose-400/90" />
-              <span className="size-2 rounded-full bg-amber-300/90" />
-              <span className="size-2 rounded-full bg-emerald-300/90" />
+        <div className="relative">
+          <div className="sticky top-24 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 shadow-xl shadow-slate-200/50 ring-1 ring-slate-200/50 backdrop-blur-sm lg:rounded-3xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50/80 to-white/80" />
+            <div className="relative p-4 md:p-5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  That's all you need
+                </p>
+                <CopyButton text={snippet} className="shrink-0" />
+              </div>
+              <div className="mt-3">
+                <HighlightedCode
+                  code={snippet}
+                  lineNumbers={true}
+                />
+              </div>
             </div>
-            <pre className="overflow-auto rounded-lg bg-slate-900/80 p-4 text-xs text-slate-100 ring-1 ring-slate-800/80">
-              {`<PhoneField.Root value={value} onValueChange={setValue}>
-  <PhoneField.Country />
-  <PhoneField.Input />
-</PhoneField.Root>`}
-            </pre>
-          </div>
-
-          <div className="relative mt-3 rounded-xl border border-slate-700/70 bg-slate-900/60 p-3">
-            <p className="text-[11px] font-semibold tracking-[0.16em] text-slate-400">
-              EMITTED VALUE
-            </p>
-            <pre className="mt-2 overflow-auto rounded-md bg-slate-950/80 p-3 text-[11px] text-slate-100 ring-1 ring-slate-800/80">
-              {`{
-  countryIso2: "US",
-  countryDialCode: "1",
-  nationalNumber: "(201) 555-0123",
-  e164: "+12015550123",
-  isValid: true
-}`}
-            </pre>
-            <p className="mt-2 text-xs text-slate-300">
-              This kind of payload is what you can store, validate, and submit.
-            </p>
           </div>
         </div>
       </div>
