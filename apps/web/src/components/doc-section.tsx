@@ -2,11 +2,11 @@ import { DocBlock } from "@/components/doc-block";
 import { InstallTabs } from "@/components/install-tabs";
 import {
 	controlledSnippet,
-	countryPropsSnippet,
 	formatAndUtilsSnippet,
 	formDataSnippet,
-	partsSnippet,
+	i18nSnippet,
 	quickStartSnippet,
+	stylingCountrySelectSnippet,
 	subsetSnippet,
 	validitySnippet,
 } from "@/lib/snippets";
@@ -24,7 +24,7 @@ function DocSubsection({
 				<h2 className="text-lg font-bold tracking-tight text-slate-800 md:text-xl">
 					{title}
 				</h2>
-				<span className="h-px flex-1 bg-gradient-to-r from-slate-300 to-transparent" />
+				<span className="h-px flex-1 bg-linear-to-r from-slate-300 to-transparent" />
 			</div>
 			<div className="space-y-8">{children}</div>
 		</div>
@@ -47,9 +47,9 @@ export function DocSection() {
 
 				<DocSubsection title="Getting started">
 					<article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-						<h3 className="text-lg font-semibold tracking-tight text-slate-900">
+						<h2 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
 							Installation
-						</h3>
+						</h2>
 						<p className="mt-1 mb-4 max-w-3xl text-sm text-slate-600 md:text-base">
 							Install with your preferred manager. Copy the command with one
 							click.
@@ -62,10 +62,29 @@ export function DocSection() {
 						description="Minimal setup. Root can run uncontrolled by default and gives a normalized PhoneField.Value output."
 						code={quickStartSnippet}
 					/>
+
 					<DocBlock
 						title="Controlled Mode"
 						description="Use when your form or global state owns the value and you need full control over updates."
 						code={controlledSnippet}
+					/>
+
+					<DocBlock
+						title="Styling country select"
+						description="PhoneField.Country has no styles by default. So you can style it as you want following your design system rules."
+						code={stylingCountrySelectSnippet}
+					/>
+
+					<DocBlock
+						title="Country Subset"
+						description="Limit the available countries from Root using ISO codes."
+						code={subsetSnippet}
+					/>
+
+					<DocBlock
+						title="Internationalization"
+						description="Localize country names/sorting with lang. Accepts a single locale or a fallback list."
+						code={i18nSnippet}
 					/>
 				</DocSubsection>
 
@@ -80,29 +99,375 @@ export function DocSection() {
 						description="Set Root name to serialize the full PhoneField.Value as JSON in a hidden input. Read it from FormData on client or server."
 						code={formDataSnippet}
 					/>
-				</DocSubsection>
-
-				<DocSubsection title="Customization">
-					<DocBlock
-						title="Country Subset"
-						description="Limit the available countries from Root using ISO codes."
-						code={subsetSnippet}
-					/>
-					<DocBlock
-						title="Styling With Country Slots"
-						description="PhoneField.Country slots map to Base UI Combobox parts (trigger, popup, list, item, etc.). Each slot accepts that part's props, and styles are passed with className."
-						code={partsSnippet}
-					/>
-					<DocBlock
-						title="Country Component Props"
-						description="PhoneField.Country supports props for UX copy and icon customization, in addition to slots for per-part props."
-						code={countryPropsSnippet}
-					/>
 					<DocBlock
 						title="Validity States"
 						description="Pair PhoneField with Base UI Field to show invalid states and clear error messages using data-valid and data-invalid attributes."
 						code={validitySnippet}
 					/>
+				</DocSubsection>
+
+				<DocSubsection title="API">
+					<article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+						<h3 className="text-lg font-semibold tracking-tight text-slate-900">
+							PhoneField.Root props
+						</h3>
+						<p className="mt-1 max-w-3xl text-sm text-slate-600">
+							Root state and serialization API. Also accepts every{" "}
+							<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+								div
+							</code>{" "}
+							prop except <code>defaultValue</code>.
+						</p>
+						<div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+							<table className="w-full min-w-lg border-collapse text-sm">
+								<thead>
+									<tr className="border-b border-slate-200 bg-slate-50/80">
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Prop
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Type
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Default
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Description
+										</th>
+									</tr>
+								</thead>
+								<tbody className="text-slate-600">
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											value
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.Value
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Controlled value for the full phone object.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											defaultValue
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.Value
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Initial value for uncontrolled usage.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											onValueChange
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											(value: PhoneField.Value) =&gt; void
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Callback fired when country or number changes.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											defaultCountry
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.CountryCodeValue
+										</td>
+										<td className="px-4 py-2.5">
+											"US" if available, otherwise first available
+										</td>
+										<td className="px-4 py-2.5">
+											Initial country when no value is provided.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											countries
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											readonly PhoneField.CountryCodeValue[]
+										</td>
+										<td className="px-4 py-2.5">all supported</td>
+										<td className="px-4 py-2.5">
+											Restricts the country list to a subset.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											lang
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.Lang
+										</td>
+										<td className="px-4 py-2.5">"en"</td>
+										<td className="px-4 py-2.5">
+											Locale used for country labels and sorting.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											name
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">string</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Serializes the value as JSON in a hidden input for
+											FormData.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											formatOnType
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">boolean</td>
+										<td className="px-4 py-2.5">true</td>
+										<td className="px-4 py-2.5">
+											Formats as you type based on selected country.
+										</td>
+									</tr>
+									<tr>
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											...divProps
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											React.ComponentPropsWithoutRef&lt;"div"&gt;
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Includes <code>children</code>, <code>className</code>,
+											events, and ARIA attributes.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</article>
+
+					<article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+						<h3 className="text-lg font-semibold tracking-tight text-slate-900">
+							PhoneField.Country props
+						</h3>
+						<p className="mt-1 max-w-3xl text-sm text-slate-600">
+							Country picker copy, rendering, and popup customization props.
+						</p>
+						<div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+							<table className="w-full min-w-lg border-collapse text-sm">
+								<thead>
+									<tr className="border-b border-slate-200 bg-slate-50/80">
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Prop
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Type
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Default
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Description
+										</th>
+									</tr>
+								</thead>
+								<tbody className="text-slate-600">
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											placeholder
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											React.ReactNode
+										</td>
+										<td className="px-4 py-2.5">"Select country"</td>
+										<td className="px-4 py-2.5">
+											Placeholder shown in the trigger when no country is
+											selected.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											noResultsText
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											React.ReactNode
+										</td>
+										<td className="px-4 py-2.5">"No countries found"</td>
+										<td className="px-4 py-2.5">
+											Message displayed when search has no matches.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											inputPlaceholder
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">string</td>
+										<td className="px-4 py-2.5">"Search country"</td>
+										<td className="px-4 py-2.5">
+											Placeholder for the popup search input.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											icon
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											React.ReactNode
+										</td>
+										<td className="px-4 py-2.5">ChevronUpDown</td>
+										<td className="px-4 py-2.5">
+											Replaces the default trigger icon.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											classNames
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.CountryClassNames
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Part-level classes: trigger, icon, popup, positioner,
+											searchInput, searchInputContainer, list, item, empty.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											positioning
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.CountryPositioning
+										</td>
+										<td className="px-4 py-2.5">
+											side: "bottom", align: "start", sideOffset: 4
+										</td>
+										<td className="px-4 py-2.5">
+											Popup placement and collision behavior options.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											renderCountryItem
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											(country: PhoneField.Country) =&gt; React.ReactNode
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Custom renderer for each dropdown country row.
+										</td>
+									</tr>
+									<tr>
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											renderCountryValue
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											(country: PhoneField.Country) =&gt; React.ReactNode
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Custom renderer for the selected country in the trigger.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</article>
+
+					<article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+						<h3 className="text-lg font-semibold tracking-tight text-slate-900">
+							PhoneField.Input props
+						</h3>
+						<p className="mt-1 max-w-3xl text-sm text-slate-600">
+							Input forwards the full{" "}
+							<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+								BaseInput.Props
+							</code>{" "}
+							surface from{" "}
+							<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
+								@base-ui/react/input
+							</code>
+							.
+						</p>
+						<div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
+							<table className="w-full min-w-lg border-collapse text-sm">
+								<thead>
+									<tr className="border-b border-slate-200 bg-slate-50/80">
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Prop
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Type
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Default
+										</th>
+										<th className="px-4 py-3 text-left font-semibold text-slate-700">
+											Description
+										</th>
+									</tr>
+								</thead>
+								<tbody className="text-slate-600">
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											type
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											React.HTMLInputTypeAttribute
+										</td>
+										<td className="px-4 py-2.5">"text"</td>
+										<td className="px-4 py-2.5">
+											Input type passed to Base UI Input.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											onValueChange
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											BaseInput.Props["onValueChange"]
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Called with the updated national number.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											className
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											BaseInput.Props["className"]
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Styles the underlying input element.
+										</td>
+									</tr>
+									<tr>
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											...baseInputProps
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											BaseInput.Props
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Includes standard input props like <code>name</code>,{" "}
+											<code>id</code>, <code>placeholder</code>,{" "}
+											<code>disabled</code>, <code>required</code>, events, and
+											ARIA attributes.
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</article>
 				</DocSubsection>
 
 				<DocSubsection title="Reference">
@@ -124,7 +489,7 @@ export function DocSection() {
 							. Same helpers on client and server.
 						</p>
 						<div className="mt-4 overflow-x-auto rounded-xl border border-slate-200">
-							<table className="w-full min-w-[32rem] border-collapse text-sm">
+							<table className="w-full min-w-lg border-collapse text-sm">
 								<thead>
 									<tr className="border-b border-slate-200 bg-slate-50/80">
 										<th className="px-4 py-3 text-left font-semibold text-slate-700">
