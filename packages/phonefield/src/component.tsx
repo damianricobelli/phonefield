@@ -243,15 +243,47 @@ function Country({
   );
 }
 
+function mergeRefs<T>(
+  ...refs: Array<React.Ref<T> | undefined>
+): React.RefCallback<T> {
+  return (value) => {
+    for (const ref of refs) {
+      if (!ref) continue;
+
+      if (typeof ref === "function") {
+        ref(value);
+      } else {
+        (ref as React.RefObject<T | null>).current = value;
+      }
+    }
+  };
+}
+
+function removeCharAt(value: string, index: number) {
+  return value.slice(0, index) + value.slice(index + 1);
+}
+
+function findPrevDigitIndex(value: string, from: number) {
+  let i = from;
+  while (i > 0 && /\D/.test(value[i - 1] ?? "")) {
+    i--;
+  }
+  return i - 1;
+}
+
 /**
  * Number input bound to the selected country. Exposes `data-valid` / `data-invalid` from Base UI Input.
  */
 const Input = ({
   className,
   onValueChange,
+  type = "text",
+  onKeyDown,
+  ref,
   ...props
 }: PhoneField.InputProps) => {
   const { value, setNumber } = usePhoneFieldContext();
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const baseInputClassName =
     "h-10 rounded-md border border-zinc-300 px-3 flex-1 outline-none focus:border-zinc-500";
   const resolvedClassName: BaseInput.Props["className"] =
@@ -262,9 +294,43 @@ const Input = ({
   return (
     <BaseInput
       {...props}
+      ref={mergeRefs(ref, inputRef)}
+      type={type}
       inputMode="tel"
+      autoComplete="tel"
+      pattern="[0-9]*"
       className={resolvedClassName}
       value={value.nationalNumber}
+      onKeyDown={(e) => {
+        if (e.key === "Backspace") {
+          const el = inputRef.current;
+          if (!el) return;
+
+          const pos = el.selectionStart ?? 0;
+          const end = el.selectionEnd ?? 0;
+
+          if (pos === end && pos > 0) {
+            const prevChar = el.value[pos - 1];
+
+            if (prevChar && /\D/.test(prevChar)) {
+              e.preventDefault();
+
+              const digitIndex = findPrevDigitIndex(el.value, pos);
+              if (digitIndex >= 0) {
+                const next = removeCharAt(el.value, digitIndex);
+                setNumber(next);
+
+                requestAnimationFrame(() => {
+                  const newPos = digitIndex;
+                  el.setSelectionRange(newPos, newPos);
+                });
+              }
+            }
+          }
+        }
+
+        onKeyDown?.(e);
+      }}
       onValueChange={(nextValue, eventDetails) => {
         setNumber(nextValue);
         onValueChange?.(nextValue, eventDetails);
