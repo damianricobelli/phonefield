@@ -34,7 +34,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run build",
+    "prepublishOnly": "pnpm run build",
     "test": "vitest run"
   },
   "peerDependencies": {
