@@ -15,7 +15,10 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'PhoneField Docs',
+        title: 'PhoneField',
+      },
+      {
+        description: 'Phone field for design systems built with Base UI and libphonenumber-js.',
       },
     ],
     links: [
