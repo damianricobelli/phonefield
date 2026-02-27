@@ -58,10 +58,6 @@ export function LivePlayground() {
       <h2 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
         Playground
       </h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Country is unstyled by default. This playground shows a complete visual
-        preset built with <code>classNames</code> and <code>positioning</code>.
-      </p>
 
       <div className="mt-6">
         <Field.Root
