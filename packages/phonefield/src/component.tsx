@@ -142,7 +142,6 @@ function Root({
  * Country combobox: trigger + searchable list. Use `slots` to style trigger, popup, list, item, etc.
  */
 function Country({
-  label,
   placeholder = "Select country",
   noResultsText = "No countries found",
   inputPlaceholder = "Search country",
@@ -156,7 +155,6 @@ function Country({
     renderCountryItem,
     renderCountryValue,
   } = usePhoneFieldContext();
-  const styles = slots ?? {};
 
   const selectedInList =
     availableCountries.find(
@@ -164,10 +162,8 @@ function Country({
     ) ?? availableCountries[0];
 
   return (
-    <div className={styles.root}>
-      {label ? <div className={styles.label}>{label}</div> : null}
-
       <Combobox.Root
+        {...slots?.root}
         items={availableCountries}
         value={selectedInList}
         itemToStringLabel={defaultCountrySearchText}
@@ -179,47 +175,34 @@ function Country({
         }}
         isItemEqualToValue={(a, b) => a.iso2 === b.iso2}
       >
-        <Combobox.Trigger className={styles.trigger}>
-          <span className={styles.value}>
-            <Combobox.Value
-              placeholder={
-                <span className={styles.placeholder}>{placeholder}</span>
-              }
-            >
+        <Combobox.Trigger {...slots?.trigger}>
+            <Combobox.Value {...slots?.value} placeholder={placeholder}>
               {(country: PhoneField.Country | null) => {
-                if (!country) {
-                  return placeholder;
-                }
-
-                return (
-                  renderCountryValue?.(country) ??
-                  `${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`
-                );
+                return country ? renderCountryValue?.(country) ?? `${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})` : placeholder;
               }}
             </Combobox.Value>
-          </span>
-          <Combobox.Icon className={styles.icon}>
+          <Combobox.Icon {...slots?.icon}>
             {icon ?? <ChevronUpDownIcon />}
           </Combobox.Icon>
         </Combobox.Trigger>
 
         <Combobox.Portal>
-          <Combobox.Positioner align="start" sideOffset={4}>
-            <Combobox.Popup className={styles.popup}>
+          <Combobox.Positioner align="start" sideOffset={4} {...slots?.positioner}>
+            <Combobox.Popup {...slots?.popup}>
               <Combobox.Input
-                className={styles.searchInput}
+                {...slots?.searchInput}
                 placeholder={inputPlaceholder}
                 aria-label={inputPlaceholder}
               />
-              <Combobox.Empty className={styles.empty}>
+              <Combobox.Empty {...slots?.empty}>
                 {noResultsText}
               </Combobox.Empty>
-              <Combobox.List className={styles.list}>
+              <Combobox.List {...slots?.list}>
                 {(country: PhoneField.Country) => (
                   <Combobox.Item
                     key={country.iso2}
                     value={country}
-                    className={styles.item}
+                    {...slots?.item}
                   >
                     {renderCountryItem?.(country) ?? (
                       <div className="flex items-center justify-between gap-4">
@@ -239,7 +222,6 @@ function Country({
           </Combobox.Positioner>
         </Combobox.Portal>
       </Combobox.Root>
-    </div>
   );
 }
 
@@ -365,18 +347,18 @@ export namespace PhoneField {
   export type RenderCountryValue = (country: Country) => React.ReactNode;
 
   /** Class names for Country sub-parts (trigger, popup, searchInput, list, item, etc.). */
-  export type CountrySlots = {
-    root?: string;
-    label?: string;
-    placeholder?: string;
-    trigger?: string;
-    value?: string;
-    icon?: string;
-    popup?: string;
-    searchInput?: string;
-    list?: string;
-    item?: string;
-    empty?: string;
+  export type CountrySlots<Value extends PhoneField.Country = PhoneField.Country> = {
+    root?: Combobox.Root.Props<Value>;
+    placeholder?: React.HTMLAttributes<HTMLSpanElement>;
+    trigger?: Combobox.Trigger.Props;
+    value?: Combobox.Value.Props;
+    icon?: Combobox.Icon.Props;
+    popup?: Combobox.Popup.Props;
+    positioner?: Combobox.Positioner.Props;
+    searchInput?: Combobox.Input.Props;
+    list?: Combobox.List.Props;
+    item?: Combobox.Item.Props;
+    empty?: Combobox.Empty.Props;
   };
 
   /**
@@ -401,7 +383,6 @@ export namespace PhoneField {
 
   /** Props for `PhoneField.Country`: label, placeholders, icon, and `slots` for styling. */
   export type CountryProps = {
-    label?: React.ReactNode;
     placeholder?: React.ReactNode;
     noResultsText?: React.ReactNode;
     inputPlaceholder?: string;

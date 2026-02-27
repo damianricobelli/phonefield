@@ -58,10 +58,14 @@ export const subsetSnippet = `<PhoneField.Root countries={["US", "CA", "MX"]}>
 `;
 
 export const partsSnippet = `const countrySlots: PhoneField.CountrySlots = {
-  trigger: "h-10 rounded-md border border-gray-200 px-3",
-  popup: "rounded-lg shadow-lg",
-  item:
-    "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
+  // Slots map to Base UI Combobox parts and receive each part props.
+  trigger: { className: "h-10 rounded-md border border-gray-200 px-3" },
+  popup: { className: "rounded-lg shadow-lg" },
+  searchInput: { className: "h-9 rounded-md border border-gray-200 px-2" },
+  item: {
+    className:
+      "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
+  },
 };
 
 <PhoneField.Root className="flex items-center gap-2">

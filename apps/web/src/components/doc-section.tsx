@@ -83,18 +83,18 @@ export function DocSection() {
 
         <DocSubsection title="Customization">
           <DocBlock
-            title="Country Subset (Type-safe IntelliSense)"
+            title="Country Subset"
             description="Limit the available countries from Root using ISO codes."
             code={subsetSnippet}
           />
           <DocBlock
             title="Styling With Country Slots"
-            description="Country styling lives in PhoneField.Country via slots; Root and Input keep standard className styling."
+            description="PhoneField.Country slots map to Base UI Combobox parts (trigger, popup, list, item, etc.). Each slot accepts that part's props, and styles are passed with className."
             code={partsSnippet}
           />
           <DocBlock
-            title="Validity States (data-valid / data-invalid)"
-            description="Pair PhoneField with Base UI Field to show invalid states and clear error messages."
+            title="Validity States"
+            description="Pair PhoneField with Base UI Field to show invalid states and clear error messages using data-valid and data-invalid attributes."
             code={validitySnippet}
           />
         </DocSubsection>

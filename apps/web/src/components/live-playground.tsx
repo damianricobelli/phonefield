@@ -5,18 +5,15 @@ import * as React from "react";
 import { FormatRow } from "@/components/format-row";
 
 const liveCountrySlots: PhoneField.CountrySlots = {
-  root: "shrink-0",
-  trigger:
-    "inline-flex bg-[canvas] h-10 items-center justify-between gap-2 rounded-xl border border-gray-200 pr-2.5 pl-3 text-base text-gray-900 select-none hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100 cursor-default whitespace-nowrap",
-  value: "whitespace-nowrap",
-  icon: "flex",
-  popup:
-    "[--input-container-height:3rem] origin-[var(--transform-origin)] min-w-[16rem] max-w-[var(--available-width)] max-h-[24rem] rounded-xl bg-[canvas] shadow-lg shadow-gray-200 text-gray-900 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0",
-  searchInput:
-    "m-2 h-10 w-[calc(100%-1rem)] font-normal rounded-lg border border-gray-200 pl-3.5 text-base text-gray-900 focus:outline focus:outline-2 focus:-outline-offset-1 focus:outline-blue-800",
-  empty: "p-4 text-[0.925rem] leading-4 text-gray-600 empty:m-0 empty:p-0",
-  list: "overflow-y-auto scroll-py-2 py-2 overscroll-contain max-h-[min(calc(24rem-var(--input-container-height)),calc(var(--available-height)-var(--input-container-height)))] empty:p-0",
-  item: "grid min-w-[max(16rem,var(--anchor-width))] cursor-default grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2.5 pr-4 pl-4 text-base leading-5 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-gray-50 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-gray-900",
+  trigger: {className: 
+    "inline-flex bg-[canvas] h-10 items-center justify-between gap-2 rounded-xl border border-gray-200 pr-2.5 pl-3 text-base text-gray-900 select-none hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100 cursor-default whitespace-nowrap" },
+  icon: { className: "flex" },
+  popup: { className: 
+    "[--input-container-height:3rem] origin-[var(--transform-origin)] min-w-[16rem] max-w-[var(--available-width)] max-h-[24rem] rounded-xl bg-[canvas] shadow-lg shadow-gray-200 text-gray-900 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0" },
+  searchInput: { className: "m-2 h-10 w-[calc(100%-1rem)] font-normal rounded-lg border border-gray-200 pl-3.5 text-base text-gray-900 focus:outline focus:outline-2 focus:-outline-offset-1 focus:outline-blue-800" },
+  empty: { className: "p-4 text-[0.925rem] leading-4 text-gray-600 empty:m-0 empty:p-0" },
+  list: { className: "overflow-y-auto scroll-py-2 py-2 overscroll-contain max-h-[min(calc(24rem-var(--input-container-height)),calc(var(--available-height)-var(--input-container-height)))] empty:p-0" },
+  item: { className: "grid min-w-[max(16rem,var(--anchor-width))] cursor-default grid-cols-[minmax(0,1fr)_auto] items-center gap-2 py-2.5 pr-4 pl-4 text-base leading-5 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-gray-50 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-gray-900" },
 };
 
 export function LivePlayground() {
@@ -59,7 +56,7 @@ export function LivePlayground() {
         Playground
       </h2>
       <p className="mt-1 text-sm text-slate-600">
-        Base UI–like motion and popup behavior using the PhoneField primitive API.
+        Country slots follow Base UI Combobox part props, with styling applied via <code>className</code>.
       </p>
 
       <div className="mt-6">
