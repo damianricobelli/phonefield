@@ -33,6 +33,9 @@ export function SignupPhone() {
 }
 ```
 
+`PhoneField.Root` is uncontrolled by default. If `defaultCountry` is not set,
+it falls back to `"US"` when available, otherwise the first available country.
+
 ```tsx
 import * as React from "react";
 import { PhoneField } from "phonefield";
@@ -80,5 +83,16 @@ function ExampleForm() {
 }
 ```
 
-More documentation and API reference: https://phonefield.vercel.app
+### Utilities (`phonefield/utils`)
 
+```ts
+import { PhoneFieldUtils } from "phonefield/utils";
+
+const parsed = PhoneFieldUtils.parse("+14155552671");
+const isValid = PhoneFieldUtils.isValid("+14155552671");
+```
+
+`parse` and `isValid` accept either `PhoneField.Value` or a phone string.
+For national-number strings, pass `options.defaultCountry`.
+
+More documentation and API reference: https://phonefield.vercel.app

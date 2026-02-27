@@ -14,31 +14,17 @@
 
 ## Table of Contents
 
-- [Why PhoneField](#why-phonefield)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Controlled Mode](#controlled-mode)
-- [Forms + FormData](#forms--formdata)
-- [Country Filtering + Localization](#country-filtering--localization)
-- [Styling with Slots](#styling-with-slots)
-- [Utilities (`phonefield/utils`)](#utilities-phonefieldutils)
+- [Styling Country Select](#styling-country-select)
+- [Country Subset](#country-subset)
+- [Internationalization](#internationalization)
+- [Uncontrolled + FormData (Client / Server)](#uncontrolled--formdata-client--server)
+- [Validity States](#validity-states)
 - [API Reference (At a Glance)](#api-reference-at-a-glance)
-- [Monorepo Development](#monorepo-development)
+- [Formatting + Utils](#formatting--utils)
 - [License](#license)
-
-## Why PhoneField
-
-PhoneField gives you a production-ready phone UX without locking you into a visual design system.
-
-| Feature | What you get |
-| --- | --- |
-| Country picker | Localized country names, dial codes, and flag emoji |
-| Smart formatting | As-you-type formatting with `formatOnType` |
-| Flexible state | Controlled or uncontrolled usage |
-| Form-friendly | Hidden input JSON + `FormData` parser |
-| Shared logic | Parse/validate helpers for frontend and backend |
-
-Live docs: [phonefield.vercel.app](https://phonefield.vercel.app)
 
 ## Installation
 
@@ -71,6 +57,43 @@ export function SignupPhone() {
 ```
 
 `PhoneField.Root` is uncontrolled by default and exposes context to `PhoneField.Country` and `PhoneField.Input`.
+
+## Styling Country Select
+
+This `classNames` preset is based entirely on Base UI's
+[Combobox "input inside popup" example](https://base-ui.com/react/components/combobox#input-inside-popup).
+You can style the Combobox however you want.
+
+```tsx
+<PhoneField.Country
+  classNames={{
+    // Trigger button that opens the country Combobox.
+    trigger:
+      "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
+    // Trigger icon.
+    icon: "flex text-gray-600",
+    // Positioning layer for z-index and popup alignment.
+    positioner: "z-50",
+    // Popup panel with dimensions and enter/exit transitions.
+    popup:
+      "origin-[var(--transform-origin)] flex max-w-[var(--available-width)] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-[canvas] text-gray-900 shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
+    // Wrapper around the search input.
+    searchInputContainer: "shrink-0 p-2",
+    // Search input inside the popup.
+    searchInput:
+      "h-10 w-full font-normal rounded-md border border-gray-200 px-3 text-base text-gray-900 focus:outline focus:outline-2 focus:-outline-offset-1 focus:outline-blue-800",
+    // Empty state when no country matches.
+    empty: "p-4 text-[0.925rem] leading-4 text-gray-600 empty:m-0 empty:p-0",
+    // Scrollable list of countries.
+    list: "min-h-0 flex-1 overflow-y-auto scroll-py-2 py-2 overscroll-contain empty:p-0",
+    // Country row and highlighted state.
+    item:
+      "grid min-w-[max(16rem,var(--anchor-width))] cursor-default grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg py-2.5 pr-4 pl-4 text-base leading-5 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-gray-50 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-gray-900",
+  }}
+  positioning={{ side: "bottom", align: "start", sideOffset: 8 }}
+  renderCountryValue={(country) => `${country.flag ?? ""} ${country.dialCode}`}
+/>
+```
 
 ## Controlled Mode
 
@@ -108,7 +131,32 @@ type PhoneFieldValue = {
 };
 ```
 
-## Forms + FormData
+## Country Subset
+
+```tsx
+<PhoneField.Root countries={["US", "CA", "MX"]} defaultCountry="US">
+  <PhoneField.Country />
+  <PhoneField.Input />
+</PhoneField.Root>
+```
+
+- `countries`: limits available ISO2 countries.
+
+## Internationalization
+
+```tsx
+<PhoneField.Root lang="es-AR" defaultCountry="AR">
+  <PhoneField.Country
+    inputPlaceholder="Buscar país"
+    noResultsText="No se encontraron países"
+  />
+  <PhoneField.Input />
+</PhoneField.Root>
+```
+
+- `lang`: BCP 47 locale (or locale list), normalized via `Intl.getCanonicalLocales`.
+
+## Uncontrolled + FormData (Client / Server)
 
 ```tsx
 import { PhoneField } from "phonefield";
@@ -140,50 +188,30 @@ const formData = await request.formData();
 const phone = PhoneFieldUtils.fromFormData(formData, "phone");
 ```
 
-## Country Filtering + Localization
+## Validity States
+
+`PhoneField.Value.isValid` can be used directly, or you can style the input using
+Base UI state attributes (`data-valid` / `data-invalid`).
 
 ```tsx
-<PhoneField.Root
-  countries={["US", "CA", "MX"]}
-  defaultCountry="US"
-  lang="es-AR"
->
-  <PhoneField.Country />
-  <PhoneField.Input />
-</PhoneField.Root>
+import { Field } from "@base-ui/react/field";
+
+const hasNumber = value.nationalNumber.trim().length > 0;
+const showError = hasNumber && !value.isValid;
+
+<Field.Root invalid={showError} className="space-y-2">
+  <Field.Label>Phone</Field.Label>
+
+  <PhoneField.Root value={value} onValueChange={setValue}>
+    <PhoneField.Country />
+    <PhoneField.Input className="data-invalid:border-red-500 data-valid:border-emerald-500" />
+  </PhoneField.Root>
+
+  <Field.Error match={showError}>Invalid phone number</Field.Error>
+</Field.Root>;
 ```
 
-- `countries`: limit available ISO2 countries
-- `lang`: BCP 47 locale(s), normalized via `Intl.getCanonicalLocales`
-
-## Styling with Slots
-
-`PhoneField.Country` exposes Base UI-aligned slots so you can style each part independently.
-
-```tsx
-import { PhoneField } from "phonefield";
-
-const countrySlots: PhoneField.CountrySlots = {
-  trigger: { className: "h-10 rounded-md border border-gray-200 px-3" },
-  popup: { className: "rounded-lg shadow-lg" },
-  searchInput: { className: "h-9 rounded-md border border-gray-200 px-2" },
-  item: {
-    className:
-      "px-3 py-2 data-[highlighted]:bg-slate-900 data-[highlighted]:text-white",
-  },
-};
-
-export function StyledPhoneField() {
-  return (
-    <PhoneField.Root className="flex items-center gap-2">
-      <PhoneField.Country slots={countrySlots} />
-      <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
-    </PhoneField.Root>
-  );
-}
-```
-
-## Utilities (`phonefield/utils`)
+## Formatting + Utils
 
 ```ts
 import { PhoneFieldUtils } from "phonefield/utils";
@@ -196,6 +224,9 @@ const output = {
   international: parsed?.formatInternational(),
 };
 ```
+
+`parse` and `isValid` accept either `PhoneField.Value` or a phone string.
+For national-number strings, pass `options.defaultCountry`.
 
 Utility surface:
 
@@ -212,7 +243,7 @@ type RootProps = Omit<React.ComponentPropsWithoutRef<"div">, "defaultValue"> & {
   value?: PhoneField.Value;
   defaultValue?: PhoneField.Value;
   onValueChange?: (value: PhoneField.Value) => void;
-  defaultCountry?: PhoneField.CountryCodeValue;
+  defaultCountry?: PhoneField.CountryCodeValue; // default: "US" if available, otherwise first available
   countries?: readonly PhoneField.CountryCodeValue[];
   lang?: PhoneField.Lang;
   name?: string;
@@ -226,7 +257,8 @@ type CountryProps = {
   noResultsText?: React.ReactNode;
   inputPlaceholder?: string;
   icon?: React.ReactNode;
-  slots?: PhoneField.CountrySlots;
+  classNames?: PhoneField.CountryClassNames;
+  positioning?: PhoneField.CountryPositioning;
   renderCountryItem?: (country: PhoneField.Country) => React.ReactNode;
   renderCountryValue?: (country: PhoneField.Country) => React.ReactNode;
 };
@@ -234,32 +266,6 @@ type CountryProps = {
 
 ```ts
 type InputProps = BaseInput.Props;
-```
-
-## Monorepo Development
-
-```bash
-# install deps
-pnpm install
-
-# run all dev tasks (turbo)
-pnpm dev
-
-# build everything
-pnpm build
-
-# lint all packages/apps
-pnpm lint
-```
-
-Workspace layout:
-
-```text
-.
-├─ apps/web                # docs site
-├─ packages/phonefield     # published package
-├─ README.md
-└─ turbo.json
 ```
 
 ## License
