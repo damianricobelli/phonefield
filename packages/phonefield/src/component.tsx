@@ -75,8 +75,6 @@ function Root({
   lang,
   name,
   formatOnType = true,
-  renderCountryItem,
-  renderCountryValue,
   children,
   className,
   ...props
@@ -118,8 +116,6 @@ function Root({
     setCountry: (country) =>
       commitValue(country, normalizedValue.nationalNumber),
     setNumber: (number) => commitValue(selectedCountry, number),
-    renderCountryItem,
-    renderCountryValue,
   };
 
   return (
@@ -147,13 +143,13 @@ function Country({
   inputPlaceholder = "Search country",
   icon,
   slots,
+  renderCountryItem,
+  renderCountryValue,
 }: PhoneField.CountryProps) {
   const {
     selectedCountry,
     availableCountries,
     setCountry,
-    renderCountryItem,
-    renderCountryValue,
   } = usePhoneFieldContext();
 
   const selectedInList =
@@ -377,8 +373,6 @@ export namespace PhoneField {
     lang?: Lang;
     name?: string;
     formatOnType?: boolean;
-    renderCountryItem?: RenderCountryItem;
-    renderCountryValue?: RenderCountryValue;
   };
 
   /** Props for `PhoneField.Country`: label, placeholders, icon, and `slots` for styling. */
@@ -388,6 +382,8 @@ export namespace PhoneField {
     inputPlaceholder?: string;
     icon?: React.ReactNode;
     slots?: CountrySlots;
+    renderCountryItem?: RenderCountryItem;
+    renderCountryValue?: RenderCountryValue;
   };
 
   /** Props for `PhoneField.Input`. Extends Base UI Input (className, onValueChange, etc.). */

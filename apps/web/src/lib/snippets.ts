@@ -73,6 +73,20 @@ export const partsSnippet = `const countrySlots: PhoneField.CountrySlots = {
   <PhoneField.Input className="h-10 rounded-md border border-gray-200 px-3" />
 </PhoneField.Root>`;
 
+export const countryPropsSnippet = `const countrySlots: PhoneField.CountrySlots = {
+  trigger: { className: "h-10 rounded-md border border-gray-200 px-3" },
+  popup: { className: "rounded-lg shadow-lg" },
+  item: { className: "px-3 py-2" },
+};
+
+<PhoneField.Country
+  placeholder="Country"
+  inputPlaceholder="e.g. United Kingdom"
+  noResultsText="No matches"
+  icon={<span aria-hidden>▾</span>}
+  slots={countrySlots}
+/>`;
+
 export const validitySnippet = `import { Field } from "@base-ui/react/field";
 
 const hasNumber = value.nationalNumber.trim().length > 0;
