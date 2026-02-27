@@ -33,12 +33,10 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install dependencies
-        run: |
-          pnpm install --no-frozen-lockfile
-          pnpm --dir package install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      - name: Build phonefield package
-        run: pnpm --dir package build
+      - name: Build phonefield packages
+        run: pnpm turbo run build --filter=phonefield
 
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
