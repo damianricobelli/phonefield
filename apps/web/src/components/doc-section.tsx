@@ -59,7 +59,7 @@ export function DocSection() {
 
 					<DocBlock
 						title="Quick Start"
-						description="Minimal setup. Root can run uncontrolled by default, gives normalized output, and Input placeholder adapts to the selected country."
+						description="Minimal setup. Root can run uncontrolled by default and gives a normalized PhoneField.Value output."
 						code={quickStartSnippet}
 					/>
 					<DocBlock
