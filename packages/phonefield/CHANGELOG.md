@@ -1,5 +1,11 @@
 # phonefield
 
+## 0.1.1
+
+### Patch Changes
+
+- [#4](https://github.com/damianricobelli/phonefield/pull/4) [`c276cf7`](https://github.com/damianricobelli/phonefield/commit/c276cf789cc79f3068888c483e726405e8f3e2e0) Thanks [@damianricobelli](https://github.com/damianricobelli)! - feat,docs: update PhoneField component
+
 ## 0.1.0
 
 ### Minor Changes
