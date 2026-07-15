@@ -10,7 +10,7 @@ const liveCountryClassNames: PhoneField.CountryClassNames = {
 	icon: "flex shrink-0 text-slate-500 transition-transform duration-150 [transition-timing-function:var(--ease-out-ui)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
-		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl bg-white text-slate-900 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 transition-[transform,opacity] duration-150 [transition-timing-function:var(--ease-out-ui)] data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.97] data-[starting-style]:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
+		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl bg-white text-slate-900 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 transition-[transform,opacity] duration-150 [transition-timing-function:var(--ease-out-ui)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
 	searchInputContainer: "shrink-0 border-slate-100 border-b p-1.5",
 	searchInput:
 		"h-9 w-full rounded-lg border border-transparent bg-slate-100 px-3 text-sm font-normal text-slate-900 outline-none placeholder:text-slate-500 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/15",

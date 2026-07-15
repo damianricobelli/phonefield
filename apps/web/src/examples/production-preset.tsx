@@ -9,7 +9,7 @@ const defaultCountryClassNames = {
 	icon: "shrink-0 text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
-		"max-h-(--available-height) w-72 max-w-(--available-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-2xl ring-1 ring-foreground/5 transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none",
+		"max-h-(--available-height) w-72 max-w-(--available-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-2xl ring-1 ring-foreground/5 transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
 	searchInputContainer: "p-1",
 	searchInput: inputClassName,
 	list: "max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1",
