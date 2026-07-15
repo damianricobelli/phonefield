@@ -3,6 +3,7 @@
 import { Combobox } from "@base-ui/react/combobox";
 import { Input as BaseInput } from "@base-ui/react/input";
 import React from "react";
+import { mergeRefs } from "./merge-refs.js";
 import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryCode,
@@ -41,11 +42,9 @@ const PhoneFieldCountryContext =
 	React.createContext<PhoneFieldCountryContextValue | null>(null);
 const PhoneFieldInputContext =
 	React.createContext<PhoneFieldInputContextValue | null>(null);
-const supportsRefCleanup = Number.parseInt(React.version, 10) >= 19;
-
 function isProductionEnvironment() {
 	return (
-		typeof process === "undefined" || process.env.NODE_ENV === "production"
+		typeof process !== "undefined" && process.env.NODE_ENV === "production"
 	);
 }
 
@@ -351,48 +350,6 @@ function CountryComponent({
 
 const Country = React.memo(CountryComponent);
 
-function mergeRefs<T>(
-	...refs: Array<React.Ref<T> | undefined>
-): React.RefCallback<T> {
-	let cleanups: Array<() => void> = [];
-
-	function cleanup() {
-		const pendingCleanups = cleanups;
-		cleanups = [];
-		for (const cleanupRef of pendingCleanups) {
-			cleanupRef();
-		}
-	}
-
-	return (value) => {
-		if (value === null) {
-			cleanup();
-			return;
-		}
-
-		cleanup();
-		for (const ref of refs) {
-			if (!ref) continue;
-
-			if (typeof ref === "function") {
-				const cleanupRef = ref(value);
-				cleanups.push(
-					typeof cleanupRef === "function" ? cleanupRef : () => ref(null),
-				);
-			} else {
-				(ref as React.RefObject<T | null>).current = value;
-				cleanups.push(() => {
-					(ref as React.RefObject<T | null>).current = null;
-				});
-			}
-		}
-
-		if (supportsRefCleanup) {
-			return cleanup;
-		}
-	};
-}
-
 function removeCharAt(value: string, index: number) {
 	return value.slice(0, index) + value.slice(index + 1);
 }
@@ -424,7 +381,7 @@ const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 		const { value, setNumber } = usePhoneFieldInputContext();
 		const inputRef = React.useRef<HTMLInputElement>(null);
 		const mergedRef = React.useMemo(
-			() => mergeRefs(forwardedRef, inputRef),
+			() => mergeRefs(React.version, forwardedRef, inputRef),
 			[forwardedRef],
 		);
 
