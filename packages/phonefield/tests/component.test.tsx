@@ -191,19 +191,21 @@ describe("PhoneField", () => {
 						root: { open: true },
 						trigger: {
 							"aria-label": "Country",
-							"data-slot": "consumer-trigger",
 						},
 						searchInput: { "aria-label": "Find country" },
 					}}
 				/>
-				<PhoneField.Input aria-label="Phone number" data-slot="consumer-input" />
+				<PhoneField.Input
+					aria-label="Phone number"
+					data-slot="consumer-input"
+				/>
 			</PhoneField.Root>,
 		);
 
 		expect(container.querySelector('[data-slot="phone-field"]')).toBeTruthy();
-		expect(
-			screen.getByRole("combobox", { name: "Country" }).dataset.slot,
-		).toBe("phone-field-country-trigger");
+		expect(screen.getByRole("combobox", { name: "Country" }).dataset.slot).toBe(
+			"phone-field-country-trigger",
+		);
 		const searchInput = await screen.findByRole("combobox", {
 			name: "Find country",
 		});
@@ -212,7 +214,9 @@ describe("PhoneField", () => {
 			screen.getByRole("textbox", { name: "Phone number" }).dataset.slot,
 		).toBe("phone-field-input");
 		expect(
-			container.querySelector('input[type="hidden"]')?.getAttribute("data-slot"),
+			container
+				.querySelector('input[type="hidden"]')
+				?.getAttribute("data-slot"),
 		).toBe("phone-field-hidden-input");
 		expect(
 			document.querySelectorAll('[data-slot="phone-field-country-item"]')

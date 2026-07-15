@@ -1,40 +1,61 @@
 /* data-slot selectors are global because the popup is rendered in a portal. */
 [data-slot="phone-field"] {
-  display: flex;
-  min-width: 0;
-  gap: 0.5rem;
+	display: flex;
+	height: 2.5rem;
+	min-width: 0;
+	border: 1px solid #e2e8f0;
+	border-radius: 0.5rem;
+	background: white;
+	overflow: hidden;
+	transition:
+		border-color 150ms,
+		box-shadow 150ms;
 }
 
-[data-slot="phone-field-country-trigger"],
-[data-slot="phone-field-input"] {
-  height: 2.5rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  background: white;
+[data-slot="phone-field"]:focus-within,
+[data-slot="phone-field"]:has([data-popup-open]) {
+	border-color: #0ea5e9;
+	box-shadow: 0 0 0 3px rgb(14 165 233 / 0.15);
+}
+
+[data-slot="phone-field"]:has([aria-invalid="true"]),
+[data-slot="phone-field"]:has([data-invalid]) {
+	border-color: #ef4444;
+	box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
 }
 
 [data-slot="phone-field-country-trigger"] {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-inline: 0.75rem;
+	display: flex;
+	height: 100%;
+	align-items: center;
+	gap: 0.5rem;
+	border: 0;
+	border-right: 1px solid #e2e8f0;
+	background: transparent;
+	outline: none;
+	padding-inline: 0.75rem;
 }
 
 [data-slot="phone-field-input"] {
-  min-width: 0;
-  flex: 1;
-  padding-inline: 0.75rem;
+	width: auto;
+	height: 100%;
+	min-width: 0;
+	flex: 1;
+	border: 0;
+	background: transparent;
+	outline: none;
+	padding-inline: 0.75rem;
 }
 
 [data-slot="phone-field-country-popup"] {
-  width: 18rem;
-  transform-origin: var(--transform-origin);
-  overflow: hidden;
-  border-radius: 0.75rem;
-  background: white;
-  box-shadow: 0 20px 40px rgb(15 23 42 / 0.14);
+	width: 18rem;
+	transform-origin: var(--transform-origin);
+	overflow: hidden;
+	border-radius: 0.75rem;
+	background: white;
+	box-shadow: 0 20px 40px rgb(15 23 42 / 0.14);
 }
 
 [data-slot="phone-field-country-item"][data-highlighted] {
-  background: #f1f5f9;
+	background: #f1f5f9;
 }

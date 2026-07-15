@@ -5,6 +5,7 @@ import {
 import { DocBlock } from "@/components/doc-block";
 import { InstallTabs } from "@/components/install-tabs";
 import { MigrationComparison } from "@/components/migration-comparison";
+import { migrationComparisons } from "@/lib/migration";
 import {
 	controlledSnippet,
 	countrySlotsCssSnippet,
@@ -16,7 +17,6 @@ import {
 	subsetSnippet,
 	validitySnippet,
 } from "@/lib/snippets";
-import { migrationComparisons } from "@/lib/migration";
 
 const DOC_NAV = [
 	{ id: "getting-started", label: "Getting started" },
@@ -148,9 +148,10 @@ export function DocSection() {
 									packageName="phonefield"
 								/>
 								<p className="mt-4 max-w-3xl text-sm text-slate-600">
-									Supported versions: <code>@base-ui/react &gt;=1.6 &lt;2</code>,{" "}
-									<code>react &gt;=19 &lt;20</code>,{" "}
-									<code>react-dom &gt;=19 &lt;20</code>, and Node.js 22 or newer.
+									Supported versions: <code>@base-ui/react &gt;=1.6 &lt;2</code>
+									, <code>react &gt;=19 &lt;20</code>,{" "}
+									<code>react-dom &gt;=19 &lt;20</code>, and Node.js 22 or
+									newer.
 								</p>
 							</article>
 
@@ -202,9 +203,11 @@ export function DocSection() {
 										Using Tailwind or class utilities?
 									</p>
 									<p className="mt-2 text-sm leading-6 text-slate-600">
-										Compose your input tokens with <code>cn</code> inside one
-										hoisted <code>CountryClassNames</code> preset, then reuse the
-										wrapper everywhere.
+										Let <code>Root</code> own the shared border and focus ring.
+										Use
+										<code>cn</code> for the input and one hoisted
+										<code>CountryClassNames</code> preset for the trigger and
+										popup.
 									</p>
 								</div>
 								<div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -216,28 +219,30 @@ export function DocSection() {
 									</p>
 									<p className="mt-2 text-sm leading-6 text-slate-600">
 										Target the stable <code>data-slot</code> anatomy. Popup
-										selectors must be global because Base UI renders the popup in a
-										portal.
+										selectors must be global because Base UI renders the popup
+										in a portal.
 									</p>
 								</div>
 							</div>
 
 							<div className="rounded-r-xl border-sky-400 border-l-2 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
-								Use named Tailwind <code>group</code> variants for local state,
-								such as rotating the trigger icon. Do not move the complete preset
-								to <code>Root.className</code>: the popup is rendered in a portal
-								and is not a Root descendant.
+								Present <code>Root</code> as one visual field, but keep Country
+								and Input as separate accessible controls. Named Tailwind{" "}
+								<code>group</code> variants are ideal for local state, such as
+								rotating the trigger icon. The popup still needs{" "}
+								<code>CountryClassNames</code> because it is rendered in a
+								portal and is not a Root descendant.
 							</div>
 
 							<DocBlock
 								title="Production preset"
-								description="A reusable wrapper that composes shared input tokens with cn, uses a named group only for the trigger icon, and styles portaled parts directly through CountryClassNames."
+								description="A reusable wrapper with one border and focus ring around two accessible controls. Root owns field-level state, while CountryClassNames styles the trigger and every portaled popup part."
 								code={stylingCountrySelectSnippet}
 							/>
 
 							<DocBlock
 								title="CSS data slots"
-								description="Every rendered part has a stable, namespaced data-slot. These selectors are additive: classNames remains the typed styling path when you need per-instance classes."
+								description="The same grouped presentation works without Tailwind. Root owns the shell; stable data slots target the inline controls and portaled popup. classNames remains available for per-instance classes."
 								code={countrySlotsCssSnippet}
 								language="CSS"
 							/>
@@ -247,16 +252,14 @@ export function DocSection() {
 									Stable anatomy
 								</h3>
 								<p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-									Base UI state attributes compose with these slots. For example,
-									style an open trigger with <code>[data-popup-open]</code> and a
-									focused country with <code>[data-highlighted]</code>.
+									Base UI state attributes compose with these slots. For
+									example, style an open trigger with{" "}
+									<code>[data-popup-open]</code> and a focused country with{" "}
+									<code>[data-highlighted]</code>.
 								</p>
 								<dl className="mt-5 grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2">
 									{STYLING_SLOTS.map(([slot, purpose]) => (
-										<div
-											key={slot}
-											className="min-w-0 bg-slate-50 px-4 py-3"
-										>
+										<div key={slot} className="min-w-0 bg-slate-50 px-4 py-3">
 											<dt className="truncate font-mono text-xs text-sky-800">
 												{slot}
 											</dt>
@@ -284,7 +287,7 @@ export function DocSection() {
 							/>
 							<DocBlock
 								title="Validity states"
-								description="Pair PhoneField with Base UI Field to show invalid states and clear error messages using data-valid and data-invalid attributes."
+								description="Give the phone input a native label, name the country trigger independently, and expose invalid state with aria-invalid. Do not wrap both controls in one Base UI Field: Field represents a single form control."
 								code={validitySnippet}
 							/>
 						</DocSubsection>
@@ -327,8 +330,9 @@ export function DocSection() {
 											This is a mechanical migration
 										</h3>
 										<p className="mt-1 text-sm leading-6 text-emerald-900/80">
-											Upgrade the package, apply the five replacements below, then
-											run your typecheck. No phone data migration is required.
+											Upgrade the package, apply the five replacements below,
+											then run your typecheck. No phone data migration is
+											required.
 										</p>
 										<code className="mt-3 inline-flex rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs text-emerald-950 shadow-sm">
 											pnpm add phonefield@^1
@@ -342,7 +346,9 @@ export function DocSection() {
 							))}
 
 							<div className="rounded-2xl border border-slate-200 bg-slate-950 p-5 text-slate-200 sm:p-6">
-								<h3 className="font-semibold text-white">Migration checklist</h3>
+								<h3 className="font-semibold text-white">
+									Migration checklist
+								</h3>
 								<ul className="mt-4 grid gap-3 text-sm leading-6 sm:grid-cols-2">
 									{[
 										"No PhoneFieldUtils facade imports remain",

@@ -4,20 +4,16 @@ import { inputClassName } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const defaultCountryClassNames = {
-	trigger: cn(
-		inputClassName,
-		"group/phone-country-trigger w-fit shrink-0 cursor-default items-center gap-2 text-left select-none",
-	),
-	icon:
-		"shrink-0 text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
+	trigger:
+		"group/phone-country-trigger flex h-full w-fit shrink-0 cursor-default items-center gap-2 border-input border-r bg-transparent px-3 text-left text-sm outline-none select-none transition-colors duration-150 hover:bg-accent/50 focus-visible:bg-accent/50 data-popup-open:bg-accent/50",
+	icon: "shrink-0 text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
 		"max-h-(--available-height) w-72 max-w-(--available-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-2xl ring-1 ring-foreground/5 transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 motion-reduce:transition-none",
 	searchInputContainer: "p-1",
 	searchInput: inputClassName,
 	list: "max-h-72 scroll-py-1 overflow-y-auto overscroll-contain p-1",
-	item:
-		"flex cursor-default items-center rounded-lg px-3 py-2 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-selected:bg-accent data-selected:text-accent-foreground",
+	item: "flex cursor-default items-center rounded-lg px-3 py-2 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground data-selected:bg-accent data-selected:text-accent-foreground",
 	empty: "p-6 text-center text-sm text-muted-foreground",
 } satisfies PhoneField.CountryClassNames;
 
@@ -30,9 +26,7 @@ function renderCountryItem(country: PhoneField.Country) {
 				{country.flag}
 			</span>
 			<span className="min-w-0 flex-1 truncate">{country.name}</span>
-			<span className="shrink-0 text-muted-foreground">
-				{country.dialCode}
-			</span>
+			<span className="shrink-0 text-muted-foreground">{country.dialCode}</span>
 		</span>
 	);
 }
@@ -67,8 +61,11 @@ export function ProductionPhoneField({
 		icon = defaultCountryIcon,
 		renderCountryItem: countryItemRenderer = renderCountryItem,
 		renderCountryValue: countryValueRenderer = renderCountryValue,
+		slotProps,
 		...resolvedCountryProps
 	} = countryProps ?? {};
+	const { trigger: countryTriggerProps, ...resolvedCountrySlotProps } =
+		slotProps ?? {};
 	const {
 		"aria-label": inputAriaLabel = "Phone number",
 		...resolvedInputProps
@@ -77,7 +74,13 @@ export function ProductionPhoneField({
 	return (
 		<PhoneField.Root
 			{...props}
-			className={cn("flex min-w-0 gap-2", className)}
+			className={cn(
+				"flex h-10 min-w-0 overflow-hidden rounded-lg border border-input bg-background shadow-sm transition-[border-color,box-shadow] duration-150",
+				"focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50",
+				"has-data-popup-open:border-ring has-data-popup-open:ring-2 has-data-popup-open:ring-ring/50",
+				"has-aria-invalid:border-destructive has-aria-invalid:ring-2 has-aria-invalid:ring-destructive/20",
+				className,
+			)}
 			defaultCountry={defaultCountry}
 		>
 			<PhoneField.Country
@@ -86,13 +89,20 @@ export function ProductionPhoneField({
 				icon={icon}
 				renderCountryItem={countryItemRenderer}
 				renderCountryValue={countryValueRenderer}
+				slotProps={{
+					...resolvedCountrySlotProps,
+					trigger: {
+						"aria-label": "Country",
+						...countryTriggerProps,
+					},
+				}}
 			/>
 			<PhoneField.Input
 				{...resolvedInputProps}
 				aria-label={inputAriaLabel}
 				className={cn(
 					inputClassName,
-					"min-w-0 flex-1",
+					"h-full w-auto min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0",
 					inputClassNameOverride,
 				)}
 			/>

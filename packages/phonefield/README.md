@@ -89,16 +89,40 @@ import { cn } from "@/lib/utils";
 import { PhoneField } from "phonefield";
 
 const countryClassNames = {
-  trigger: cn(inputClassName, "group/phone-country-trigger w-fit"),
+  trigger:
+    "group/phone-country-trigger flex h-full w-fit items-center gap-2 border-r border-input px-3",
   icon: "group-data-popup-open/phone-country-trigger:rotate-180",
   popup: "w-72 origin-(--transform-origin) rounded-lg bg-popover shadow-2xl",
   item: "rounded-lg px-3 py-2 data-highlighted:bg-accent",
 } satisfies PhoneField.CountryClassNames;
 
-<PhoneField.Country classNames={countryClassNames} />;
+<PhoneField.Root
+  className={cn(
+    "flex h-10 min-w-0 overflow-hidden rounded-lg border border-input bg-background",
+    "focus-within:ring-2 focus-within:ring-ring",
+    "has-data-popup-open:ring-2 has-data-popup-open:ring-ring",
+    "has-aria-invalid:border-destructive has-aria-invalid:ring-2",
+  )}
+>
+  <PhoneField.Country
+    classNames={countryClassNames}
+    slotProps={{ trigger: { "aria-label": "Country" } }}
+  />
+  <PhoneField.Input
+    aria-label="Phone number"
+    className={cn(
+      inputClassName,
+      "h-full w-auto min-w-0 flex-1 rounded-none border-0 focus-visible:ring-0",
+    )}
+  />
+</PhoneField.Root>;
 ```
 
-For Tailwind, `classNames` is the recommended styling seam. Use `cn` to combine shared design-system tokens with slot-specific classes, and use named `group` variants only for state relationships inside a slot. A group on `PhoneField.Root` cannot reach the country popup because Base UI renders it in a portal.
+This looks like one field, while remaining two accessible controls: a country selector and a telephone input. Put the shared border, focus ring, invalid state, and sizing on `Root`; remove the duplicated border and ring from the inline controls.
+
+Give the telephone input a native `<label>` (or its own `aria-label`) and give the country trigger an independent accessible name through `slotProps.trigger`. Do not wrap the complete compound component in one Base UI `Field.Root`: a field represents one form control, while `PhoneField` contains two interactive controls.
+
+For Tailwind, `Root.className` plus `classNames` is the recommended combination. Use `cn` to merge shared design-system tokens, and named `group` variants only for state relationships inside a slot. A group on `PhoneField.Root` cannot reach the country popup because Base UI renders it in a portal, so `CountryClassNames` remains the explicit styling seam for popup parts.
 
 For vanilla CSS and CSS Modules, every rendered part also exposes a stable, namespaced `data-slot`, including `phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, and `phone-field-country-item`. Country popup selectors must be global because the popup is portaled.
 

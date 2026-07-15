@@ -1,8 +1,9 @@
-import { Field } from "@base-ui/react/field";
 import { PhoneField } from "phonefield";
 import * as React from "react";
 
 export function ValidatedPhone() {
+	const phoneInputId = React.useId();
+	const phoneErrorId = `${phoneInputId}-error`;
 	const [value, setValue] = React.useState<PhoneField.InputValue>({
 		countryIso2: "US",
 		nationalNumber: "",
@@ -10,8 +11,8 @@ export function ValidatedPhone() {
 	const [isValid, setIsValid] = React.useState(true);
 
 	return (
-		<Field.Root invalid={!isValid} className="space-y-2">
-			<Field.Label>Phone</Field.Label>
+		<div className="space-y-2">
+			<label htmlFor={phoneInputId}>Phone</label>
 			<PhoneField.Root
 				value={value}
 				onValueChange={(nextValue) => {
@@ -19,10 +20,25 @@ export function ValidatedPhone() {
 					setIsValid(!nextValue.nationalNumber || nextValue.isValid);
 				}}
 			>
-				<PhoneField.Country />
-				<PhoneField.Input className="data-invalid:border-red-500" />
+				<PhoneField.Country
+					slotProps={{
+						trigger: {
+							"aria-label": "Country",
+						},
+					}}
+				/>
+				<PhoneField.Input
+					aria-describedby={!isValid ? phoneErrorId : undefined}
+					aria-invalid={!isValid || undefined}
+					id={phoneInputId}
+					className="aria-invalid:border-red-500"
+				/>
 			</PhoneField.Root>
-			<Field.Error match={!isValid}>Invalid phone number</Field.Error>
-		</Field.Root>
+			{!isValid ? (
+				<p id={phoneErrorId} role="alert">
+					Invalid phone number
+				</p>
+			) : null}
+		</div>
 	);
 }
