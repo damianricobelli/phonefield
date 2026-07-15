@@ -199,6 +199,18 @@ export function DocSection() {
 								and <code>onValueChange</code> always emits the complete{" "}
 								<code>PhoneField.Value</code>.
 							</div>
+							<div className="rounded-r-xl border-violet-400 border-l-2 bg-violet-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
+								<strong>Undo and redo work with formatted values.</strong> While
+								the phone input has focus, use <code>Cmd/Ctrl+Z</code> to undo
+								and <code>Cmd/Ctrl+Shift+Z</code> or <code>Ctrl+Y</code> to
+								redo. PhoneField restores the number, selected country, and
+								selection in native-style transactions: a typing run undoes as
+								one step, while undoing consecutive deletions restores and
+								selects the removed digits. Paste, cut, drop, and country
+								changes are independent steps. The last 100 transactions are
+								retained; replacing a controlled <code>value</code> starts a new
+								history.
+							</div>
 							<div className="rounded-r-xl border-emerald-400 border-l-2 bg-emerald-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
 								Paste an international number beginning with <code>+</code> and
 								PhoneField selects its detected country when available, then

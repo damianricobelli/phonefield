@@ -45,6 +45,26 @@ const [phone, setPhone] = useState<PhoneField.InputValue>({
 
 `onValueChange` emits a canonical `PhoneField.Value` with `countryDialCode`, `e164`, and `isValid`.
 
+## Undo and redo
+
+PhoneField keeps its own bounded, native-style edit history because formatting
+a controlled input replaces the browser's native text edits. While the phone
+input is focused, the usual platform shortcuts restore both the national
+number and its country:
+
+- Undo: `Cmd+Z` on macOS or `Ctrl+Z` on Windows and Linux.
+- Redo: `Cmd+Shift+Z`, `Ctrl+Shift+Z`, or `Ctrl+Y`.
+
+History is grouped by editing transaction rather than by character. Typing
+`12345` and undoing clears the complete typing run. If the user then removes
+`45`, undo restores `12345` with `45` selected, matching native input feedback.
+Moving the caret or changing edit type starts another transaction; paste, cut,
+drop, and country changes are independent steps.
+
+The last 100 transactions are retained. Replacing a controlled `value`
+externally starts a new history, which prevents undo from crossing a form reset
+or server update.
+
 ## International paste
 
 When input begins with `+`, PhoneField parses it as an international number. If

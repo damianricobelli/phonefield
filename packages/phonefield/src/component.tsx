@@ -10,6 +10,12 @@ import {
 	type PhoneFieldInputContextValue,
 } from "./context.js";
 import { Country } from "./country.js";
+import {
+	type PhoneFieldEditKind,
+	PhoneFieldHistory,
+	type PhoneFieldInputSelection,
+	toInputValue,
+} from "./history.js";
 import { Input } from "./input.js";
 import type {
 	PhoneFieldCountry,
@@ -109,46 +115,113 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		);
 		const isControlled = value !== undefined;
 		useControlledModeWarning(isControlled);
-		const currentNumberRef = React.useRef(normalizedValue.nationalNumber);
+		const currentValueRef = React.useRef(normalizedValue);
+		const historyRef = React.useRef(
+			new PhoneFieldHistory(toInputValue(normalizedValue)),
+		);
+		const selectionRef = React.useRef<PhoneFieldInputSelection>({
+			start: normalizedValue.nationalNumber.length,
+			end: normalizedValue.nationalNumber.length,
+		});
 		// Country's context stays stable while typing, so its callback reads the
-		// latest number through a ref synchronized after every committed render.
+		// latest value through a ref synchronized after every committed render.
 		React.useEffect(() => {
-			currentNumberRef.current = normalizedValue.nationalNumber;
-		}, [normalizedValue.nationalNumber]);
+			currentValueRef.current = normalizedValue;
+		}, [normalizedValue]);
 
-		const commitValue = React.useCallback(
-			(nextCountry: PhoneField.Country, nextNumber: string) => {
-				const nextValue = buildValue(nextCountry, nextNumber, formatOnType);
+		const applyValue = React.useCallback(
+			(nextValue: PhoneField.Value) => {
 				if (!isControlled) {
 					setInternalValue(nextValue);
+					currentValueRef.current = nextValue;
 				}
 				onValueChange?.(nextValue);
 				return nextValue;
 			},
-			[formatOnType, isControlled, onValueChange],
+			[isControlled, onValueChange],
+		);
+
+		const commitValue = React.useCallback(
+			(
+				nextCountry: PhoneField.Country,
+				nextNumber: string,
+				editKind: PhoneFieldEditKind,
+			) => {
+				const currentValue = currentValueRef.current;
+				const currentInputValue = toInputValue(currentValue);
+				const nextValue = buildValue(nextCountry, nextNumber, formatOnType);
+				historyRef.current.record(
+					currentInputValue,
+					toInputValue(nextValue),
+					selectionRef.current,
+					editKind,
+				);
+				return applyValue(nextValue);
+			},
+			[applyValue, formatOnType],
 		);
 
 		const setCountry = React.useCallback(
 			(country: PhoneField.Country) =>
-				commitValue(country, currentNumberRef.current),
+				commitValue(country, currentValueRef.current.nationalNumber, "country"),
 			[commitValue],
 		);
 		const setNumber = React.useCallback(
-			(number: string) => {
+			(number: string, editKind: PhoneFieldEditKind = "unknown") => {
 				const internationalCountry = parseInternationalInput(number)?.country;
 				const nextCountry = internationalCountry
 					? (availableCountries.find(
 							(country) => country.iso2 === internationalCountry,
 						) ?? selectedCountry)
 					: selectedCountry;
-				const nextValue = commitValue(nextCountry, number);
-				if (!isControlled) {
-					// Keep back-to-back uncontrolled events synchronous. Controlled
-					// values are synchronized only after the parent accepts the update.
-					currentNumberRef.current = nextValue.nationalNumber;
-				}
+				const nextValue = commitValue(nextCountry, number, editKind);
+				// Keep back-to-back uncontrolled events synchronous. Controlled values
+				// are synchronized only after the parent accepts the update.
+				if (!isControlled) currentValueRef.current = nextValue;
 			},
 			[availableCountries, commitValue, isControlled, selectedCountry],
+		);
+		const rememberSelection = React.useCallback(
+			(selection: PhoneFieldInputSelection) => {
+				selectionRef.current = selection;
+			},
+			[],
+		);
+		const breakHistoryGroup = React.useCallback(() => {
+			historyRef.current.breakGroup();
+		}, []);
+		const restoreHistory = React.useCallback(
+			(direction: "undo" | "redo") => {
+				const currentValue = currentValueRef.current;
+				const currentInputValue = toInputValue(currentValue);
+				const target = historyRef.current[direction](
+					currentInputValue,
+					selectionRef.current,
+				);
+				if (!target) return undefined;
+
+				const targetCountry = resolveCountry(
+					availableCountries,
+					target.value.countryIso2,
+				);
+				const nextValue = buildValue(
+					targetCountry,
+					target.value.nationalNumber,
+					formatOnType,
+				);
+				selectionRef.current = target.selection;
+				applyValue(nextValue);
+				return target;
+			},
+			[applyValue, availableCountries, formatOnType],
+		);
+		const undo = React.useCallback(
+			() => restoreHistory("undo"),
+			[restoreHistory],
+		);
+		const redo = React.useCallback(
+			() => restoreHistory("redo"),
+			[restoreHistory],
 		);
 
 		const countryContextValue = React.useMemo<PhoneFieldCountryContextValue>(
@@ -160,8 +233,22 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[availableCountries, selectedCountry, setCountry],
 		);
 		const inputContextValue = React.useMemo<PhoneFieldInputContextValue>(
-			() => ({ value: normalizedValue, setNumber }),
-			[normalizedValue, setNumber],
+			() => ({
+				value: normalizedValue,
+				setNumber,
+				rememberSelection,
+				breakHistoryGroup,
+				undo,
+				redo,
+			}),
+			[
+				breakHistoryGroup,
+				normalizedValue,
+				redo,
+				rememberSelection,
+				setNumber,
+				undo,
+			],
 		);
 
 		return (
