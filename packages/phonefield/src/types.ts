@@ -34,6 +34,7 @@ export type PhoneFieldValue = {
 	countryDialCode: string;
 	nationalNumber: string;
 	e164: string | null;
+	/** Whether the number is valid and its detected country matches countryIso2. */
 	isValid: boolean;
 };
 

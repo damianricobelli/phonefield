@@ -18,7 +18,7 @@ export function parse(
 	return parsePhoneField(value, options);
 }
 
-/** Validate a strict phone string or PhoneField value. */
+/** Validate a strict phone string or a PhoneField value against its selected country. */
 export function isValid(
 	value: string | PhoneField.Value,
 	options?: PhoneField.ParseOptions,

@@ -191,7 +191,8 @@ export const utilityProperties = [
 		name: "isValid(value, options?)",
 		type: "(string | Value, ParseOptions?) => boolean",
 		defaultValue: "-",
-		description: "Validate a strict string or Value.",
+		description:
+			"Validate a strict string or require a Value to match its selected country.",
 	},
 	{
 		key: "buildValue",

@@ -418,6 +418,40 @@ describe("PhoneField", () => {
 		expect(latestValue?.nationalNumber.replace(/\D/g, "")).toBe("2025550123");
 	});
 
+	it("invalidates a valid number when its detected country differs from the selection", async () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["CA", "US"]}
+				defaultValue={{
+					countryIso2: "CA",
+					nationalNumber: "4165550199",
+				}}
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{
+						root: { open: true },
+						trigger: { "aria-label": "Country" },
+					}}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		fireEvent.click(
+			await screen.findByRole("option", { name: /United States/ }),
+		);
+
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "(416) 555-0199",
+			e164: "+14165550199",
+			isValid: false,
+		});
+	});
+
 	it("keeps externally controlled number updates when the country changes", async () => {
 		const onValueChange = vi.fn();
 

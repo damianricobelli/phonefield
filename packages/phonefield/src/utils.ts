@@ -292,7 +292,7 @@ export function buildValue(
 		countryDialCode,
 		nationalNumber,
 		e164: formatter.getNumberValue() ?? null,
-		isValid: parsed?.isValid() ?? false,
+		isValid: parsed?.country === country.iso2 && parsed.isValid(),
 	};
 }
 
@@ -335,7 +335,11 @@ export function isValidPhoneField(
 	value: string | PhoneFieldValue,
 	options?: PhoneFieldParseOptions,
 ) {
-	return parsePhoneField(value, options)?.isValid() ?? false;
+	const parsed = parsePhoneField(value, options);
+	return (
+		parsed?.isValid() === true &&
+		(typeof value === "string" || parsed.country === value.countryIso2)
+	);
 }
 
 /** Type guard: true if the value has the PhoneFieldValue shape. */

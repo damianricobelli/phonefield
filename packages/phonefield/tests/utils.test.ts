@@ -272,6 +272,18 @@ describe("parsePhoneField / isValidPhoneField", () => {
 		expect(isValidPhoneField("123", { defaultCountry: "US" })).toBe(false);
 	});
 
+	it("invalidates values whose detected country differs from countryIso2", () => {
+		expect(
+			isValidPhoneField({
+				countryIso2: "US",
+				countryDialCode: "+1",
+				nationalNumber: "(416) 555-0199",
+				e164: "+14165550199",
+				isValid: true,
+			}),
+		).toBe(false);
+	});
+
 	it("uses strict string parsing unless extraction is explicitly enabled", () => {
 		expect(parsePhoneField("Call +1 202 555 0123")?.number).toBeUndefined();
 		expect(

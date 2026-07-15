@@ -56,6 +56,11 @@ When `countries` excludes the detected country, PhoneField preserves the pasted
 text and emits an invalid value with `e164: null` instead of reinterpreting those
 digits as a number from the currently selected country.
 
+Validity also includes the country selection. If a valid Canadian `+1` number is
+shown while the user manually selects the United States, `e164` and parsing
+metadata still describe the number accurately, but `isValid` becomes `false`
+until the selected country matches.
+
 ## FormData
 
 ```tsx
