@@ -5,6 +5,7 @@ import {
 import { DocBlock } from "@/components/doc-block";
 import { InstallTabs } from "@/components/install-tabs";
 import { MigrationComparison } from "@/components/migration-comparison";
+import { useDocumentationScrollSpy } from "@/hooks/use-documentation-scroll-spy";
 import { migrationComparisons } from "@/lib/migration";
 import {
 	controlledSnippet,
@@ -17,6 +18,7 @@ import {
 	subsetSnippet,
 	validitySnippet,
 } from "@/lib/snippets";
+import { cn } from "@/lib/utils";
 
 const DOC_NAV = [
 	{ id: "getting-started", label: "Getting started" },
@@ -26,6 +28,8 @@ const DOC_NAV = [
 	{ id: "utilities", label: "Utilities" },
 	{ id: "migration", label: "Migrate to v1" },
 ] as const;
+
+const DOC_SECTION_IDS = DOC_NAV.map((item) => item.id);
 
 const STYLING_SLOTS = [
 	["phone-field", "Root layout"],
@@ -69,6 +73,9 @@ function DocSubsection({
 }
 
 export function DocSection() {
+	const { currentHash, beginHashNavigation } =
+		useDocumentationScrollSpy(DOC_SECTION_IDS);
+
 	return (
 		<section className="relative border-t border-slate-200 bg-white">
 			<div className="mx-auto max-w-6xl px-5 py-16 sm:px-6 md:py-20">
@@ -98,7 +105,24 @@ export function DocSection() {
 								<a
 									key={item.id}
 									href={`#${item.id}`}
-									className="ui-pressable block shrink-0 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-600"
+									aria-current={
+										currentHash === item.id ? "location" : undefined
+									}
+									onClick={(event) => {
+										if (
+											event.button === 0 &&
+											!event.altKey &&
+											!event.ctrlKey &&
+											!event.metaKey &&
+											!event.shiftKey
+										) {
+											beginHashNavigation(item.id);
+										}
+									}}
+									className={cn(
+										"ui-pressable block shrink-0 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-600",
+										currentHash === item.id && "font-semibold text-slate-950",
+									)}
 								>
 									{item.label}
 								</a>
@@ -204,8 +228,7 @@ export function DocSection() {
 									</p>
 									<p className="mt-2 text-sm leading-6 text-slate-600">
 										Let <code>Root</code> own the shared border and focus ring.
-										Use
-										<code>cn</code> for the input and one hoisted
+										Use <code>cn</code> for the input and one hoisted{" "}
 										<code>CountryClassNames</code> preset for the trigger and
 										popup.
 									</p>
