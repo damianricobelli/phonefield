@@ -301,6 +301,37 @@ describe("PhoneField", () => {
 		expect(latestValue?.nationalNumber.replace(/\D/g, "")).toBe("2025550123");
 	});
 
+	it("does not retain number updates rejected by a controlled parent", async () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "AR"]}
+				value={{ countryIso2: "US", nationalNumber: "" }}
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{
+						root: { open: true },
+						trigger: { "aria-label": "Country" },
+					}}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		fireEvent.change(screen.getByRole("textbox", { name: "Phone number" }), {
+			target: { value: "2025550123" },
+		});
+		fireEvent.click(await screen.findByRole("option", { name: /Argentina/ }));
+
+		expect(onValueChange).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				countryIso2: "AR",
+				nationalNumber: "",
+			}),
+		);
+	});
+
 	it.each([
 		["uncontrolled", undefined, controlledValue],
 		["controlled", controlledValue, undefined],

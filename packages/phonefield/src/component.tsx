@@ -182,11 +182,13 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		const setNumber = React.useCallback(
 			(number: string) => {
 				const nextValue = commitValue(selectedCountry, number);
-				// Keep back-to-back input and country events synchronous. The effect
-				// above still covers controlled values changed outside this field.
-				currentNumberRef.current = nextValue.nationalNumber;
+				if (!isControlled) {
+					// Keep back-to-back uncontrolled events synchronous. Controlled
+					// values are synchronized only after the parent accepts the update.
+					currentNumberRef.current = nextValue.nationalNumber;
+				}
 			},
-			[commitValue, selectedCountry],
+			[commitValue, isControlled, selectedCountry],
 		);
 
 		const countryContextValue = React.useMemo<PhoneFieldCountryContextValue>(
