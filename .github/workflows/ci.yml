@@ -1,18 +1,16 @@
-name: Release
+name: CI
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  release:
+  phonefield:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -36,7 +34,7 @@ jobs:
       - name: Lint workspace
         run: pnpm lint
 
-      - name: Typecheck phonefield package
+      - name: Typecheck package
         run: pnpm --filter ./packages/phonefield typecheck
 
       - name: Test phonefield package
@@ -44,14 +42,3 @@ jobs:
 
       - name: Build workspace and verify package
         run: pnpm build
-
-      - name: Create Release Pull Request or Publish to npm
-        uses: changesets/action@v1
-        with:
-          version: pnpm ci:version
-          commit: "chore: new release"
-          title: "chore: new release"
-          publish: pnpm ci:release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACTION_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

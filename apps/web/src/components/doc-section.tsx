@@ -55,6 +55,11 @@ export function DocSection() {
 							click.
 						</p>
 						<InstallTabs className="max-w-3xl" packageName="phonefield" />
+						<p className="mt-4 max-w-3xl text-sm text-slate-600">
+							Peer dependencies: <code>@base-ui/react &gt;=1.2 &lt;2</code>,{" "}
+							<code>react &gt;=18 &lt;20</code>, and{" "}
+							<code>react-dom &gt;=18 &lt;20</code>.
+						</p>
 					</article>
 
 					<DocBlock
@@ -96,7 +101,7 @@ export function DocSection() {
 					</div>
 					<DocBlock
 						title="Uncontrolled + FormData (Client / Server)"
-						description="Set Root name to serialize the full PhoneField.Value as JSON in a hidden input. Read it from FormData on client or server."
+						description="Set Root name to submit only countryIso2 and nationalNumber. fromFormData validates those untrusted source fields and rebuilds the derived value on client or server."
 						code={formDataSnippet}
 					/>
 					<DocBlock
@@ -178,7 +183,7 @@ export function DocSection() {
 											defaultCountry
 										</td>
 										<td className="px-4 py-2.5 font-mono text-xs">
-											PhoneField.CountryCodeValue
+											PhoneField.CountryCode
 										</td>
 										<td className="px-4 py-2.5">
 											"US" if available, otherwise first available
@@ -192,7 +197,7 @@ export function DocSection() {
 											countries
 										</td>
 										<td className="px-4 py-2.5 font-mono text-xs">
-											readonly PhoneField.CountryCodeValue[]
+											readonly PhoneField.CountryCode[]
 										</td>
 										<td className="px-4 py-2.5">all supported</td>
 										<td className="px-4 py-2.5">
@@ -218,7 +223,7 @@ export function DocSection() {
 										<td className="px-4 py-2.5 font-mono text-xs">string</td>
 										<td className="px-4 py-2.5">-</td>
 										<td className="px-4 py-2.5">
-											Serializes the value as JSON in a hidden input for
+											Serializes only countryIso2 and nationalNumber as JSON for
 											FormData.
 										</td>
 									</tr>
@@ -338,6 +343,19 @@ export function DocSection() {
 									</tr>
 									<tr className="border-b border-slate-100">
 										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											slotProps
+										</td>
+										<td className="px-4 py-2.5 font-mono text-xs">
+											PhoneField.CountrySlotProps
+										</td>
+										<td className="px-4 py-2.5">-</td>
+										<td className="px-4 py-2.5">
+											Forwards native and Base UI props to each rendered part;
+											item may be a per-country callback.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
 											positioning
 										</td>
 										<td className="px-4 py-2.5 font-mono text-xs">
@@ -384,9 +402,9 @@ export function DocSection() {
 							PhoneField.Input props
 						</h3>
 						<p className="mt-1 max-w-3xl text-sm text-slate-600">
-							Input forwards the full{" "}
+							Input forwards{" "}
 							<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
-								BaseInput.Props
+								Omit&lt;BaseInput.Props, "value" | "defaultValue"&gt;
 							</code>{" "}
 							surface from{" "}
 							<code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">
@@ -420,9 +438,9 @@ export function DocSection() {
 										<td className="px-4 py-2.5 font-mono text-xs">
 											React.HTMLInputTypeAttribute
 										</td>
-										<td className="px-4 py-2.5">"text"</td>
+										<td className="px-4 py-2.5">"tel"</td>
 										<td className="px-4 py-2.5">
-											Input type passed to Base UI Input.
+											Telephone-friendly default; consumers may override it.
 										</td>
 									</tr>
 									<tr className="border-b border-slate-100">
@@ -461,7 +479,9 @@ export function DocSection() {
 											Includes standard input props like <code>name</code>,{" "}
 											<code>id</code>, <code>placeholder</code>,{" "}
 											<code>disabled</code>, <code>required</code>, events, and
-											ARIA attributes.
+											ARIA attributes, except controlled value props. Defaults
+											to inputMode="tel" and autoComplete="tel-national" without
+											a forced pattern.
 										</td>
 									</tr>
 								</tbody>
@@ -473,7 +493,7 @@ export function DocSection() {
 				<DocSubsection title="Reference">
 					<DocBlock
 						title="Formatting + Utils"
-						description="Validate and format on frontend or backend. parse() returns libphonenumber's PhoneNumber (formatNational, formatInternational, getURI). isValid and parse accept Value or E.164 string; optional { defaultCountry } for national-number strings."
+						description="Validate and format on frontend or backend. parse() returns libphonenumber's PhoneNumber. String parsing is strict by default; pass { defaultCountry } for national numbers or opt into { extract: true } for arbitrary text."
 						code={formatAndUtilsSnippet}
 					/>
 
@@ -506,10 +526,13 @@ export function DocSection() {
 											parse(value, options?)
 										</td>
 										<td className="px-4 py-2.5">
-											Parse <code>Value</code> or E.164 → libphonenumber{" "}
-											<code>PhoneNumber</code> (formatNational,
+											Parse <code>Value</code> or a strict phone string →
+											libphonenumber <code>PhoneNumber</code> (formatNational,
 											formatInternational, getURI).{" "}
-											<code>options.defaultCountry</code> for national numbers.
+											<code>options.defaultCountry</code> handles national
+											numbers;
+											<code>options.extract</code> opts into extraction from
+											text.
 										</td>
 									</tr>
 									<tr className="border-b border-slate-100">
@@ -526,8 +549,17 @@ export function DocSection() {
 											fromFormData(formData, name)
 										</td>
 										<td className="px-4 py-2.5">
-											Read serialized <code>PhoneField.Value</code> from
-											FormData → Value | null.
+											Validate countryIso2 and nationalNumber from FormData,
+											then rebuild a canonical Value or return null.
+										</td>
+									</tr>
+									<tr className="border-b border-slate-100">
+										<td className="px-4 py-2.5 font-mono text-xs text-slate-800">
+											toFormValue(value)
+										</td>
+										<td className="px-4 py-2.5">
+											Return the minimal serializable payload: countryIso2 and
+											nationalNumber.
 										</td>
 									</tr>
 									<tr className="border-b border-slate-100">
@@ -535,8 +567,8 @@ export function DocSection() {
 											getCountries(locale?)
 										</td>
 										<td className="px-4 py-2.5">
-											Map ISO2 → country (name, dialCode, flag). Locale for
-											display names.
+											Runtime-immutable map ISO2 → country (name, dialCode,
+											flag). Locale controls display names and sorting.
 										</td>
 									</tr>
 									<tr className="border-b border-slate-100">

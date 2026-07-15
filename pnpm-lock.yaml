@@ -138,19 +138,19 @@ importers:
 
   packages/phonefield:
     dependencies:
-      '@base-ui/react':
-        specifier: ^1.2.0
-        version: 1.2.0(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       libphonenumber-js:
         specifier: ^1.12.38
         version: 1.12.38
       react:
-        specifier: '>=18'
+        specifier: '>=18 <20'
         version: 19.2.7
       react-dom:
-        specifier: '>=18'
+        specifier: '>=18 <20'
         version: 19.2.7(react@19.2.7)
     devDependencies:
+      '@base-ui/react':
+        specifier: ^1.2.0
+        version: 1.2.0(@types/react@19.2.14)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@testing-library/dom':
         specifier: ^10.4.1
         version: 10.4.1
@@ -163,9 +163,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.14)
-      terser:
-        specifier: ^5.46.0
-        version: 5.46.0
+      jsdom:
+        specifier: ^28.1.0
+        version: 28.1.0
       tsup:
         specifier: ^8.5.1
         version: 8.5.1(jiti@2.7.0)(postcss@8.5.19)(tsx@4.21.0)(typescript@5.9.3)

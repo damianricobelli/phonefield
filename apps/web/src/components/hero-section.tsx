@@ -8,7 +8,7 @@ export function App() {
   return (
     <PhoneField.Root>
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }`;

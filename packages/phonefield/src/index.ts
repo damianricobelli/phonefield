@@ -1,9 +1,12 @@
-export { PhoneField } from "./component";
+export { PhoneField } from "./component.js";
 export type {
-  PhoneFieldCountry,
-  PhoneFieldCountryCodeValue,
-  PhoneFieldCountryMap,
-  PhoneFieldCountryName,
-  PhoneFieldLang,
-  PhoneFieldValue,
-} from "./types";
+	PhoneFieldCountry,
+	PhoneFieldCountryCode,
+	PhoneFieldCountryCodeValue,
+	PhoneFieldCountryMap,
+	PhoneFieldCountryName,
+	PhoneFieldFormValue,
+	PhoneFieldLang,
+	PhoneFieldParseOptions,
+	PhoneFieldValue,
+} from "./types.js";

@@ -22,7 +22,7 @@ const liveCountryClassNames: PhoneField.CountryClassNames = {
 export function LivePlayground() {
   const [value, setValue] = React.useState<PhoneField.Value>({
     countryIso2: "US",
-    countryDialCode: "1",
+    countryDialCode: "+1",
     nationalNumber: "",
     e164: null,
     isValid: false,

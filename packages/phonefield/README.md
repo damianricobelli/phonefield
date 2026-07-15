@@ -18,6 +18,9 @@ yarn add phonefield
 bun add phonefield
 ```
 
+Requires `@base-ui/react >= 1.2 < 2`, `react >= 18 < 20`, and
+`react-dom >= 18 < 20` as peer dependencies.
+
 ### Usage
 
 ```tsx
@@ -27,7 +30,7 @@ export function SignupPhone() {
   return (
     <PhoneField.Root defaultCountry="US" lang="en">
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }
@@ -43,7 +46,7 @@ import { PhoneField } from "phonefield";
 export function ControlledExample() {
   const [phone, setPhone] = React.useState<PhoneField.Value>({
     countryIso2: "US",
-    countryDialCode: "1",
+    countryDialCode: "+1",
     nationalNumber: "",
     e164: null,
     isValid: false,
@@ -52,7 +55,7 @@ export function ControlledExample() {
   return (
     <PhoneField.Root value={phone} onValueChange={setPhone}>
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }
@@ -76,12 +79,16 @@ function ExampleForm() {
     >
       <PhoneField.Root name="phone" defaultCountry="US">
         <PhoneField.Country />
-        <PhoneField.Input />
+        <PhoneField.Input aria-label="Phone number" />
       </PhoneField.Root>
     </form>
   );
 }
 ```
+
+Forms contain only `{ countryIso2, nationalNumber }`. Treat this as untrusted
+input: `fromFormData` validates it and rebuilds `countryDialCode`, `e164`, and
+`isValid` instead of accepting client-supplied derived fields.
 
 ### Utilities (`phonefield/utils`)
 
@@ -92,7 +99,12 @@ const parsed = PhoneFieldUtils.parse("+14155552671");
 const isValid = PhoneFieldUtils.isValid("+14155552671");
 ```
 
-`parse` and `isValid` accept either `PhoneField.Value` or a phone string.
-For national-number strings, pass `options.defaultCountry`.
+`parse` and `isValid` accept either `PhoneField.Value` or a phone string. Parsing
+is strict by default. Pass `options.defaultCountry` for national strings, or
+`{ extract: true }` to intentionally extract a number from surrounding text.
+
+`PhoneField.Input` defaults to telephone-friendly native attributes and both
+`PhoneField.Root` and `PhoneField.Input` forward refs. See the full documentation
+for `slotProps`, immutable country metadata, and the complete API.
 
 More documentation and API reference: https://phonefield.vercel.app

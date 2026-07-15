@@ -4,7 +4,7 @@ export function SignupPhone() {
   return (
     <PhoneField.Root defaultCountry="US" lang="en">
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }`;
@@ -46,7 +46,7 @@ import { PhoneField } from "phonefield";
 export function CheckoutPhone() {
   const [phone, setPhone] = React.useState<PhoneField.Value>({
     countryIso2: "US",
-    countryDialCode: "1",
+    countryDialCode: "+1",
     nationalNumber: "",
     e164: null,
     isValid: false,
@@ -55,7 +55,7 @@ export function CheckoutPhone() {
   return (
     <PhoneField.Root value={phone} onValueChange={setPhone}>
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }`;
@@ -74,7 +74,7 @@ import { PhoneFieldUtils } from "phonefield/utils";
 >
   <PhoneField.Root name="phone" defaultCountry="US">
     <PhoneField.Country />
-    <PhoneField.Input />
+    <PhoneField.Input aria-label="Phone number" />
   </PhoneField.Root>
 </form>
 
@@ -84,7 +84,7 @@ const phone = PhoneFieldUtils.fromFormData(formData, "phone");`;
 
 export const subsetSnippet = `<PhoneField.Root countries={["US", "CA", "MX"]}>
   <PhoneField.Country />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Phone number" />
 </PhoneField.Root>
 `;
 
@@ -93,7 +93,7 @@ export const i18nSnippet = `<PhoneField.Root lang="es-AR" defaultCountry="AR">
     inputPlaceholder="Buscar país"
     noResultsText="No se encontraron países"
   />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Número de teléfono" />
 </PhoneField.Root>
 `;
 
@@ -118,6 +118,11 @@ export const formatAndUtilsSnippet = `import { PhoneFieldUtils } from "phonefiel
 // parse() returns libphonenumber PhoneNumber: formatNational(), formatInternational(), getURI()
 const parsed = PhoneFieldUtils.parse(value);
 
+// Strict by default: opt into extraction only for arbitrary text.
+const extracted = PhoneFieldUtils.parse("Call +1 415 555 2671", {
+  extract: true,
+});
+
 const output = {
   isValid: PhoneFieldUtils.isValid(value),
   e164: value.e164,
@@ -128,5 +133,6 @@ const output = {
 // Frontend or backend:
 PhoneFieldUtils.isValid("+14155552671");
 PhoneFieldUtils.fromFormData(formData, "phone");
+PhoneFieldUtils.toFormValue(value); // { countryIso2, nationalNumber }
 PhoneFieldUtils.getCountries("es-AR"); // Map<iso2, country> (locale for names)
 PhoneFieldUtils.countries; // default map (en)`;

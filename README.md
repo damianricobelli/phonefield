@@ -38,8 +38,9 @@ bun add phonefield
 
 Peer dependencies:
 
-- `react >= 18`
-- `react-dom >= 18`
+- `@base-ui/react >= 1.2 < 2`
+- `react >= 18 < 20`
+- `react-dom >= 18 < 20`
 
 ## Quick Start
 
@@ -50,7 +51,7 @@ export function SignupPhone() {
   return (
     <PhoneField.Root defaultCountry="US" lang="en">
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }
@@ -104,7 +105,7 @@ import { PhoneField } from "phonefield";
 export function CheckoutPhone() {
   const [phone, setPhone] = React.useState<PhoneField.Value>({
     countryIso2: "US",
-    countryDialCode: "1",
+    countryDialCode: "+1",
     nationalNumber: "",
     e164: null,
     isValid: false,
@@ -113,7 +114,7 @@ export function CheckoutPhone() {
   return (
     <PhoneField.Root value={phone} onValueChange={setPhone}>
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }
@@ -124,7 +125,7 @@ Value shape:
 ```ts
 type PhoneFieldValue = {
   countryIso2: CountryCode;
-  countryDialCode: string;
+  countryDialCode: string; // includes the leading "+"
   nationalNumber: string;
   e164: string | null;
   isValid: boolean;
@@ -136,7 +137,7 @@ type PhoneFieldValue = {
 ```tsx
 <PhoneField.Root countries={["US", "CA", "MX"]} defaultCountry="US">
   <PhoneField.Country />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Phone number" />
 </PhoneField.Root>
 ```
 
@@ -150,7 +151,7 @@ type PhoneFieldValue = {
     inputPlaceholder="Buscar país"
     noResultsText="No se encontraron países"
   />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Número de teléfono" />
 </PhoneField.Root>
 ```
 
@@ -174,7 +175,7 @@ function ExampleForm() {
     >
       <PhoneField.Root name="phone" defaultCountry="US">
         <PhoneField.Country />
-        <PhoneField.Input />
+        <PhoneField.Input aria-label="Phone number" />
       </PhoneField.Root>
     </form>
   );
@@ -187,6 +188,10 @@ Server side:
 const formData = await request.formData();
 const phone = PhoneFieldUtils.fromFormData(formData, "phone");
 ```
+
+`Root` only submits the untrusted source fields `{ countryIso2, nationalNumber }`.
+`fromFormData` validates that payload and rebuilds `countryDialCode`, `e164`, and
+`isValid`; it never trusts client-supplied derived fields.
 
 ## Validity States
 
@@ -225,16 +230,22 @@ const output = {
 };
 ```
 
-`parse` and `isValid` accept either `PhoneField.Value` or a phone string.
-For national-number strings, pass `options.defaultCountry`.
+`parse` and `isValid` accept either `PhoneField.Value` or a phone string. String
+parsing is strict by default, so surrounding prose is rejected. For national
+numbers pass `options.defaultCountry`; use `{ extract: true }` only when you
+intentionally want to extract a phone number from arbitrary text.
 
 Utility surface:
 
 - `PhoneFieldUtils.parse(value, options?)`
 - `PhoneFieldUtils.isValid(value, options?)`
 - `PhoneFieldUtils.fromFormData(formData, name)`
+- `PhoneFieldUtils.toFormValue(value)`
 - `PhoneFieldUtils.getCountries(locale?)`
 - `PhoneFieldUtils.countries`
+
+Country maps and country objects are immutable at runtime. Localized maps use a
+bounded cache.
 
 ## API Reference (At a Glance)
 
@@ -243,8 +254,8 @@ type RootProps = Omit<React.ComponentPropsWithoutRef<"div">, "defaultValue"> & {
   value?: PhoneField.Value;
   defaultValue?: PhoneField.Value;
   onValueChange?: (value: PhoneField.Value) => void;
-  defaultCountry?: PhoneField.CountryCodeValue; // default: "US" if available, otherwise first available
-  countries?: readonly PhoneField.CountryCodeValue[];
+  defaultCountry?: PhoneField.CountryCode; // default: "US" if available, otherwise first available
+  countries?: readonly PhoneField.CountryCode[];
   lang?: PhoneField.Lang;
   name?: string;
   formatOnType?: boolean; // default: true
@@ -258,6 +269,7 @@ type CountryProps = {
   inputPlaceholder?: string;
   icon?: React.ReactNode;
   classNames?: PhoneField.CountryClassNames;
+  slotProps?: PhoneField.CountrySlotProps;
   positioning?: PhoneField.CountryPositioning;
   renderCountryItem?: (country: PhoneField.Country) => React.ReactNode;
   renderCountryValue?: (country: PhoneField.Country) => React.ReactNode;
@@ -265,8 +277,13 @@ type CountryProps = {
 ```
 
 ```ts
-type InputProps = BaseInput.Props;
+type InputProps = Omit<BaseInput.Props, "value" | "defaultValue">;
 ```
+
+`Root` and `Input` forward refs to their underlying `div` and `input`.
+`Input` defaults to `type="tel"`, `inputMode="tel"`, and
+`autoComplete="tel-national"`; all three can be overridden. It deliberately
+does not force a `pattern`, so validation rules remain application-owned.
 
 ## License
 

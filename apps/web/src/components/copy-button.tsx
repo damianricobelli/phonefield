@@ -49,6 +49,7 @@ function CopyIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       aria-hidden
     >
+      <title>Copy</title>
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

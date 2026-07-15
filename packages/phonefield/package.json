@@ -6,51 +6,68 @@
     "access": "public"
   },
   "description": "Composable phone field primitive built with Base UI and libphonenumber-js.",
+  "keywords": [
+    "react",
+    "phone-input",
+    "phone-number",
+    "base-ui",
+    "libphonenumber"
+  ],
   "author": "damianricobelli",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/damianricobelli/phonefield.git",
-    "directory": "package"
+    "directory": "packages/phonefield"
   },
   "homepage": "https://phonefield.vercel.app",
   "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./utils": {
       "types": "./dist/utils.d.ts",
-      "import": "./dist/utils.js"
-    }
+      "import": "./dist/utils.js",
+      "default": "./dist/utils.js"
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json && node scripts/verify-package.mjs",
+    "check": "biome check src tests scripts",
     "dev": "tsup --watch",
+    "lint": "biome lint src tests scripts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build",
     "test": "vitest run"
   },
   "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
+    "@base-ui/react": ">=1.2.0 <2",
+    "react": ">=18 <20",
+    "react-dom": ">=18 <20"
   },
   "dependencies": {
-    "@base-ui/react": "^1.2.0",
     "libphonenumber-js": "^1.12.38"
   },
   "devDependencies": {
+    "@base-ui/react": "^1.2.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "terser": "^5.46.0",
+    "jsdom": "^28.1.0",
     "tsup": "^8.5.1",
     "typescript": "catalog:",
     "vitest": "^4.1.10"
