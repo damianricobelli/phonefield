@@ -46,7 +46,8 @@ export const rootProperties = [
 		name: "countries",
 		type: "readonly PhoneField.CountryCode[]",
 		defaultValue: "all",
-		description: "Restricts the country list to a subset.",
+		description:
+			"Restricts the country list and international-paste auto-selection to a subset.",
 	},
 	{
 		name: "lang",

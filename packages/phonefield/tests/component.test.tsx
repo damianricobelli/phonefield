@@ -71,6 +71,122 @@ describe("PhoneField", () => {
 		});
 	});
 
+	it("removes the selected country calling code from an international paste", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root defaultCountry="US" onValueChange={onValueChange}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "  +1 415 555 2671" } });
+
+		expect(input.value).toBe("(415) 555-2671");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "(415) 555-2671",
+			e164: "+14155552671",
+			isValid: true,
+		});
+	});
+
+	it("selects an allowed country detected from an international paste", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "AR"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{ trigger: { "aria-label": "Country" } }}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("+54");
+		expect(input.value).toBe("011 15-4321-1234");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "AR",
+			countryDialCode: "+54",
+			nationalNumber: "011 15-4321-1234",
+			e164: "+5491143211234",
+			isValid: true,
+		});
+	});
+
+	it("does not reinterpret a disallowed international country as the selected country", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+
+		expect(input.value).toBe("+54 9 11 4321-1234");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "+54 9 11 4321-1234",
+			e164: null,
+			isValid: false,
+		});
+	});
+
+	it("detects countries that share an international calling code", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "CA"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{ trigger: { "aria-label": "Country" } }}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+1 204 234 5678" } });
+
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("Canada");
+		expect(input.value).toBe("(204) 234-5678");
+		expect(onValueChange).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				countryIso2: "CA",
+				e164: "+12042345678",
+				isValid: true,
+			}),
+		);
+	});
+
 	it("treats defaultValue as mount-only initialization", () => {
 		const { rerender } = render(
 			<PhoneField.Root

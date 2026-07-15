@@ -199,6 +199,14 @@ export function DocSection() {
 								and <code>onValueChange</code> always emits the complete{" "}
 								<code>PhoneField.Value</code>.
 							</div>
+							<div className="rounded-r-xl border-emerald-400 border-l-2 bg-emerald-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
+								Paste an international number beginning with <code>+</code> and
+								PhoneField selects its detected country when available, then
+								keeps only the nationally formatted number in the input. If the
+								detected country is excluded by <code>countries</code>, the
+								original text is preserved and emitted as invalid instead of
+								being reinterpreted.
+							</div>
 
 							<DocBlock
 								title="Country subset"

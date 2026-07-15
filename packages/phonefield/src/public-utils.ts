@@ -26,7 +26,7 @@ export function isValid(
 	return isValidPhoneField(value, options);
 }
 
-/** Build a canonical value from country metadata and a national number. */
+/** Build a canonical value from country metadata and a national or international number. */
 export function buildValue(
 	country: PhoneField.Country,
 	nationalNumber: string,

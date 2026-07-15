@@ -24,6 +24,7 @@ import type {
 import {
 	buildValue,
 	getCountriesMap,
+	parseInternationalInput,
 	resolveCountry,
 	toAvailableCountries,
 	toFormValue,
@@ -134,14 +135,20 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		);
 		const setNumber = React.useCallback(
 			(number: string) => {
-				const nextValue = commitValue(selectedCountry, number);
+				const internationalCountry = parseInternationalInput(number)?.country;
+				const nextCountry = internationalCountry
+					? (availableCountries.find(
+							(country) => country.iso2 === internationalCountry,
+						) ?? selectedCountry)
+					: selectedCountry;
+				const nextValue = commitValue(nextCountry, number);
 				if (!isControlled) {
 					// Keep back-to-back uncontrolled events synchronous. Controlled
 					// values are synchronized only after the parent accepts the update.
 					currentNumberRef.current = nextValue.nationalNumber;
 				}
 			},
-			[commitValue, isControlled, selectedCountry],
+			[availableCountries, commitValue, isControlled, selectedCountry],
 		);
 
 		const countryContextValue = React.useMemo<PhoneFieldCountryContextValue>(
@@ -160,7 +167,12 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		return (
 			<PhoneFieldCountryContext.Provider value={countryContextValue}>
 				<PhoneFieldInputContext.Provider value={inputContextValue}>
-					<div {...props} ref={ref} className={className} data-slot="phone-field">
+					<div
+						{...props}
+						ref={ref}
+						className={className}
+						data-slot="phone-field"
+					>
 						{children}
 						{name ? (
 							<input
