@@ -10,6 +10,12 @@ export function PageHeader() {
     <header className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/70 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
         <a href="/" className="text-lg font-bold tracking-tight text-slate-900">
+          <img
+            src="/favicon.ico"
+            alt=""
+            className="size-7"
+            aria-hidden="true"
+          />
           PhoneField
         </a>
         <nav className="flex items-center gap-1">
