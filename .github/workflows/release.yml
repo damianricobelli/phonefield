@@ -53,5 +53,5 @@ jobs:
           title: "chore: new release"
           publish: pnpm ci:release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACTION_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
