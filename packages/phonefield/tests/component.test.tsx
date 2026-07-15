@@ -18,6 +18,25 @@ const controlledValue: PhoneField.Value = {
 	isValid: false,
 };
 
+function typeText(input: HTMLInputElement, text: string) {
+	for (const character of text) {
+		const nextValue = `${input.value}${character}`;
+		input.setSelectionRange(input.value.length, input.value.length);
+		fireEvent.keyDown(input, { key: character });
+		fireEvent.change(input, { target: { value: nextValue } });
+	}
+}
+
+function backspace(input: HTMLInputElement, count: number) {
+	for (let index = 0; index < count; index++) {
+		input.setSelectionRange(input.value.length, input.value.length);
+		fireEvent.keyDown(input, { key: "Backspace" });
+		fireEvent.change(input, {
+			target: { value: input.value.slice(0, -1) },
+		});
+	}
+}
+
 describe("PhoneField", () => {
 	it("serializes only submitted source fields and uses national phone semantics", () => {
 		const { container } = render(
@@ -69,6 +88,490 @@ describe("PhoneField", () => {
 			e164: "+14155552671",
 			isValid: true,
 		});
+	});
+
+	it("undoes a continuous typing transaction instead of one character", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				defaultCountry="US"
+				formatOnType={false}
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		typeText(input, "12345");
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("");
+		expect(onValueChange).toHaveBeenLastCalledWith(
+			expect.objectContaining({ nationalNumber: "" }),
+		);
+	});
+
+	it("undoes consecutive deletions and selects the restored text", () => {
+		render(
+			<PhoneField.Root defaultCountry="US" formatOnType={false}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		typeText(input, "12345");
+		backspace(input, 2);
+		expect(input.value).toBe("123");
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("12345");
+		expect(input.selectionStart).toBe(3);
+		expect(input.selectionEnd).toBe(5);
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true, shiftKey: true });
+		expect(input.value).toBe("123");
+		expect(input.selectionStart).toBe(3);
+		expect(input.selectionEnd).toBe(3);
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		expect(input.value).toBe("");
+	});
+
+	it("selects only restored digits when formatting changes during deletion", () => {
+		render(
+			<PhoneField.Root defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		typeText(input, "41555");
+		backspace(input, 2);
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("(415) 55");
+		expect(
+			input.value.slice(input.selectionStart ?? 0, input.selectionEnd ?? 0),
+		).toBe("55");
+	});
+
+	it("starts a new typing transaction after moving the caret", () => {
+		render(
+			<PhoneField.Root defaultCountry="US" formatOnType={false}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		typeText(input, "123");
+		fireEvent.keyDown(input, { key: "ArrowLeft" });
+		input.setSelectionRange(2, 2);
+		fireEvent.keyDown(input, { key: "4" });
+		fireEvent.change(input, { target: { value: "1243" } });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("123");
+	});
+
+	it("does not restore a stale selection when controlled undo is rejected", () => {
+		function RejectUndoPhoneField() {
+			const [value, setValue] = React.useState<PhoneField.InputValue>({
+				countryIso2: "US",
+				nationalNumber: "",
+			});
+			const [, rerender] = React.useReducer((count) => count + 1, 0);
+			return (
+				<>
+					<button type="button" onClick={rerender}>
+						Rerender
+					</button>
+					<PhoneField.Root
+						formatOnType={false}
+						value={value}
+						onValueChange={(nextValue) => {
+							if (
+								nextValue.nationalNumber.length >= value.nationalNumber.length
+							) {
+								setValue(nextValue);
+							}
+						}}
+					>
+						<PhoneField.Input aria-label="Phone number" />
+					</PhoneField.Root>
+				</>
+			);
+		}
+
+		render(<RejectUndoPhoneField />);
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		typeText(input, "12345");
+		input.setSelectionRange(5, 5);
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		expect(input.value).toBe("12345");
+
+		fireEvent.click(screen.getByRole("button", { name: "Rerender" }));
+		expect(input.selectionStart).toBe(5);
+		expect(input.selectionEnd).toBe(5);
+	});
+
+	it("undoes and redoes an explicit country selection", async () => {
+		render(
+			<PhoneField.Root
+				countries={["US", "AR"]}
+				defaultValue={{ countryIso2: "US", nationalNumber: "123" }}
+				formatOnType={false}
+			>
+				<PhoneField.Country
+					slotProps={{
+						root: { open: true },
+						trigger: { "aria-label": "Country" },
+					}}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		fireEvent.click(await screen.findByRole("option", { name: /Argentina/ }));
+		const trigger = screen.getByRole("combobox", { name: "Country" });
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		expect(trigger.textContent).toContain("+54");
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		expect(trigger.textContent).toContain("+1");
+		expect(input.value).toBe("123");
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true, shiftKey: true });
+		expect(trigger.textContent).toContain("+54");
+	});
+
+	it("redoes an undone edit and clears redo after a new edit", () => {
+		render(
+			<PhoneField.Root defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "415" } });
+		fireEvent.change(input, { target: { value: "4155" } });
+		fireEvent.keyDown(input, { key: "z", metaKey: true });
+		fireEvent.keyDown(input, { key: "z", metaKey: true, shiftKey: true });
+
+		expect(input.value).toBe("(415) 5");
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		fireEvent.keyDown(input, { key: "y", ctrlKey: true });
+		expect(input.value).toBe("(415) 5");
+
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+		fireEvent.change(input, { target: { value: "4156" } });
+		fireEvent.keyDown(input, { key: "z", metaKey: true, shiftKey: true });
+
+		expect(input.value).toBe("(415) 6");
+	});
+
+	it("restores the country changed by an international edit", () => {
+		render(
+			<PhoneField.Root countries={["US", "AR"]} defaultCountry="US">
+				<PhoneField.Country
+					slotProps={{ trigger: { "aria-label": "Country" } }}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("");
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("+1");
+	});
+
+	it("supports undo when a controlled parent accepts each value", () => {
+		function ControlledPhoneField() {
+			const [value, setValue] = React.useState<PhoneField.InputValue>({
+				countryIso2: "US",
+				nationalNumber: "",
+			});
+			return (
+				<PhoneField.Root value={value} onValueChange={setValue}>
+					<PhoneField.Input aria-label="Phone number" />
+				</PhoneField.Root>
+			);
+		}
+
+		render(<ControlledPhoneField />);
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "415" } });
+		fireEvent.change(input, { target: { value: "4155" } });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("(415)");
+	});
+
+	it("discards history when a controlled value rejects an edit", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root value={controlledValue} onValueChange={onValueChange}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "415" } });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("");
+		expect(onValueChange).toHaveBeenCalledTimes(1);
+	});
+
+	it("does not undo across an external controlled reset", () => {
+		function ResettablePhoneField() {
+			const [value, setValue] = React.useState<PhoneField.InputValue>({
+				countryIso2: "US",
+				nationalNumber: "",
+			});
+			return (
+				<>
+					<button
+						type="button"
+						onClick={() => setValue({ countryIso2: "AR", nationalNumber: "" })}
+					>
+						Reset
+					</button>
+					<PhoneField.Root
+						countries={["US", "AR"]}
+						value={value}
+						onValueChange={setValue}
+					>
+						<PhoneField.Country
+							slotProps={{ trigger: { "aria-label": "Country" } }}
+						/>
+						<PhoneField.Input aria-label="Phone number" />
+					</PhoneField.Root>
+				</>
+			);
+		}
+
+		render(<ResettablePhoneField />);
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "415" } });
+		fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.value).toBe("");
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("+54");
+	});
+
+	it("restores the recorded selection after undo", () => {
+		render(
+			<PhoneField.Root defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "415" } });
+		input.setSelectionRange(2, 2);
+		fireEvent.select(input);
+		fireEvent.change(input, { target: { value: "4155" } });
+		fireEvent.keyDown(input, { key: "z", ctrlKey: true });
+
+		expect(input.selectionStart).toBe(2);
+		expect(input.selectionEnd).toBe(2);
+	});
+
+	it("prevents typing a plus sign", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root defaultCountry="US" onValueChange={onValueChange}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		const wasNotCanceled = fireEvent.keyDown(input, {
+			key: "+",
+			shiftKey: true,
+		});
+		expect(wasNotCanceled).toBe(false);
+		expect(input.value).toBe("");
+		expect(onValueChange).not.toHaveBeenCalled();
+	});
+
+	it("lets Backspace remove a plus sign preserved from paste", () => {
+		const onPaste = vi.fn();
+		render(
+			<PhoneField.Root countries={["US"]} defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" onPaste={onPaste} />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.paste(input, {
+			clipboardData: { getData: () => "+54 9 11 4321-1234" },
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+		input.setSelectionRange(1, 1);
+
+		const wasNotCanceled = fireEvent.keyDown(input, { key: "Backspace" });
+
+		expect(onPaste).toHaveBeenCalledOnce();
+		expect(wasNotCanceled).toBe(true);
+		fireEvent.change(input, { target: { value: "54 9 11 4321-1234" } });
+		expect(input.value.startsWith("+")).toBe(false);
+	});
+
+	it("removes the selected country calling code from an international paste", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root defaultCountry="US" onValueChange={onValueChange}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "  +1 415 555 2671" } });
+
+		expect(input.value).toBe("(415) 555-2671");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "(415) 555-2671",
+			e164: "+14155552671",
+			isValid: true,
+		});
+	});
+
+	it("selects an allowed country detected from an international paste", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "AR"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{ trigger: { "aria-label": "Country" } }}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("+54");
+		expect(input.value).toBe("011 15-4321-1234");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "AR",
+			countryDialCode: "+54",
+			nationalNumber: "011 15-4321-1234",
+			e164: "+5491143211234",
+			isValid: true,
+		});
+	});
+
+	it("does not reinterpret a disallowed international country as the selected country", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+
+		expect(input.value).toBe("+54 9 11 4321-1234");
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "+54 9 11 4321-1234",
+			e164: null,
+			isValid: false,
+		});
+	});
+
+	it("detects countries that share an international calling code", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "CA"]}
+				defaultCountry="US"
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{ trigger: { "aria-label": "Country" } }}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.change(input, { target: { value: "+1 204 234 5678" } });
+
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).textContent,
+		).toContain("Canada");
+		expect(input.value).toBe("(204) 234-5678");
+		expect(onValueChange).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				countryIso2: "CA",
+				e164: "+12042345678",
+				isValid: true,
+			}),
+		);
 	});
 
 	it("treats defaultValue as mount-only initialization", () => {
@@ -300,6 +803,40 @@ describe("PhoneField", () => {
 			| undefined;
 		expect(latestValue?.countryIso2).toBe("AR");
 		expect(latestValue?.nationalNumber.replace(/\D/g, "")).toBe("2025550123");
+	});
+
+	it("invalidates a valid number when its detected country differs from the selection", async () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["CA", "US"]}
+				defaultValue={{
+					countryIso2: "CA",
+					nationalNumber: "4165550199",
+				}}
+				onValueChange={onValueChange}
+			>
+				<PhoneField.Country
+					slotProps={{
+						root: { open: true },
+						trigger: { "aria-label": "Country" },
+					}}
+				/>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		fireEvent.click(
+			await screen.findByRole("option", { name: /United States/ }),
+		);
+
+		expect(onValueChange).toHaveBeenLastCalledWith({
+			countryIso2: "US",
+			countryDialCode: "+1",
+			nationalNumber: "(416) 555-0199",
+			e164: "+14165550199",
+			isValid: false,
+		});
 	});
 
 	it("keeps externally controlled number updates when the country changes", async () => {

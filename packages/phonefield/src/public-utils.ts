@@ -18,7 +18,7 @@ export function parse(
 	return parsePhoneField(value, options);
 }
 
-/** Validate a strict phone string or PhoneField value. */
+/** Validate a strict phone string or a PhoneField value against its selected country. */
 export function isValid(
 	value: string | PhoneField.Value,
 	options?: PhoneField.ParseOptions,
@@ -26,7 +26,7 @@ export function isValid(
 	return isValidPhoneField(value, options);
 }
 
-/** Build a canonical value from country metadata and a national number. */
+/** Build a canonical value from country metadata and a national or international number. */
 export function buildValue(
 	country: PhoneField.Country,
 	nationalNumber: string,

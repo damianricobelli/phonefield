@@ -174,6 +174,14 @@ export function onlyDigits(value: string) {
 	return value.replace(/\D+/g, "");
 }
 
+/** Parses a strict international input while preserving ordinary national input behavior. */
+export function parseInternationalInput(value: string) {
+	const trimmedValue = value.trim();
+	return trimmedValue.startsWith("+")
+		? parsePhoneNumberFromString(trimmedValue, { extract: false })
+		: undefined;
+}
+
 /**
  * Filters a countries map to the given ISO2 codes, or returns all countries if none provided.
  * @throws If the resulting list is empty.
@@ -253,10 +261,29 @@ export function buildValue(
 	rawNumber: string,
 	formatOnType: boolean,
 ): PhoneFieldValue {
-	const nationalDigits = onlyDigits(rawNumber);
+	const internationalNumber = parseInternationalInput(rawNumber);
+	if (
+		rawNumber.trimStart().startsWith("+") &&
+		internationalNumber?.country !== country.iso2
+	) {
+		return {
+			countryIso2: country.iso2,
+			countryDialCode: country.dialCode,
+			nationalNumber: rawNumber,
+			e164: null,
+			isValid: false,
+		};
+	}
+	const normalizedNumber =
+		internationalNumber?.country === country.iso2
+			? formatOnType
+				? internationalNumber.formatNational()
+				: internationalNumber.nationalNumber
+			: rawNumber;
+	const nationalDigits = onlyDigits(normalizedNumber);
 	const formatter = new AsYouType(country.iso2);
 	const formattedNumber = nationalDigits ? formatter.input(nationalDigits) : "";
-	const nationalNumber = formatOnType ? formattedNumber : rawNumber;
+	const nationalNumber = formatOnType ? formattedNumber : normalizedNumber;
 	const countryDialCode = country.dialCode;
 	const parsed = formatter.getNumber();
 
@@ -265,7 +292,7 @@ export function buildValue(
 		countryDialCode,
 		nationalNumber,
 		e164: formatter.getNumberValue() ?? null,
-		isValid: parsed?.isValid() ?? false,
+		isValid: parsed?.country === country.iso2 && parsed.isValid(),
 	};
 }
 
@@ -308,7 +335,11 @@ export function isValidPhoneField(
 	value: string | PhoneFieldValue,
 	options?: PhoneFieldParseOptions,
 ) {
-	return parsePhoneField(value, options)?.isValid() ?? false;
+	const parsed = parsePhoneField(value, options);
+	return (
+		parsed?.isValid() === true &&
+		(typeof value === "string" || parsed.country === value.countryIso2)
+	);
 }
 
 /** Type guard: true if the value has the PhoneFieldValue shape. */

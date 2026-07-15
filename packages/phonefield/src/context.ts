@@ -1,4 +1,9 @@
 import React from "react";
+import type {
+	PhoneFieldEditKind,
+	PhoneFieldHistorySnapshot,
+	PhoneFieldInputSelection,
+} from "./history.js";
 import type { PhoneFieldCountry, PhoneFieldValue } from "./types.js";
 
 export type PhoneFieldCountryContextValue = {
@@ -9,7 +14,11 @@ export type PhoneFieldCountryContextValue = {
 
 export type PhoneFieldInputContextValue = {
 	value: PhoneFieldValue;
-	setNumber: (number: string) => void;
+	setNumber: (number: string, editKind?: PhoneFieldEditKind) => void;
+	rememberSelection: (selection: PhoneFieldInputSelection) => void;
+	breakHistoryGroup: () => void;
+	undo: () => PhoneFieldHistorySnapshot | undefined;
+	redo: () => PhoneFieldHistorySnapshot | undefined;
 };
 
 export const PhoneFieldCountryContext =

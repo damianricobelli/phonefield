@@ -45,6 +45,45 @@ const [phone, setPhone] = useState<PhoneField.InputValue>({
 
 `onValueChange` emits a canonical `PhoneField.Value` with `countryDialCode`, `e164`, and `isValid`.
 
+## Undo and redo
+
+PhoneField keeps its own bounded, native-style edit history because formatting
+a controlled input replaces the browser's native text edits. While the phone
+input is focused, the usual platform shortcuts restore both the national
+number and its country:
+
+- Undo: `Cmd+Z` on macOS or `Ctrl+Z` on Windows and Linux.
+- Redo: `Cmd+Shift+Z`, `Ctrl+Shift+Z`, or `Ctrl+Y`.
+
+History is grouped by editing transaction rather than by character. Typing
+`12345` and undoing clears the complete typing run. If the user then removes
+`45`, undo restores `12345` with `45` selected, matching native input feedback.
+Moving the caret or changing edit type starts another transaction; paste, cut,
+drop, and country changes are independent steps.
+
+The last 100 transactions are retained. Replacing a controlled `value`
+externally starts a new history, which prevents undo from crossing a form reset
+or server update.
+
+## International paste
+
+When input begins with `+`, PhoneField parses it as an international number. If
+the detected country is available, Root selects it automatically and Input keeps
+only its nationally formatted number. For example, pasting
+`+44 20 7946 0018` selects the United Kingdom and displays `020 7946 0018`.
+The `+` prefix is accepted from paste, but direct keyboard entry is blocked to
+avoid a partially international value that cannot be edited predictably.
+
+When `countries` excludes the detected country, PhoneField preserves the pasted
+text and emits an invalid value with `e164: null` instead of reinterpreting those
+digits as a number from the currently selected country. The preserved `+` can
+still be removed normally with Backspace.
+
+Validity also includes the country selection. If a valid Canadian `+1` number is
+shown while the user manually selects the United States, `e164` and parsing
+metadata still describe the number accurately, but `isValid` becomes `false`
+until the selected country matches.
+
 ## FormData
 
 ```tsx

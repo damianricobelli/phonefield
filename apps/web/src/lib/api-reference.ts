@@ -46,7 +46,8 @@ export const rootProperties = [
 		name: "countries",
 		type: "readonly PhoneField.CountryCode[]",
 		defaultValue: "all",
-		description: "Restricts the country list to a subset.",
+		description:
+			"Restricts the country list and international-paste auto-selection to a subset.",
 	},
 	{
 		name: "lang",
@@ -190,7 +191,8 @@ export const utilityProperties = [
 		name: "isValid(value, options?)",
 		type: "(string | Value, ParseOptions?) => boolean",
 		defaultValue: "-",
-		description: "Validate a strict string or Value.",
+		description:
+			"Validate a strict string or require a Value to match its selected country.",
 	},
 	{
 		key: "buildValue",
