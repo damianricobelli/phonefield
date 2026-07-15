@@ -2,6 +2,21 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const SECTION_SEPARATOR = "\u0000";
 
+function replaceHashWithoutScrolling(hash: string) {
+	const scrollX = window.scrollX;
+	const scrollY = window.scrollY;
+	const url = new URL(window.location.href);
+	url.hash = hash;
+	window.history.replaceState(window.history.state, "", url);
+
+	if (window.scrollX === scrollX && window.scrollY === scrollY) return;
+
+	const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+	document.documentElement.style.scrollBehavior = "auto";
+	window.scrollTo(scrollX, scrollY);
+	document.documentElement.style.scrollBehavior = previousScrollBehavior;
+}
+
 /** Keeps the URL fragment and the documentation section near the viewport top in sync. */
 export function useDocumentationScrollSpy(sectionIds: readonly string[]) {
 	const [currentHash, setCurrentHash] = useState("");
@@ -56,9 +71,7 @@ export function useDocumentationScrollSpy(sectionIds: readonly string[]) {
 				currentHashRef.current = activeId;
 				setCurrentHash(activeId);
 
-				const url = new URL(window.location.href);
-				url.hash = activeId;
-				window.history.replaceState(window.history.state, "", url);
+				replaceHashWithoutScrolling(activeId);
 			},
 			{
 				rootMargin: "-96px 0px -55% 0px",

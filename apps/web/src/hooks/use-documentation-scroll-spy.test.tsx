@@ -47,6 +47,7 @@ describe("useDocumentationScrollSpy", () => {
 
 	afterEach(() => {
 		cleanup();
+		vi.restoreAllMocks();
 		vi.unstubAllGlobals();
 	});
 
@@ -69,6 +70,38 @@ describe("useDocumentationScrollSpy", () => {
 
 		unmount();
 		expect(disconnect).toHaveBeenCalledOnce();
+	});
+
+	it("preserves the scroll position when the active fragment changes", () => {
+		vi.stubGlobal("scrollX", 24);
+		vi.stubGlobal("scrollY", 640);
+		const scrollTo = vi.fn((x: number, y: number) => {
+			vi.stubGlobal("scrollX", x);
+			vi.stubGlobal("scrollY", y);
+		});
+		vi.stubGlobal("scrollTo", scrollTo);
+
+		const replaceState = window.history.replaceState.bind(window.history);
+		vi.spyOn(window.history, "replaceState").mockImplementation(
+			(state, unused, url) => {
+				replaceState(state, unused, url);
+				vi.stubGlobal("scrollX", 0);
+				vi.stubGlobal("scrollY", 96);
+			},
+		);
+
+		renderHook(() =>
+			useDocumentationScrollSpy(["getting-started", "styling"]),
+		);
+		const styling = document.getElementById("styling");
+		if (!styling) throw new Error("Expected the styling section");
+
+		act(() => notify([entry(styling, true)]));
+
+		expect(window.location.hash).toBe("#styling");
+		expect(scrollTo).toHaveBeenLastCalledWith(24, 640);
+		expect(window.scrollX).toBe(24);
+		expect(window.scrollY).toBe(640);
 	});
 
 	it("keeps a clicked hash active until its section reaches the viewport", () => {
