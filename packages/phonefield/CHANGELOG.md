@@ -1,5 +1,16 @@
 # phonefield
 
+## 1.0.1
+
+### Patch Changes
+
+- [#12](https://github.com/damianricobelli/phonefield/pull/12) [`1d47926`](https://github.com/damianricobelli/phonefield/commit/1d47926b01aee747d3e57034991d4749405811e2) Thanks [@damianricobelli](https://github.com/damianricobelli)! - Add bounded, native-style undo and redo history for formatted phone edits,
+  including grouped typing and deletion transactions, restored selections,
+  country changes, and controlled or uncontrolled fields. Prevent direct `+`
+  entry while preserving international paste and normal Backspace removal.
+
+  Normalize pasted international numbers, select detected allowed countries, reject disallowed countries without reinterpreting their digits, and require valid numbers to match the selected country.
+
 ## 1.0.0
 
 ### Major Changes
