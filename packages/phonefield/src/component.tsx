@@ -1,78 +1,61 @@
 "use client";
 
-import { Combobox } from "@base-ui/react/combobox";
-import { Input as BaseInput } from "@base-ui/react/input";
+import type { Combobox } from "@base-ui/react/combobox";
+import type { Input as BaseInput } from "@base-ui/react/input";
 import React from "react";
+import {
+	PhoneFieldCountryContext,
+	type PhoneFieldCountryContextValue,
+	PhoneFieldInputContext,
+	type PhoneFieldInputContextValue,
+} from "./context.js";
+import { Country } from "./country.js";
+import { Input } from "./input.js";
 import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryCode,
-	PhoneFieldCountryCodeValue,
 	PhoneFieldCountryMap,
-	PhoneFieldCountryName,
 	PhoneFieldFormValue,
+	PhoneFieldInputValue,
 	PhoneFieldLang,
 	PhoneFieldParseOptions,
 	PhoneFieldValue,
 } from "./types.js";
 import {
 	buildValue,
-	defaultCountrySearchText,
 	getCountriesMap,
 	resolveCountry,
 	toAvailableCountries,
 	toFormValue,
 } from "./utils.js";
 
-type PhoneFieldCountryContextValue = {
-	selectedCountry: PhoneFieldCountry;
-	availableCountries: readonly PhoneFieldCountry[];
-	setCountry: (country: PhoneFieldCountry) => void;
-};
+declare const process: { env: { NODE_ENV?: string } } | undefined;
 
-type PhoneFieldInputContextValue = {
-	value: PhoneFieldValue;
-	setNumber: (number: string) => void;
-};
-
-const PhoneFieldCountryContext =
-	React.createContext<PhoneFieldCountryContextValue | null>(null);
-const PhoneFieldInputContext =
-	React.createContext<PhoneFieldInputContextValue | null>(null);
-
-function usePhoneFieldCountryContext() {
-	const ctx = React.useContext(PhoneFieldCountryContext);
-	if (!ctx) {
-		throw new Error(
-			"PhoneField.Country must be used inside <PhoneField.Root>.",
-		);
-	}
-	return ctx;
-}
-
-function usePhoneFieldInputContext() {
-	const ctx = React.useContext(PhoneFieldInputContext);
-	if (!ctx) {
-		throw new Error("PhoneField.Input must be used inside <PhoneField.Root>.");
-	}
-	return ctx;
-}
-
-function ChevronUpDownIcon(props: React.ComponentProps<"svg">) {
+function isProductionEnvironment() {
 	return (
-		<svg
-			width="8"
-			height="12"
-			viewBox="0 0 8 12"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			aria-hidden="true"
-			{...props}
-		>
-			<path d="M0.5 4.5L4 1.5L7.5 4.5" />
-			<path d="M0.5 7.5L4 10.5L7.5 7.5" />
-		</svg>
+		typeof process !== "undefined" && process.env.NODE_ENV === "production"
 	);
+}
+
+function useControlledModeWarning(isControlled: boolean) {
+	const initialIsControlled = React.useRef(isControlled);
+	const didWarn = React.useRef(false);
+
+	React.useEffect(() => {
+		if (
+			isProductionEnvironment() ||
+			didWarn.current ||
+			initialIsControlled.current === isControlled
+		) {
+			return;
+		}
+
+		didWarn.current = true;
+		console.error(
+			"PhoneField.Root cannot switch between controlled and uncontrolled usage. " +
+				"Choose value/onValueChange or defaultValue/defaultCountry for the component's lifetime.",
+		);
+	}, [isControlled]);
 }
 
 /**
@@ -102,15 +85,16 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[countriesMap, countries],
 		);
 
-		const [internalValue, setInternalValue] = React.useState<PhoneField.Value>(
-			() =>
-				defaultValue ??
-				buildValue(
-					resolveCountry(availableCountries, defaultCountry),
-					"",
-					formatOnType,
-				),
-		);
+		const [internalValue, setInternalValue] =
+			React.useState<PhoneField.InputValue>(
+				() =>
+					defaultValue ??
+					buildValue(
+						resolveCountry(availableCountries, defaultCountry),
+						"",
+						formatOnType,
+					),
+			);
 
 		const currentValue = value ?? internalValue;
 		const selectedCountry = React.useMemo(
@@ -123,7 +107,10 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[currentValue.nationalNumber, formatOnType, selectedCountry],
 		);
 		const isControlled = value !== undefined;
+		useControlledModeWarning(isControlled);
 		const currentNumberRef = React.useRef(normalizedValue.nationalNumber);
+		// Country's context stays stable while typing, so its callback reads the
+		// latest number through a ref synchronized after every committed render.
 		React.useEffect(() => {
 			currentNumberRef.current = normalizedValue.nationalNumber;
 		}, [normalizedValue.nationalNumber]);
@@ -135,6 +122,7 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 					setInternalValue(nextValue);
 				}
 				onValueChange?.(nextValue);
+				return nextValue;
 			},
 			[formatOnType, isControlled, onValueChange],
 		);
@@ -145,8 +133,15 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[commitValue],
 		);
 		const setNumber = React.useCallback(
-			(number: string) => commitValue(selectedCountry, number),
-			[commitValue, selectedCountry],
+			(number: string) => {
+				const nextValue = commitValue(selectedCountry, number);
+				if (!isControlled) {
+					// Keep back-to-back uncontrolled events synchronous. Controlled
+					// values are synchronized only after the parent accepts the update.
+					currentNumberRef.current = nextValue.nationalNumber;
+				}
+			},
+			[commitValue, isControlled, selectedCountry],
 		);
 
 		const countryContextValue = React.useMemo<PhoneFieldCountryContextValue>(
@@ -165,249 +160,19 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		return (
 			<PhoneFieldCountryContext.Provider value={countryContextValue}>
 				<PhoneFieldInputContext.Provider value={inputContextValue}>
-					<div ref={ref} className={className} {...props}>
+					<div {...props} ref={ref} className={className} data-slot="phone-field">
 						{children}
 						{name ? (
 							<input
 								type="hidden"
 								name={name}
 								value={JSON.stringify(toFormValue(normalizedValue))}
+								data-slot="phone-field-hidden-input"
 							/>
 						) : null}
 					</div>
 				</PhoneFieldInputContext.Provider>
 			</PhoneFieldCountryContext.Provider>
-		);
-	},
-);
-
-/**
- * Country combobox.
- * Intentionally unstyled by default; use `classNames` for visuals and `positioning` for placement.
- */
-function CountryComponent({
-	placeholder = "Select country",
-	noResultsText = "No countries found",
-	inputPlaceholder = "Search country",
-	icon,
-	classNames,
-	positioning,
-	renderCountryItem,
-	renderCountryValue,
-	slotProps,
-}: PhoneField.CountryProps) {
-	const { selectedCountry, availableCountries, setCountry } =
-		usePhoneFieldCountryContext();
-
-	const selectedInList =
-		availableCountries.find(
-			(country) => country.iso2 === selectedCountry.iso2,
-		) ?? availableCountries[0];
-
-	const resolvedPositioning = {
-		side: "bottom" as const,
-		align: "start" as const,
-		sideOffset: 4,
-		...positioning,
-	};
-
-	return (
-		<Combobox.Root
-			{...slotProps?.root}
-			items={availableCountries}
-			value={selectedInList}
-			itemToStringLabel={defaultCountrySearchText}
-			onValueChange={(next) => {
-				if (!next) {
-					return;
-				}
-				setCountry(next);
-			}}
-			isItemEqualToValue={(a, b) => a.iso2 === b.iso2}
-		>
-			<Combobox.Trigger
-				{...slotProps?.trigger}
-				className={classNames?.trigger ?? slotProps?.trigger?.className}
-			>
-				<Combobox.Value placeholder={placeholder} {...slotProps?.value}>
-					{(country: PhoneField.Country | null) => {
-						return country
-							? (renderCountryValue?.(country) ??
-									`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`)
-							: placeholder;
-					}}
-				</Combobox.Value>
-				<Combobox.Icon
-					{...slotProps?.icon}
-					className={classNames?.icon ?? slotProps?.icon?.className}
-				>
-					{icon ?? <ChevronUpDownIcon />}
-				</Combobox.Icon>
-			</Combobox.Trigger>
-
-			<Combobox.Portal {...slotProps?.portal}>
-				<Combobox.Positioner
-					{...slotProps?.positioner}
-					{...resolvedPositioning}
-					className={classNames?.positioner ?? slotProps?.positioner?.className}
-				>
-					<Combobox.Popup
-						{...slotProps?.popup}
-						className={classNames?.popup ?? slotProps?.popup?.className}
-					>
-						<div
-							{...slotProps?.searchInputContainer}
-							className={
-								classNames?.searchInputContainer ??
-								slotProps?.searchInputContainer?.className
-							}
-						>
-							<Combobox.Input
-								{...slotProps?.searchInput}
-								className={
-									classNames?.searchInput ?? slotProps?.searchInput?.className
-								}
-								placeholder={inputPlaceholder}
-								aria-label={
-									slotProps?.searchInput?.["aria-label"] ?? inputPlaceholder
-								}
-							/>
-						</div>
-						<Combobox.Empty
-							{...slotProps?.empty}
-							className={classNames?.empty ?? slotProps?.empty?.className}
-						>
-							{noResultsText}
-						</Combobox.Empty>
-						<Combobox.List
-							{...slotProps?.list}
-							className={classNames?.list ?? slotProps?.list?.className}
-						>
-							{(country: PhoneField.Country) => {
-								const itemProps =
-									typeof slotProps?.item === "function"
-										? slotProps.item(country)
-										: slotProps?.item;
-								return (
-									<Combobox.Item
-										{...itemProps}
-										key={country.iso2}
-										value={country}
-										className={classNames?.item ?? itemProps?.className}
-									>
-										{renderCountryItem?.(country) ??
-											`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`}
-									</Combobox.Item>
-								);
-							}}
-						</Combobox.List>
-					</Combobox.Popup>
-				</Combobox.Positioner>
-			</Combobox.Portal>
-		</Combobox.Root>
-	);
-}
-
-const Country = React.memo(CountryComponent);
-
-function mergeRefs<T>(
-	...refs: Array<React.Ref<T> | undefined>
-): React.RefCallback<T> {
-	return (value) => {
-		for (const ref of refs) {
-			if (!ref) continue;
-
-			if (typeof ref === "function") {
-				ref(value);
-			} else {
-				(ref as React.RefObject<T | null>).current = value;
-			}
-		}
-	};
-}
-
-function removeCharAt(value: string, index: number) {
-	return value.slice(0, index) + value.slice(index + 1);
-}
-
-function findPrevDigitIndex(value: string, from: number) {
-	let i = from;
-	while (i > 0 && /\D/.test(value[i - 1] ?? "")) {
-		i--;
-	}
-	return i - 1;
-}
-
-/**
- * Number input bound to the selected country. Exposes `data-valid` / `data-invalid` from Base UI Input.
- */
-const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
-	function Input(
-		{
-			className,
-			onValueChange,
-			type = "tel",
-			inputMode = "tel",
-			autoComplete = "tel-national",
-			onKeyDown,
-			...props
-		},
-		forwardedRef,
-	) {
-		const { value, setNumber } = usePhoneFieldInputContext();
-		const inputRef = React.useRef<HTMLInputElement>(null);
-		const mergedRef = React.useMemo(
-			() => mergeRefs(forwardedRef, inputRef),
-			[forwardedRef],
-		);
-
-		return (
-			<BaseInput
-				{...props}
-				ref={mergedRef}
-				type={type}
-				inputMode={inputMode}
-				autoComplete={autoComplete}
-				className={className}
-				value={value.nationalNumber}
-				onKeyDown={(e) => {
-					onKeyDown?.(e);
-					if (e.defaultPrevented) {
-						return;
-					}
-
-					if (e.key === "Backspace") {
-						const el = inputRef.current;
-						if (!el) return;
-
-						const pos = el.selectionStart ?? 0;
-						const end = el.selectionEnd ?? 0;
-
-						if (pos === end && pos > 0) {
-							const prevChar = el.value[pos - 1];
-
-							if (prevChar && /\D/.test(prevChar)) {
-								e.preventDefault();
-
-								const digitIndex = findPrevDigitIndex(el.value, pos);
-								if (digitIndex >= 0) {
-									const next = removeCharAt(el.value, digitIndex);
-									setNumber(next);
-
-									requestAnimationFrame(() => {
-										const newPos = digitIndex;
-										el.setSelectionRange(newPos, newPos);
-									});
-								}
-							}
-						}
-					}
-				}}
-				onValueChange={(nextValue, eventDetails) => {
-					setNumber(nextValue);
-					onValueChange?.(nextValue, eventDetails);
-				}}
-			/>
 		);
 	},
 );
@@ -425,14 +190,12 @@ export namespace PhoneField {
 	export type CountryMap = PhoneFieldCountryMap;
 	/** ISO2 country code (e.g. "US", "GB"). */
 	export type CountryCode = PhoneFieldCountryCode;
-	/** @deprecated Use `PhoneField.CountryCode`. */
-	export type CountryCodeValue = PhoneFieldCountryCodeValue;
-	/** @deprecated This is an ISO2 code, not a country name. Use `PhoneField.CountryCode`. */
-	export type CountryName = PhoneFieldCountryName;
 	/** BCP 47 locale for country names and sorting. */
 	export type Lang = PhoneFieldLang;
-	/** Emitted/controlled value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
+	/** Complete emitted value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
 	export type Value = PhoneFieldValue;
+	/** Source fields accepted by `value` and `defaultValue`; derived fields are rebuilt. */
+	export type InputValue = PhoneFieldInputValue;
 	/** Minimal untrusted payload serialized into forms. */
 	export type FormValue = PhoneFieldFormValue;
 	/** Options for strict string parsing and opt-in extraction. */
@@ -445,7 +208,9 @@ export namespace PhoneField {
 
 	/**
 	 * Styling API for `PhoneField.Country` parts.
-	 * `PhoneField.Country` is unstyled by default; use this to style each part.
+	 * `PhoneField.Country` is unstyled by default. This is the recommended seam
+	 * for class utilities and per-instance styles. Stable `data-slot` attributes
+	 * are also available for global CSS.
 	 */
 	export type CountryClassNames = {
 		trigger?: Combobox.Trigger.Props["className"];
@@ -471,19 +236,30 @@ export namespace PhoneField {
 			| "onValueChange"
 			| "value"
 		>;
-		trigger?: Omit<Combobox.Trigger.Props, "children">;
-		value?: Omit<Combobox.Value.Props, "children">;
-		icon?: Omit<Combobox.Icon.Props, "children">;
+		trigger?: Omit<Combobox.Trigger.Props, "children" | "className">;
+		value?: Omit<
+			Combobox.Value.Props,
+			"children" | "className" | "placeholder"
+		>;
+		icon?: Omit<Combobox.Icon.Props, "children" | "className">;
 		portal?: Omit<Combobox.Portal.Props, "children">;
-		positioner?: Omit<Combobox.Positioner.Props, "children">;
-		popup?: Omit<Combobox.Popup.Props, "children">;
-		searchInputContainer?: React.HTMLAttributes<HTMLDivElement>;
-		searchInput?: Combobox.Input.Props;
-		empty?: Omit<Combobox.Empty.Props, "children">;
-		list?: Omit<Combobox.List.Props, "children">;
+		positioner?: Omit<
+			Combobox.Positioner.Props,
+			"children" | "className" | keyof CountryPositioning
+		>;
+		popup?: Omit<Combobox.Popup.Props, "children" | "className">;
+		searchInputContainer?: Omit<
+			React.HTMLAttributes<HTMLDivElement>,
+			"className"
+		>;
+		searchInput?: Omit<Combobox.Input.Props, "className" | "placeholder">;
+		empty?: Omit<Combobox.Empty.Props, "children" | "className">;
+		list?: Omit<Combobox.List.Props, "children" | "className">;
 		item?:
-			| Omit<Combobox.Item.Props, "children" | "value">
-			| ((country: Country) => Omit<Combobox.Item.Props, "children" | "value">);
+			| Omit<Combobox.Item.Props, "children" | "className" | "value">
+			| ((
+					country: Country,
+			  ) => Omit<Combobox.Item.Props, "children" | "className" | "value">);
 	};
 
 	/**
@@ -507,14 +283,15 @@ export namespace PhoneField {
 
 	/**
 	 * Props for `PhoneField.Root`. Extends div. Use `value`/`onValueChange` for controlled mode,
-	 * or `defaultValue`/`defaultCountry` for uncontrolled. Set `name` to serialize value into FormData.
+	 * or `defaultValue`/`defaultCountry` for uncontrolled. Defaults are only read on mount;
+	 * do not switch modes during the component's lifetime. Set `name` to serialize into FormData.
 	 */
 	export type RootProps = Omit<
 		React.ComponentPropsWithoutRef<"div">,
 		"defaultValue"
 	> & {
-		value?: Value;
-		defaultValue?: Value;
+		value?: InputValue | Value;
+		defaultValue?: InputValue | Value;
 		onValueChange?: (value: Value) => void;
 		defaultCountry?: CountryCode;
 		countries?: readonly CountryCode[];
@@ -537,5 +314,8 @@ export namespace PhoneField {
 	};
 
 	/** Props for `PhoneField.Input`. Value and defaultValue are managed by `PhoneField.Root`. */
-	export type InputProps = Omit<BaseInput.Props, "defaultValue" | "value">;
+	export type InputProps = Omit<
+		BaseInput.Props,
+		"defaultValue" | "name" | "onValueChange" | "value"
+	>;
 }

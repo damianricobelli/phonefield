@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import * as PhoneFieldUtils from "../src/public-utils";
 import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryMap,
@@ -15,7 +16,6 @@ import {
 	isValidPhoneField,
 	normalizeLang,
 	onlyDigits,
-	PhoneFieldUtils,
 	parsePhoneField,
 	resolveCountry,
 	toAvailableCountries,
@@ -394,7 +394,7 @@ describe("fromFormData", () => {
 	});
 });
 
-describe("PhoneFieldUtils facade", () => {
+describe("public utility namespace", () => {
 	it("exposes parse and validation helpers", () => {
 		expect(PhoneFieldUtils.parse("+12025550123")?.number).toBe("+12025550123");
 		expect(PhoneFieldUtils.isValid("+12025550123")).toBe(true);
@@ -412,6 +412,8 @@ describe("PhoneFieldUtils facade", () => {
 			nationalNumber: "(202) 555-0123",
 		});
 		expect(PhoneFieldUtils.getCountries("en")).toBe(getCountriesMap("en"));
-		expect(PhoneFieldUtils.countries).toBe(getDefaultCountriesMap());
+		expect(PhoneFieldUtils.countries.get("US")).toEqual(
+			getDefaultCountriesMap().get("US"),
+		);
 	});
 });

@@ -21,7 +21,7 @@ export function CopyButton({
 		[],
 	);
 
-	const handleCopy = React.useCallback(async () => {
+	const handleCopy = async () => {
 		if (!navigator.clipboard) return;
 
 		try {
@@ -34,7 +34,7 @@ export function CopyButton({
 		} catch {
 			setCopied(false);
 		}
-	}, [text]);
+	};
 
 	return (
 		<button

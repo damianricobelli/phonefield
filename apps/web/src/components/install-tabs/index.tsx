@@ -38,18 +38,22 @@ export function InstallTabs({
 	);
 	const resetTimerRef = React.useRef<number | null>(null);
 
-	const resolvedCommands = React.useMemo(
-		() =>
-			MANAGERS.reduce<Record<Manager, string>>(
-				(acc, manager) => {
-					acc[manager.value] =
-						commands?.[manager.value] ??
-						defaultCommand(manager.value, packageName);
-					return acc;
-				},
-				{} as Record<Manager, string>,
-			),
-		[commands, packageName],
+	const resolvedCommands = MANAGERS.reduce<Record<Manager, string>>(
+		(acc, manager) => {
+			acc[manager.value] =
+				commands?.[manager.value] ?? defaultCommand(manager.value, packageName);
+			return acc;
+		},
+		{} as Record<Manager, string>,
+	);
+
+	React.useEffect(
+		() => () => {
+			if (resetTimerRef.current) {
+				window.clearTimeout(resetTimerRef.current);
+			}
+		},
+		[],
 	);
 
 	const copyCommand = async (manager: Manager) => {
@@ -89,7 +93,7 @@ export function InstallTabs({
 						{manager.label}
 					</Tabs.Tab>
 				))}
-				<Tabs.Indicator className="absolute top-1/2 left-0 z-[-1] h-7 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-md bg-white/10 transition-[width,transform] duration-200 [transition-timing-function:var(--ease-in-out-ui)] motion-reduce:transition-none" />
+				<Tabs.Indicator className="absolute top-1/2 left-0 z-[-1] h-7 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-md bg-white/10 transition-[width,transform] duration-200 ease-(--ease-in-out-ui) motion-reduce:transition-none" />
 			</Tabs.List>
 
 			{MANAGERS.map((manager) => {

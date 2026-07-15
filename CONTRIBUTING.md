@@ -14,12 +14,29 @@ We're glad you're interested in contributing to our project! Here are some guide
 
 ## Development Setup
 
-1. Install dependencies: `pnpm i`
-2. Run the development docs server: `pnpm dev --filter docs`
+1. Install dependencies: `pnpm install`
+2. Run the documentation app: `pnpm --filter web dev`
 
-## Code Style
+## React and Code Style
 
-We use Biome for code formatting. Please ensure your code is formatted before submitting a pull request.
+We use Biome for formatting and general linting. ESLint runs the official
+`eslint-plugin-react-hooks` recommended rules, including React Compiler
+diagnostics.
+
+The v1 library supports React 19 and is not precompiled with React
+Compiler. Keep intentional manual memoization in the package unless a profiler
+and regression tests show it can be removed. The documentation app does use
+React Compiler, so prefer plain functions and calculations there; add
+`useMemo` or `useCallback` only when identity is part of a documented
+performance boundary or Hook dependency.
+
+Before submitting a pull request, run:
+
+```bash
+pnpm lint
+pnpm --filter phonefield test
+pnpm build
+```
 
 ## Submitting Pull Requests
 

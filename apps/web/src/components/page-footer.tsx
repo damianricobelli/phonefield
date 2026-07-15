@@ -1,6 +1,10 @@
 import { SiGithub as Github } from "@icons-pack/react-simple-icons";
 
-const links = [
+const links: readonly {
+	label: string;
+	href: string;
+	external?: boolean;
+}[] = [
 	{ label: "Try it", href: "#playground" },
 	{ label: "Docs", href: "#docs" },
 	{
@@ -8,7 +12,7 @@ const links = [
 		href: "https://github.com/damianricobelli/phonefield",
 		external: true,
 	},
-] as const;
+];
 
 export function PageFooter() {
 	return (

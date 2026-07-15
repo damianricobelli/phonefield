@@ -16,12 +16,6 @@ export type PhoneFieldCountryMap = ReadonlyMap<CountryCode, PhoneFieldCountry>;
 /** ISO2 country code (e.g. `"US"`, `"GB"`). */
 export type PhoneFieldCountryCode = CountryCode;
 
-/** @deprecated Use `PhoneFieldCountryCode` or `PhoneField.CountryCode`. */
-export type PhoneFieldCountryCodeValue = PhoneFieldCountryCode;
-
-/** @deprecated This type is an ISO2 code, not a country name. Use `PhoneFieldCountryCode`. */
-export type PhoneFieldCountryName = PhoneFieldCountryCode;
-
 /** BCP 47 locale string or list of locale strings for country display names and sorting. */
 export type PhoneFieldLang = string | readonly string[];
 
@@ -32,7 +26,7 @@ export type PhoneFieldParseOptions = {
 };
 
 /**
- * Emitted and controlled value shape: country, national number, E.164, and validity.
+ * Complete emitted value: country, national number, E.164, and validity.
  * Derived fields are rebuilt when reading the minimal payload from FormData.
  */
 export type PhoneFieldValue = {
@@ -43,8 +37,11 @@ export type PhoneFieldValue = {
 	isValid: boolean;
 };
 
-/** Minimal, untrusted payload serialized into forms. Derived fields are rebuilt when read. */
-export type PhoneFieldFormValue = Pick<
+/** Source fields accepted by controlled and uncontrolled roots. Derived fields are rebuilt. */
+export type PhoneFieldInputValue = Pick<
 	PhoneFieldValue,
 	"countryIso2" | "nationalNumber"
 >;
+
+/** Minimal, untrusted payload serialized into forms. Derived fields are rebuilt when read. */
+export type PhoneFieldFormValue = PhoneFieldInputValue;

@@ -24,10 +24,11 @@
   "sideEffects": false,
   "files": [
     "dist",
-    "LICENSE"
+    "LICENSE",
+    "MIGRATION.md"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -38,7 +39,7 @@
       "default": "./dist/index.js"
     },
     "./utils": {
-      "types": "./dist/utils.d.ts",
+      "types": "./dist/public-utils.d.ts",
       "import": "./dist/utils.js",
       "default": "./dist/utils.js"
     },
@@ -54,9 +55,9 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@base-ui/react": ">=1.2.0 <2",
-    "react": ">=18 <20",
-    "react-dom": ">=18 <20"
+    "@base-ui/react": ">=1.6.0 <2",
+    "react": ">=19 <20",
+    "react-dom": ">=19 <20"
   },
   "dependencies": {
     "libphonenumber-js": "^1.13.8"

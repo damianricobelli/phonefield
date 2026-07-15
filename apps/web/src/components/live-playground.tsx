@@ -1,17 +1,16 @@
-import { Field } from "@base-ui/react/field";
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
-import { PhoneFieldUtils } from "phonefield/utils";
+import { isValid, parse } from "phonefield/utils";
 import * as React from "react";
 import { FormatRow } from "@/components/format-row";
 
 const liveCountryClassNames: PhoneField.CountryClassNames = {
 	trigger:
-		"group/phone-country-trigger ui-pressable flex h-11 w-fit shrink-0 cursor-default items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-left text-base text-slate-900 shadow-sm transition-colors duration-150 select-none hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-sky-600 data-[popup-open]:border-slate-300 data-[popup-open]:bg-slate-50",
+		"group/phone-country-trigger flex h-full w-fit shrink-0 cursor-default items-center gap-2 border-slate-200 border-r bg-white px-3 text-left text-base text-slate-900 outline-none transition-colors duration-150 select-none hover:bg-slate-50 focus-visible:bg-slate-50 data-[popup-open]:bg-slate-50",
 	icon: "flex shrink-0 text-slate-500 transition-transform duration-150 [transition-timing-function:var(--ease-out-ui)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
-		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl bg-white text-slate-900 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 transition-[transform,opacity] duration-150 [transition-timing-function:var(--ease-out-ui)] data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.97] data-[starting-style]:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
+		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl bg-white text-slate-900 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 transition-[transform,opacity] duration-150 [transition-timing-function:var(--ease-out-ui)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
 	searchInputContainer: "shrink-0 border-slate-100 border-b p-1.5",
 	searchInput:
 		"h-9 w-full rounded-lg border border-transparent bg-slate-100 px-3 text-sm font-normal text-slate-900 outline-none placeholder:text-slate-500 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/15",
@@ -55,6 +54,8 @@ const SAMPLES = [
 ] satisfies ReadonlyArray<{ label: string; value: PhoneField.Value }>;
 
 export function LivePlayground() {
+	const phoneInputId = React.useId();
+	const phoneErrorId = `${phoneInputId}-error`;
 	const [value, setValue] = React.useState<PhoneField.Value>({
 		countryIso2: "US",
 		countryDialCode: "+1",
@@ -64,7 +65,7 @@ export function LivePlayground() {
 	});
 	const [phoneTouched, setPhoneTouched] = React.useState(false);
 
-	const parsed = PhoneFieldUtils.parse(value);
+	const parsed = parse(value);
 	const hasNumber = value.nationalNumber.trim().length > 0;
 	const requiredError = phoneTouched && !hasNumber;
 	const invalidError = phoneTouched && hasNumber && !value.isValid;
@@ -102,24 +103,27 @@ export function LivePlayground() {
 
 			<div className="grid lg:grid-cols-[minmax(0,1.05fr)_minmax(22rem,0.95fr)]">
 				<div className="bg-slate-50/70 p-6 md:p-8 lg:border-r lg:border-slate-200">
-					<Field.Root
-						touched={phoneTouched}
-						dirty={phoneTouched && hasNumber}
-						invalid={showPhoneError}
-						className="space-y-2"
-					>
-						<Field.Label className="text-sm font-medium text-slate-700">
+					<div className="space-y-2">
+						<label
+							htmlFor={phoneInputId}
+							className="text-sm font-medium text-slate-700"
+						>
 							Phone number
-						</Field.Label>
+						</label>
 
 						<PhoneField.Root
 							value={value}
 							onValueChange={setValue}
-							className="flex min-w-0 flex-col gap-2 sm:flex-row"
+							className="flex h-11 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/15 has-data-popup-open:border-sky-500 has-data-popup-open:ring-2 has-data-popup-open:ring-sky-500/15 has-aria-invalid:border-red-500 has-aria-invalid:ring-2 has-aria-invalid:ring-red-500/10 has-aria-invalid:focus-within:border-red-500 has-aria-invalid:focus-within:ring-red-500/10 has-data-valid:border-emerald-500"
 						>
 							<PhoneField.Country
 								inputPlaceholder="Search country"
 								noResultsText="No countries found"
+								slotProps={{
+									trigger: {
+										"aria-label": "Country",
+									},
+								}}
 								classNames={liveCountryClassNames}
 								icon={<ChevronDownIcon aria-hidden className="size-4" />}
 								positioning={{
@@ -149,24 +153,33 @@ export function LivePlayground() {
 								)}
 							/>
 							<PhoneField.Input
-								className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-base text-slate-900 shadow-sm outline-none transition-colors duration-150 placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 data-invalid:border-red-500 data-invalid:ring-2 data-invalid:ring-red-500/10 data-valid:border-emerald-500 sm:flex-1"
+								aria-describedby={showPhoneError ? phoneErrorId : undefined}
+								aria-invalid={showPhoneError || undefined}
+								data-valid={
+									phoneTouched && hasNumber && !showPhoneError ? "" : undefined
+								}
+								id={phoneInputId}
+								className="h-full w-auto min-w-0 flex-1 border-0 bg-white px-3 text-base text-slate-900 outline-none placeholder:text-slate-400"
 								onBlur={() => setPhoneTouched(true)}
-								onValueChange={() => setPhoneTouched(true)}
+								onChange={() => setPhoneTouched(true)}
 								placeholder="Enter phone number"
 							/>
 						</PhoneField.Root>
 
-						<Field.Error
-							match={showPhoneError}
-							className="text-sm text-red-600"
-						>
-							{phoneErrorText}
-						</Field.Error>
+						{showPhoneError ? (
+							<p
+								id={phoneErrorId}
+								role="alert"
+								className="text-sm text-red-600"
+							>
+								{phoneErrorText}
+							</p>
+						) : null}
 						<p className="text-xs text-slate-500">
-							Input states are exposed via <code>data-valid</code> and{" "}
-							<code>data-invalid</code>.
+							Input states are exposed via <code>aria-invalid</code> and{" "}
+							<code>data-valid</code>.
 						</p>
-					</Field.Root>
+					</div>
 
 					<div className="mt-8 border-t border-slate-200 pt-5">
 						<p className="text-xs font-semibold tracking-wide text-slate-500 uppercase">
@@ -197,7 +210,7 @@ export function LivePlayground() {
 								Canonical output
 							</h3>
 							<p className="mt-1 text-xs leading-5 text-slate-400">
-								Live values from <code>PhoneFieldUtils.parse</code>.
+								Live values from <code>parse</code>.
 							</p>
 						</div>
 						<span
@@ -221,7 +234,7 @@ export function LivePlayground() {
 						))}
 						<FormatRow
 							label="Validity"
-							value={PhoneFieldUtils.isValid(value) ? "true" : "false"}
+							value={isValid(value) ? "true" : "false"}
 						/>
 					</dl>
 				</div>
