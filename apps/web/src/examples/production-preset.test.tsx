@@ -73,6 +73,14 @@ describe("ProductionPhoneField", () => {
 });
 
 describe("LivePlayground", () => {
+	it("does not move the country trigger while it is pressed", () => {
+		render(<LivePlayground />);
+
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).className,
+		).not.toContain("ui-pressable");
+	});
+
 	it("uses the same interruptible popup motion as the production preset", async () => {
 		render(<LivePlayground />);
 

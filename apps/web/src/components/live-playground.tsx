@@ -6,7 +6,7 @@ import { FormatRow } from "@/components/format-row";
 
 const liveCountryClassNames: PhoneField.CountryClassNames = {
 	trigger:
-		"group/phone-country-trigger ui-pressable flex h-full w-fit shrink-0 cursor-default items-center gap-2 border-slate-200 border-r bg-white px-3 text-left text-base text-slate-900 outline-none transition-colors duration-150 select-none hover:bg-slate-50 focus-visible:bg-slate-50 data-[popup-open]:bg-slate-50",
+		"group/phone-country-trigger flex h-full w-fit shrink-0 cursor-default items-center gap-2 border-slate-200 border-r bg-white px-3 text-left text-base text-slate-900 outline-none transition-colors duration-150 select-none hover:bg-slate-50 focus-visible:bg-slate-50 data-[popup-open]:bg-slate-50",
 	icon: "flex shrink-0 text-slate-500 transition-transform duration-150 [transition-timing-function:var(--ease-out-ui)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
