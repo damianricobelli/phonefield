@@ -208,8 +208,9 @@ export namespace PhoneField {
 
 	/**
 	 * Styling API for `PhoneField.Country` parts.
-	 * `PhoneField.Country` is unstyled by default; use this to style each part.
-	 * Stable `data-slot` attributes are also available for global CSS.
+	 * `PhoneField.Country` is unstyled by default. This is the recommended seam
+	 * for class utilities and per-instance styles. Stable `data-slot` attributes
+	 * are also available for global CSS.
 	 */
 	export type CountryClassNames = {
 		trigger?: Combobox.Trigger.Props["className"];

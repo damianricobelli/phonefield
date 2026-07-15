@@ -191,20 +191,26 @@ export function DocSection() {
 						<DocSubsection
 							id="styling"
 							title="Styling"
-							description="Choose one styling path for your design system: a typed class preset or stable data-slot selectors."
+							description="Use the typed class preset for Tailwind and per-instance styles. Use stable data-slot selectors when your design system is CSS-first."
 						>
 							<div className="grid gap-4 md:grid-cols-2">
-								<div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+								<div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-5">
+									<p className="mb-3 text-[11px] font-semibold tracking-[0.12em] text-sky-700 uppercase">
+										Recommended
+									</p>
 									<p className="text-sm font-semibold text-slate-950">
 										Using Tailwind or class utilities?
 									</p>
 									<p className="mt-2 text-sm leading-6 text-slate-600">
-										Create one hoisted <code>CountryClassNames</code> preset and
-										reuse it from your app-level wrapper. This keeps render paths
-										quiet and typechecked.
+										Compose your input tokens with <code>cn</code> inside one
+										hoisted <code>CountryClassNames</code> preset, then reuse the
+										wrapper everywhere.
 									</p>
 								</div>
 								<div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+									<p className="mb-3 text-[11px] font-semibold tracking-[0.12em] text-slate-500 uppercase">
+										Alternative
+									</p>
 									<p className="text-sm font-semibold text-slate-950">
 										Using CSS or CSS Modules?
 									</p>
@@ -216,9 +222,16 @@ export function DocSection() {
 								</div>
 							</div>
 
+							<div className="rounded-r-xl border-sky-400 border-l-2 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
+								Use named Tailwind <code>group</code> variants for local state,
+								such as rotating the trigger icon. Do not move the complete preset
+								to <code>Root.className</code>: the popup is rendered in a portal
+								and is not a Root descendant.
+							</div>
+
 							<DocBlock
 								title="Production preset"
-								description="Define this once beside your design-system input styles, then reuse the wrapper everywhere. The popup uses its trigger-aware transform origin and respects reduced motion."
+								description="A reusable wrapper that composes shared input tokens with cn, uses a named group only for the trigger icon, and styles portaled parts directly through CountryClassNames."
 								code={stylingCountrySelectSnippet}
 							/>
 

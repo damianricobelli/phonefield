@@ -84,14 +84,21 @@ All utility exports work on client and server. Namespace-style usage remains ava
 Define `classNames` once in your design-system wrapper instead of repeating it at every call site:
 
 ```tsx
+import { inputClassName } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { PhoneField } from "phonefield";
+
 const countryClassNames = {
-  trigger: "countryTrigger",
-  popup: "countryPopup",
-  item: "countryItem",
+  trigger: cn(inputClassName, "group/phone-country-trigger w-fit"),
+  icon: "group-data-popup-open/phone-country-trigger:rotate-180",
+  popup: "w-72 origin-(--transform-origin) rounded-lg bg-popover shadow-2xl",
+  item: "rounded-lg px-3 py-2 data-highlighted:bg-accent",
 } satisfies PhoneField.CountryClassNames;
 
 <PhoneField.Country classNames={countryClassNames} />;
 ```
+
+For Tailwind, `classNames` is the recommended styling seam. Use `cn` to combine shared design-system tokens with slot-specific classes, and use named `group` variants only for state relationships inside a slot. A group on `PhoneField.Root` cannot reach the country popup because Base UI renders it in a portal.
 
 For vanilla CSS and CSS Modules, every rendered part also exposes a stable, namespaced `data-slot`, including `phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, and `phone-field-country-item`. Country popup selectors must be global because the popup is portaled.
 

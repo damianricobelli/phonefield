@@ -105,7 +105,7 @@ export const countryProperties = [
 		type: "PhoneField.CountryClassNames",
 		defaultValue: "-",
 		description:
-			"Typed per-instance classes. Stable data-slot attributes also support global CSS.",
+			"Recommended for Tailwind and per-instance classes. Use data-slot for global CSS.",
 	},
 	{
 		name: "positioning",
