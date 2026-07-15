@@ -10,6 +10,7 @@ import type {
 	PhoneFieldCountryMap,
 	PhoneFieldCountryName,
 	PhoneFieldFormValue,
+	PhoneFieldInputValue,
 	PhoneFieldLang,
 	PhoneFieldParseOptions,
 	PhoneFieldValue,
@@ -22,6 +23,8 @@ import {
 	toAvailableCountries,
 	toFormValue,
 } from "./utils.js";
+
+declare const process: { env: { NODE_ENV?: string } } | undefined;
 
 type PhoneFieldCountryContextValue = {
 	selectedCountry: PhoneFieldCountry;
@@ -38,6 +41,34 @@ const PhoneFieldCountryContext =
 	React.createContext<PhoneFieldCountryContextValue | null>(null);
 const PhoneFieldInputContext =
 	React.createContext<PhoneFieldInputContextValue | null>(null);
+const supportsRefCleanup = Number.parseInt(React.version, 10) >= 19;
+
+function isProductionEnvironment() {
+	return (
+		typeof process === "undefined" || process.env.NODE_ENV === "production"
+	);
+}
+
+function useControlledModeWarning(isControlled: boolean) {
+	const initialIsControlled = React.useRef(isControlled);
+	const didWarn = React.useRef(false);
+
+	React.useEffect(() => {
+		if (
+			isProductionEnvironment() ||
+			didWarn.current ||
+			initialIsControlled.current === isControlled
+		) {
+			return;
+		}
+
+		didWarn.current = true;
+		console.error(
+			"PhoneField.Root cannot switch between controlled and uncontrolled usage. " +
+				"Choose value/onValueChange or defaultValue/defaultCountry for the component's lifetime.",
+		);
+	}, [isControlled]);
+}
 
 function usePhoneFieldCountryContext() {
 	const ctx = React.useContext(PhoneFieldCountryContext);
@@ -102,15 +133,16 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[countriesMap, countries],
 		);
 
-		const [internalValue, setInternalValue] = React.useState<PhoneField.Value>(
-			() =>
-				defaultValue ??
-				buildValue(
-					resolveCountry(availableCountries, defaultCountry),
-					"",
-					formatOnType,
-				),
-		);
+		const [internalValue, setInternalValue] =
+			React.useState<PhoneField.InputValue>(
+				() =>
+					defaultValue ??
+					buildValue(
+						resolveCountry(availableCountries, defaultCountry),
+						"",
+						formatOnType,
+					),
+			);
 
 		const currentValue = value ?? internalValue;
 		const selectedCountry = React.useMemo(
@@ -123,7 +155,10 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[currentValue.nationalNumber, formatOnType, selectedCountry],
 		);
 		const isControlled = value !== undefined;
+		useControlledModeWarning(isControlled);
 		const currentNumberRef = React.useRef(normalizedValue.nationalNumber);
+		// Country's context stays stable while typing, so its callback reads the
+		// latest number through a ref synchronized after every committed render.
 		React.useEffect(() => {
 			currentNumberRef.current = normalizedValue.nationalNumber;
 		}, [normalizedValue.nationalNumber]);
@@ -135,6 +170,7 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 					setInternalValue(nextValue);
 				}
 				onValueChange?.(nextValue);
+				return nextValue;
 			},
 			[formatOnType, isControlled, onValueChange],
 		);
@@ -145,7 +181,12 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 			[commitValue],
 		);
 		const setNumber = React.useCallback(
-			(number: string) => commitValue(selectedCountry, number),
+			(number: string) => {
+				const nextValue = commitValue(selectedCountry, number);
+				// Keep back-to-back input and country events synchronous. The effect
+				// above still covers controlled values changed outside this field.
+				currentNumberRef.current = nextValue.nationalNumber;
+			},
 			[commitValue, selectedCountry],
 		);
 
@@ -313,15 +354,41 @@ const Country = React.memo(CountryComponent);
 function mergeRefs<T>(
 	...refs: Array<React.Ref<T> | undefined>
 ): React.RefCallback<T> {
+	let cleanups: Array<() => void> = [];
+
+	function cleanup() {
+		const pendingCleanups = cleanups;
+		cleanups = [];
+		for (const cleanupRef of pendingCleanups) {
+			cleanupRef();
+		}
+	}
+
 	return (value) => {
+		if (value === null) {
+			cleanup();
+			return;
+		}
+
+		cleanup();
 		for (const ref of refs) {
 			if (!ref) continue;
 
 			if (typeof ref === "function") {
-				ref(value);
+				const cleanupRef = ref(value);
+				cleanups.push(
+					typeof cleanupRef === "function" ? cleanupRef : () => ref(null),
+				);
 			} else {
 				(ref as React.RefObject<T | null>).current = value;
+				cleanups.push(() => {
+					(ref as React.RefObject<T | null>).current = null;
+				});
 			}
+		}
+
+		if (supportsRefCleanup) {
+			return cleanup;
 		}
 	};
 }
@@ -431,8 +498,10 @@ export namespace PhoneField {
 	export type CountryName = PhoneFieldCountryName;
 	/** BCP 47 locale for country names and sorting. */
 	export type Lang = PhoneFieldLang;
-	/** Emitted/controlled value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
+	/** Complete emitted value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
 	export type Value = PhoneFieldValue;
+	/** Source fields accepted by `value` and `defaultValue`; derived fields are rebuilt. */
+	export type InputValue = PhoneFieldInputValue;
 	/** Minimal untrusted payload serialized into forms. */
 	export type FormValue = PhoneFieldFormValue;
 	/** Options for strict string parsing and opt-in extraction. */
@@ -507,14 +576,15 @@ export namespace PhoneField {
 
 	/**
 	 * Props for `PhoneField.Root`. Extends div. Use `value`/`onValueChange` for controlled mode,
-	 * or `defaultValue`/`defaultCountry` for uncontrolled. Set `name` to serialize value into FormData.
+	 * or `defaultValue`/`defaultCountry` for uncontrolled. Defaults are only read on mount;
+	 * do not switch modes during the component's lifetime. Set `name` to serialize into FormData.
 	 */
 	export type RootProps = Omit<
 		React.ComponentPropsWithoutRef<"div">,
 		"defaultValue"
 	> & {
-		value?: Value;
-		defaultValue?: Value;
+		value?: InputValue | Value;
+		defaultValue?: InputValue | Value;
 		onValueChange?: (value: Value) => void;
 		defaultCountry?: CountryCode;
 		countries?: readonly CountryCode[];

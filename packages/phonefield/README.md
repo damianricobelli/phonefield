@@ -38,6 +38,9 @@ export function SignupPhone() {
 
 `PhoneField.Root` is uncontrolled by default. If `defaultCountry` is not set,
 it falls back to `"US"` when available, otherwise the first available country.
+`defaultValue` and `defaultCountry` are only read for initialization. Do not
+switch between controlled and uncontrolled usage during the component's
+lifetime.
 
 ```tsx
 import * as React from "react";
@@ -60,6 +63,10 @@ export function ControlledExample() {
   );
 }
 ```
+
+`value` and `defaultValue` accept the minimal `PhoneField.InputValue`
+(`countryIso2` and `nationalNumber`) or a complete `PhoneField.Value`. Derived
+fields are always rebuilt, and `onValueChange` always emits the complete value.
 
 ### FormData
 
@@ -104,7 +111,8 @@ is strict by default. Pass `options.defaultCountry` for national strings, or
 `{ extract: true }` to intentionally extract a number from surrounding text.
 
 `PhoneField.Input` defaults to telephone-friendly native attributes and both
-`PhoneField.Root` and `PhoneField.Input` forward refs. See the full documentation
-for `slotProps`, immutable country metadata, and the complete API.
+`PhoneField.Root` and `PhoneField.Input` forward refs. React 19 callback-ref
+cleanup functions are preserved. See the full documentation for `slotProps`,
+immutable country metadata, and the complete API.
 
 More documentation and API reference: https://phonefield.vercel.app

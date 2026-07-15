@@ -12,8 +12,7 @@ export function SignupPhone() {
 export const stylingCountrySelectSnippet = `// This classNames preset is based entirely on Base UI's example:
 // https://base-ui.com/react/components/combobox#input-inside-popup
 // Replace every class with your own design-system tokens.
-<PhoneField.Country
-  classNames={{
+const countryClassNames: PhoneField.CountryClassNames = {
     // Trigger button that opens the country Combobox.
     trigger:
       "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors duration-150 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
@@ -36,7 +35,10 @@ export const stylingCountrySelectSnippet = `// This classNames preset is based e
     // Country row and highlighted state.
     item:
       "grid min-w-[max(16rem,var(--anchor-width))] cursor-default grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg py-2.5 pr-4 pl-4 text-base leading-5 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-gray-50 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-gray-900",
-  }}
+};
+
+<PhoneField.Country
+  classNames={countryClassNames}
   ...
 />`;
 

@@ -58,6 +58,9 @@ export function SignupPhone() {
 ```
 
 `PhoneField.Root` is uncontrolled by default and exposes context to `PhoneField.Country` and `PhoneField.Input`.
+`defaultValue` and `defaultCountry` are initial values: changing them after mount
+does not reset the field. Keep a root controlled or uncontrolled for its entire
+lifetime; switching modes logs a development warning.
 
 ## Styling Country Select
 
@@ -66,8 +69,7 @@ This `classNames` preset is based entirely on Base UI's
 You can style the Combobox however you want.
 
 ```tsx
-<PhoneField.Country
-  classNames={{
+const countryClassNames: PhoneField.CountryClassNames = {
     // Trigger button that opens the country Combobox.
     trigger:
       "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
@@ -90,11 +92,18 @@ You can style the Combobox however you want.
     // Country row and highlighted state.
     item:
       "grid min-w-[max(16rem,var(--anchor-width))] cursor-default grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg py-2.5 pr-4 pl-4 text-base leading-5 outline-none select-none data-[highlighted]:relative data-[highlighted]:z-0 data-[highlighted]:text-gray-50 data-[highlighted]:before:absolute data-[highlighted]:before:inset-x-2 data-[highlighted]:before:inset-y-0 data-[highlighted]:before:z-[-1] data-[highlighted]:before:rounded-lg data-[highlighted]:before:bg-gray-900",
-  }}
+};
+
+<PhoneField.Country
+  classNames={countryClassNames}
   positioning={{ side: "bottom", align: "start", sideOffset: 8 }}
   renderCountryValue={(country) => `${country.flag ?? ""} ${country.dialCode}`}
 />
 ```
+
+Hoist reusable `classNames`, `slotProps`, and renderers when the parent updates
+frequently. This preserves `PhoneField.Country`'s render isolation; applications
+using React Compiler can usually rely on the compiler for equivalent stability.
 
 ## Controlled Mode
 
@@ -123,6 +132,11 @@ export function CheckoutPhone() {
 Value shape:
 
 ```ts
+type PhoneFieldInputValue = {
+  countryIso2: CountryCode;
+  nationalNumber: string;
+};
+
 type PhoneFieldValue = {
   countryIso2: CountryCode;
   countryDialCode: string; // includes the leading "+"
@@ -131,6 +145,11 @@ type PhoneFieldValue = {
   isValid: boolean;
 };
 ```
+
+`value` and `defaultValue` accept either `PhoneField.InputValue` or the complete
+`PhoneField.Value`. The root treats `countryIso2` and `nationalNumber` as the
+source of truth and always rebuilds `countryDialCode`, `e164`, and `isValid`.
+`onValueChange` always emits the complete `PhoneField.Value`.
 
 ## Country Subset
 
@@ -251,8 +270,8 @@ bounded cache.
 
 ```ts
 type RootProps = Omit<React.ComponentPropsWithoutRef<"div">, "defaultValue"> & {
-  value?: PhoneField.Value;
-  defaultValue?: PhoneField.Value;
+  value?: PhoneField.InputValue | PhoneField.Value;
+  defaultValue?: PhoneField.InputValue | PhoneField.Value;
   onValueChange?: (value: PhoneField.Value) => void;
   defaultCountry?: PhoneField.CountryCode; // default: "US" if available, otherwise first available
   countries?: readonly PhoneField.CountryCode[];
@@ -281,6 +300,8 @@ type InputProps = Omit<BaseInput.Props, "value" | "defaultValue">;
 ```
 
 `Root` and `Input` forward refs to their underlying `div` and `input`.
+Input callback refs preserve cleanup functions returned under React 19 while
+remaining compatible with React 18's `ref(null)` lifecycle.
 `Input` defaults to `type="tel"`, `inputMode="tel"`, and
 `autoComplete="tel-national"`; all three can be overridden. It deliberately
 does not force a `pattern`, so validation rules remain application-owned.

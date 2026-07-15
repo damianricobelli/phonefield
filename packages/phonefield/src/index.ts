@@ -6,6 +6,7 @@ export type {
 	PhoneFieldCountryMap,
 	PhoneFieldCountryName,
 	PhoneFieldFormValue,
+	PhoneFieldInputValue,
 	PhoneFieldLang,
 	PhoneFieldParseOptions,
 	PhoneFieldValue,

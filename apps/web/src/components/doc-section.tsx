@@ -141,10 +141,19 @@ export function DocSection() {
 								description="Use when your form or global state owns the value and you need full control over updates."
 								code={controlledSnippet}
 							/>
+							<div className="rounded-r-xl border-sky-400 border-l-2 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
+								Keep the root controlled or uncontrolled for its complete
+								lifetime. <code>defaultValue</code> and{" "}
+								<code>defaultCountry</code> are initial values and do not reset
+								the field after mount. Controlled inputs may provide only{" "}
+								<code>PhoneField.InputValue</code>; derived fields are rebuilt
+								and <code>onValueChange</code> always emits the complete{" "}
+								<code>PhoneField.Value</code>.
+							</div>
 
 							<DocBlock
 								title="Styling country select"
-								description="PhoneField.Country is unstyled by default. Map each part to your design-system tokens through classNames."
+								description="PhoneField.Country is unstyled by default. Map each part to your design-system tokens through classNames; hoist reusable presets so controlled parent updates preserve render isolation."
 								code={stylingCountrySelectSnippet}
 							/>
 
@@ -223,11 +232,11 @@ export function DocSection() {
 													value
 												</td>
 												<td className="px-4 py-2.5 font-mono text-xs">
-													PhoneField.Value
+													PhoneField.InputValue | PhoneField.Value
 												</td>
 												<td className="px-4 py-2.5">-</td>
 												<td className="px-4 py-2.5">
-													Controlled value for the full phone object.
+													Controlled source fields. Derived fields are rebuilt.
 												</td>
 											</tr>
 											<tr className="border-b border-slate-100">
@@ -235,11 +244,12 @@ export function DocSection() {
 													defaultValue
 												</td>
 												<td className="px-4 py-2.5 font-mono text-xs">
-													PhoneField.Value
+													PhoneField.InputValue | PhoneField.Value
 												</td>
 												<td className="px-4 py-2.5">-</td>
 												<td className="px-4 py-2.5">
-													Initial value for uncontrolled usage.
+													Initial uncontrolled source fields; later changes are
+													ignored.
 												</td>
 											</tr>
 											<tr className="border-b border-slate-100">
@@ -265,7 +275,8 @@ export function DocSection() {
 													"US" if available, otherwise first available
 												</td>
 												<td className="px-4 py-2.5">
-													Initial country when no value is provided.
+													Initial country when no value is provided; later
+													changes are ignored.
 												</td>
 											</tr>
 											<tr className="border-b border-slate-100">
@@ -494,6 +505,10 @@ export function DocSection() {
 										@base-ui/react/input
 									</code>
 									.
+								</p>
+								<p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+									The forwarded ref supports React 19 cleanup callbacks and
+									remains compatible with React 18 ref teardown.
 								</p>
 								<div className="code-scrollbar mt-4 overflow-x-auto rounded-xl border border-slate-200">
 									<table className="w-full min-w-lg border-collapse text-sm">
