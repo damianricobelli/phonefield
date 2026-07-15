@@ -1,5 +1,11 @@
 # phonefield
 
+## 1.0.0
+
+### Major Changes
+
+- [#10](https://github.com/damianricobelli/phonefield/pull/10) [`fec94e0`](https://github.com/damianricobelli/phonefield/commit/fec94e02887b53cfe85da5dc4a307c593da1db8e) Thanks [@damianricobelli](https://github.com/damianricobelli)! - Release the stable v1 interface: make Root the sole owner of value changes and form serialization, separate Country styling/positioning/behavior seams, publish only documented named utilities, standardize public types under `PhoneField.*`, and expose namespaced `data-slot` attributes for CSS styling.
+
 ## 0.2.0
 
 ### Minor Changes
