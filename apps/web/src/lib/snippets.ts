@@ -4,26 +4,26 @@ export function SignupPhone() {
   return (
     <PhoneField.Root defaultCountry="US" lang="en">
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }`;
 
 export const stylingCountrySelectSnippet = `// This classNames preset is based entirely on Base UI's example:
 // https://base-ui.com/react/components/combobox#input-inside-popup
-// You can style the Combobox however you want.
+// Replace every class with your own design-system tokens.
 <PhoneField.Country
   classNames={{
     // Trigger button that opens the country Combobox.
     trigger:
-      "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
+      "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors duration-150 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
     // Trigger icon.
     icon: "flex text-gray-600",
     // Positioning layer for z-index and popup alignment.
     positioner: "z-50",
     // Popup panel with dimensions and enter/exit transitions.
     popup:
-      "origin-[var(--transform-origin)] flex max-w-[var(--available-width)] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-[canvas] text-gray-900 shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
+      "origin-[var(--transform-origin)] flex max-w-[var(--available-width)] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-[canvas] text-gray-900 shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,opacity] duration-[180ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.97] data-[starting-style]:opacity-0 motion-reduce:transform-none motion-reduce:transition-none dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
     // Wrapper around the search input.
     searchInputContainer: "shrink-0 p-2",
     // Search input inside the popup.
@@ -46,7 +46,7 @@ import { PhoneField } from "phonefield";
 export function CheckoutPhone() {
   const [phone, setPhone] = React.useState<PhoneField.Value>({
     countryIso2: "US",
-    countryDialCode: "1",
+    countryDialCode: "+1",
     nationalNumber: "",
     e164: null,
     isValid: false,
@@ -55,7 +55,7 @@ export function CheckoutPhone() {
   return (
     <PhoneField.Root value={phone} onValueChange={setPhone}>
       <PhoneField.Country />
-      <PhoneField.Input />
+      <PhoneField.Input aria-label="Phone number" />
     </PhoneField.Root>
   );
 }`;
@@ -74,7 +74,7 @@ import { PhoneFieldUtils } from "phonefield/utils";
 >
   <PhoneField.Root name="phone" defaultCountry="US">
     <PhoneField.Country />
-    <PhoneField.Input />
+    <PhoneField.Input aria-label="Phone number" />
   </PhoneField.Root>
 </form>
 
@@ -84,7 +84,7 @@ const phone = PhoneFieldUtils.fromFormData(formData, "phone");`;
 
 export const subsetSnippet = `<PhoneField.Root countries={["US", "CA", "MX"]}>
   <PhoneField.Country />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Phone number" />
 </PhoneField.Root>
 `;
 
@@ -93,7 +93,7 @@ export const i18nSnippet = `<PhoneField.Root lang="es-AR" defaultCountry="AR">
     inputPlaceholder="Buscar país"
     noResultsText="No se encontraron países"
   />
-  <PhoneField.Input />
+  <PhoneField.Input aria-label="Número de teléfono" />
 </PhoneField.Root>
 `;
 
@@ -118,6 +118,11 @@ export const formatAndUtilsSnippet = `import { PhoneFieldUtils } from "phonefiel
 // parse() returns libphonenumber PhoneNumber: formatNational(), formatInternational(), getURI()
 const parsed = PhoneFieldUtils.parse(value);
 
+// Strict by default: opt into extraction only for arbitrary text.
+const extracted = PhoneFieldUtils.parse("Call +1 415 555 2671", {
+  extract: true,
+});
+
 const output = {
   isValid: PhoneFieldUtils.isValid(value),
   e164: value.e164,
@@ -128,5 +133,6 @@ const output = {
 // Frontend or backend:
 PhoneFieldUtils.isValid("+14155552671");
 PhoneFieldUtils.fromFormData(formData, "phone");
+PhoneFieldUtils.toFormValue(value); // { countryIso2, nationalNumber }
 PhoneFieldUtils.getCountries("es-AR"); // Map<iso2, country> (locale for names)
 PhoneFieldUtils.countries; // default map (en)`;

@@ -8,31 +8,29 @@ import { PageHeader } from "@/components/page-header";
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
-  return (
-    <div className="min-h-screen bg-[canvas] overflow-x-hidden bg-[radial-gradient(1400px_600px_at_8%_-18%,#dbeafe_0%,transparent_48%),radial-gradient(1000px_500px_at_92%_-12%,#fef3c7_0%,transparent_45%),linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] text-slate-900">
-      <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -left-40 top-24 size-80 rounded-full bg-blue-300/20 blur-3xl" />
-        <div className="absolute -right-28 top-36 size-72 rounded-full bg-amber-300/25 blur-3xl" />
-      </div>
+	return (
+		<div className="min-h-screen overflow-x-clip bg-slate-50 text-slate-950">
+			<div className="docs-grid pointer-events-none absolute inset-x-0 top-0 h-[48rem]" />
+			<div className="pointer-events-none absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(ellipse_at_top,rgba(186,230,253,0.42),transparent_58%)]" />
 
-      <PageHeader />
+			<PageHeader />
 
-      <main className="relative">
-        <HeroSection />
+			<main className="relative">
+				<HeroSection />
 
-        <section
-          id="playground"
-          className="relative mx-auto max-w-6xl scroll-mt-20 px-6 pb-20"
-        >
-          <LivePlayground />
-        </section>
+				<section
+					id="playground"
+					className="relative mx-auto max-w-6xl scroll-mt-24 px-5 pb-20 sm:px-6 lg:pb-28"
+				>
+					<LivePlayground />
+				</section>
 
-        <section id="docs" className="relative scroll-mt-20">
-          <DocSection />
-        </section>
+				<section id="docs" className="relative scroll-mt-20">
+					<DocSection />
+				</section>
 
-        <PageFooter />
-      </main>
-    </div>
-  );
+				<PageFooter />
+			</main>
+		</div>
+	);
 }

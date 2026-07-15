@@ -1,92 +1,139 @@
 import {
-  AsYouType,
-  type CountryCode,
-  getCountries,
-  getCountryCallingCode,
-  parsePhoneNumberFromString,
+	AsYouType,
+	type CountryCode,
+	getCountries,
+	getCountryCallingCode,
+	parsePhoneNumberFromString,
 } from "libphonenumber-js/min";
 import type {
-  PhoneFieldCountry,
-  PhoneFieldCountryCodeValue,
-  PhoneFieldCountryMap,
-  PhoneFieldLang,
-  PhoneFieldValue,
-} from "./types";
+	PhoneFieldCountry,
+	PhoneFieldCountryCode,
+	PhoneFieldCountryMap,
+	PhoneFieldFormValue,
+	PhoneFieldLang,
+	PhoneFieldParseOptions,
+	PhoneFieldValue,
+} from "./types.js";
 
 function createRegionNames(locale: string) {
-  if (typeof Intl === "undefined" || typeof Intl.DisplayNames === "undefined") {
-    return null;
-  }
+	if (typeof Intl === "undefined" || typeof Intl.DisplayNames === "undefined") {
+		return null;
+	}
 
-  try {
-    return new Intl.DisplayNames([locale], { type: "region" });
-  } catch {
-    return null;
-  }
+	try {
+		return new Intl.DisplayNames([locale], { type: "region" });
+	} catch {
+		return null;
+	}
 }
 
 function createRegionCollator(locale: string) {
-  if (typeof Intl === "undefined" || typeof Intl.Collator === "undefined") {
-    return null;
-  }
+	if (typeof Intl === "undefined" || typeof Intl.Collator === "undefined") {
+		return null;
+	}
 
-  try {
-    return new Intl.Collator(locale);
-  } catch {
-    return null;
-  }
+	try {
+		return new Intl.Collator(locale);
+	} catch {
+		return null;
+	}
 }
 
 const fallbackRegionNames = createRegionNames("en");
 const allCountries = getCountries();
+const MAX_CACHED_LOCALES = 16;
+
+class ReadonlyMapView<K, V> implements ReadonlyMap<K, V> {
+	readonly #map: Map<K, V>;
+
+	constructor(map: Map<K, V>) {
+		this.#map = map;
+	}
+
+	get size() {
+		return this.#map.size;
+	}
+
+	get(key: K) {
+		return this.#map.get(key);
+	}
+
+	has(key: K) {
+		return this.#map.has(key);
+	}
+
+	entries() {
+		return this.#map.entries();
+	}
+
+	keys() {
+		return this.#map.keys();
+	}
+
+	values() {
+		return this.#map.values();
+	}
+
+	forEach(
+		callback: (value: V, key: K, map: ReadonlyMap<K, V>) => void,
+		thisArg?: unknown,
+	) {
+		for (const [key, value] of this.#map) {
+			callback.call(thisArg, value, key, this);
+		}
+	}
+
+	[Symbol.iterator]() {
+		return this.#map[Symbol.iterator]();
+	}
+}
 
 function countryName(iso2: CountryCode, regionNames: Intl.DisplayNames | null) {
-  return regionNames?.of(iso2) ?? fallbackRegionNames?.of(iso2) ?? iso2;
+	return regionNames?.of(iso2) ?? fallbackRegionNames?.of(iso2) ?? iso2;
 }
 
 function countryFlag(iso2: CountryCode) {
-  return iso2
-    .toUpperCase()
-    .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
+	return iso2
+		.toUpperCase()
+		.replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
 }
 
 /**
  * Normalizes a BCP 47 locale (string or array) to a single canonical locale string. Returns `"en"` when missing or invalid.
  */
-export function normalizeLang(lang?: PhoneFieldLang) {
-  if (!lang) {
-    return "en";
-  }
+export function normalizeLang(lang?: PhoneFieldLang): string {
+	if (!lang) {
+		return "en";
+	}
 
-  try {
-    return Intl.getCanonicalLocales(lang)[0] ?? "en";
-  } catch {
-    if (Array.isArray(lang)) {
-      return lang[0] ?? "en";
-    }
-    return lang;
-  }
+	try {
+		return Intl.getCanonicalLocales(lang)[0] ?? "en";
+	} catch {
+		return "en";
+	}
 }
 
 function buildCountriesMap(lang: string) {
-  const regionNames = createRegionNames(lang);
-  const collator = createRegionCollator(lang);
-  const countries = allCountries
-    .map((iso2) => ({
-      iso2,
-      name: countryName(iso2, regionNames),
-      dialCode: `+${getCountryCallingCode(iso2)}`,
-      flag: countryFlag(iso2),
-    }))
-    .sort((a, b) =>
-      collator
-        ? collator.compare(a.name, b.name)
-        : a.name.localeCompare(b.name, lang),
-    );
+	const regionNames = createRegionNames(lang);
+	const collator = createRegionCollator(lang);
+	const countries = allCountries
+		.map((iso2) =>
+			Object.freeze({
+				iso2,
+				name: countryName(iso2, regionNames),
+				dialCode: `+${getCountryCallingCode(iso2)}`,
+				flag: countryFlag(iso2),
+			}),
+		)
+		.sort((a, b) =>
+			collator
+				? collator.compare(a.name, b.name)
+				: a.name.localeCompare(b.name, lang),
+		);
 
-  return new Map<CountryCode, PhoneFieldCountry>(
-    countries.map((country) => [country.iso2, country]),
-  );
+	return new ReadonlyMapView<CountryCode, PhoneFieldCountry>(
+		new Map(countries.map((country) => [country.iso2, country])),
+	);
 }
 
 const countriesMapByLang = new Map<string, PhoneFieldCountryMap>();
@@ -95,15 +142,23 @@ const countriesMapByLang = new Map<string, PhoneFieldCountryMap>();
  * Returns a cached map of ISO2 → PhoneFieldCountry for the given locale. Used for country names and sorting.
  */
 export function getCountriesMap(lang?: PhoneFieldLang) {
-  const normalizedLang = normalizeLang(lang);
-  const cached = countriesMapByLang.get(normalizedLang);
-  if (cached) {
-    return cached;
-  }
+	const normalizedLang = normalizeLang(lang);
+	const cached = countriesMapByLang.get(normalizedLang);
+	if (cached) {
+		countriesMapByLang.delete(normalizedLang);
+		countriesMapByLang.set(normalizedLang, cached);
+		return cached;
+	}
 
-  const countriesMap = buildCountriesMap(normalizedLang);
-  countriesMapByLang.set(normalizedLang, countriesMap);
-  return countriesMap;
+	const countriesMap = buildCountriesMap(normalizedLang);
+	if (countriesMapByLang.size >= MAX_CACHED_LOCALES) {
+		const oldestLocale = countriesMapByLang.keys().next().value;
+		if (oldestLocale) {
+			countriesMapByLang.delete(oldestLocale);
+		}
+	}
+	countriesMapByLang.set(normalizedLang, countriesMap);
+	return countriesMap;
 }
 
 /** Default country code used when none is specified (e.g. "US"). */
@@ -111,16 +166,12 @@ export const DEFAULT_COUNTRY: CountryCode = "US";
 
 /** Returns the default countries map for locale "en". */
 export function getDefaultCountriesMap() {
-  return getCountriesMap("en");
+	return getCountriesMap("en");
 }
 
 /** Strips all non-digit characters from a string. */
 export function onlyDigits(value: string) {
-  return value.replace(/\D+/g, "");
-}
-
-function dialCodeDigits(country: PhoneFieldCountry) {
-  return onlyDigits(country.dialCode);
+	return value.replace(/\D+/g, "");
 }
 
 /**
@@ -128,42 +179,42 @@ function dialCodeDigits(country: PhoneFieldCountry) {
  * @throws If the resulting list is empty.
  */
 export function toAvailableCountries(
-  countriesMap: PhoneFieldCountryMap,
-  countries?: readonly PhoneFieldCountryCodeValue[],
+	countriesMap: PhoneFieldCountryMap,
+	countries?: readonly PhoneFieldCountryCode[],
 ) {
-  if (!countries?.length) {
-    const entries = Array.from(countriesMap.values());
-    if (entries.length === 0) {
-      throw new Error(
-        "PhoneField.Root requires at least one valid country code.",
-      );
-    }
-    return entries;
-  }
+	if (!countries?.length) {
+		const entries = Array.from(countriesMap.values());
+		if (entries.length === 0) {
+			throw new Error(
+				"PhoneField.Root requires at least one valid country code.",
+			);
+		}
+		return entries;
+	}
 
-  const selectedCodes = countries;
-  const seen = new Set<CountryCode>();
-  const entries: PhoneFieldCountry[] = [];
+	const selectedCodes = countries;
+	const seen = new Set<CountryCode>();
+	const entries: PhoneFieldCountry[] = [];
 
-  for (const code of selectedCodes) {
-    if (seen.has(code)) {
-      continue;
-    }
-    seen.add(code);
+	for (const code of selectedCodes) {
+		if (seen.has(code)) {
+			continue;
+		}
+		seen.add(code);
 
-    const country = countriesMap.get(code);
-    if (country) {
-      entries.push(country);
-    }
-  }
+		const country = countriesMap.get(code);
+		if (country) {
+			entries.push(country);
+		}
+	}
 
-  if (entries.length === 0) {
-    throw new Error(
-      "PhoneField.Root requires at least one valid country code.",
-    );
-  }
+	if (entries.length === 0) {
+		throw new Error(
+			"PhoneField.Root requires at least one valid country code.",
+		);
+	}
 
-  return entries;
+	return entries;
 }
 
 /**
@@ -171,26 +222,26 @@ export function toAvailableCountries(
  * @throws If availableCountries is empty.
  */
 export function resolveCountry(
-  availableCountries: readonly PhoneFieldCountry[],
-  iso2?: CountryCode,
+	availableCountries: readonly PhoneFieldCountry[],
+	iso2?: CountryCode,
 ) {
-  if (availableCountries.length === 0) {
-    throw new Error("PhoneField.Root requires at least one available country.");
-  }
+	if (availableCountries.length === 0) {
+		throw new Error("PhoneField.Root requires at least one available country.");
+	}
 
-  let fallbackCountry = availableCountries[0];
+	let fallbackCountry = availableCountries[0];
 
-  for (const country of availableCountries) {
-    if (country.iso2 === DEFAULT_COUNTRY) {
-      fallbackCountry = country;
-    }
+	for (const country of availableCountries) {
+		if (country.iso2 === DEFAULT_COUNTRY) {
+			fallbackCountry = country;
+		}
 
-    if (iso2 && country.iso2 === iso2) {
-      return country;
-    }
-  }
+		if (iso2 && country.iso2 === iso2) {
+			return country;
+		}
+	}
 
-  return fallbackCountry;
+	return fallbackCountry;
 }
 
 /**
@@ -198,34 +249,29 @@ export function resolveCountry(
  * When formatOnType is true, national number is formatted as-you-type.
  */
 export function buildValue(
-  country: PhoneFieldCountry,
-  rawNumber: string,
-  formatOnType: boolean,
+	country: PhoneFieldCountry,
+	rawNumber: string,
+	formatOnType: boolean,
 ): PhoneFieldValue {
-  const nationalDigits = onlyDigits(rawNumber);
-  const nationalNumber = formatOnType
-    ? nationalDigits
-      ? new AsYouType(country.iso2).input(nationalDigits)
-      : ""
-    : rawNumber;
-  const countryDialCode = dialCodeDigits(country);
-  const e164 = nationalDigits
-    ? `+${countryDialCode}${nationalDigits}`
-    : null;
-  const parsed = e164 ? parsePhoneNumberFromString(e164) : undefined;
+	const nationalDigits = onlyDigits(rawNumber);
+	const formatter = new AsYouType(country.iso2);
+	const formattedNumber = nationalDigits ? formatter.input(nationalDigits) : "";
+	const nationalNumber = formatOnType ? formattedNumber : rawNumber;
+	const countryDialCode = country.dialCode;
+	const parsed = formatter.getNumber();
 
-  return {
-    countryIso2: country.iso2,
-    countryDialCode,
-    nationalNumber,
-    e164,
-    isValid: parsed?.isValid() ?? false,
-  };
+	return {
+		countryIso2: country.iso2,
+		countryDialCode,
+		nationalNumber,
+		e164: formatter.getNumberValue() ?? null,
+		isValid: parsed?.isValid() ?? false,
+	};
 }
 
 /** Default search text for a country (name, iso2, dialCode) used by the combobox. */
 export function defaultCountrySearchText(country: PhoneFieldCountry) {
-  return `${country.name} ${country.iso2} ${country.dialCode}`;
+	return `${country.name} ${country.iso2} ${country.dialCode}`;
 }
 
 /**
@@ -233,22 +279,25 @@ export function defaultCountrySearchText(country: PhoneFieldCountry) {
  * Use for formatNational(), formatInternational(), getURI(). Options.defaultCountry for national-number strings.
  */
 export function parsePhoneField(
-  value: string | PhoneFieldValue,
-  options?: { defaultCountry?: CountryCode },
+	value: string | PhoneFieldValue,
+	options?: PhoneFieldParseOptions,
 ) {
-  if (typeof value === "string") {
-    return parsePhoneNumberFromString(value, options?.defaultCountry);
-  }
+	if (typeof value === "string") {
+		return parsePhoneNumberFromString(value, {
+			defaultCountry: options?.defaultCountry,
+			extract: options?.extract ?? false,
+		});
+	}
 
-  const byE164 = value.e164
-    ? parsePhoneNumberFromString(value.e164)
-    : undefined;
-  if (byE164) {
-    return byE164;
-  }
+	const country = getDefaultCountriesMap().get(value.countryIso2);
+	if (!country) {
+		return undefined;
+	}
 
-  const raw = `+${value.countryDialCode}${onlyDigits(value.nationalNumber)}`;
-  return parsePhoneNumberFromString(raw, value.countryIso2);
+	return parsePhoneNumberFromString(onlyDigits(value.nationalNumber), {
+		defaultCountry: country.iso2,
+		extract: false,
+	});
 }
 
 /**
@@ -256,55 +305,100 @@ export function parsePhoneField(
  * Options.defaultCountry for national-number strings.
  */
 export function isValidPhoneField(
-  value: string | PhoneFieldValue,
-  options?: { defaultCountry?: CountryCode },
+	value: string | PhoneFieldValue,
+	options?: PhoneFieldParseOptions,
 ) {
-  return parsePhoneField(value, options)?.isValid() ?? false;
+	return parsePhoneField(value, options)?.isValid() ?? false;
 }
 
 /** Type guard: true if the value has the PhoneFieldValue shape. */
 export function isPhoneFieldValue(value: unknown): value is PhoneFieldValue {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
+	if (!value || typeof value !== "object") {
+		return false;
+	}
 
-  const candidate = value as Partial<PhoneFieldValue>;
-  return (
-    typeof candidate.countryIso2 === "string" &&
-    typeof candidate.countryDialCode === "string" &&
-    typeof candidate.nationalNumber === "string" &&
-    (typeof candidate.e164 === "string" || candidate.e164 === null) &&
-    typeof candidate.isValid === "boolean"
-  );
+	const candidate = value as Partial<PhoneFieldValue>;
+	if (
+		typeof candidate.countryIso2 !== "string" ||
+		typeof candidate.countryDialCode !== "string" ||
+		typeof candidate.nationalNumber !== "string" ||
+		(typeof candidate.e164 !== "string" && candidate.e164 !== null) ||
+		typeof candidate.isValid !== "boolean"
+	) {
+		return false;
+	}
+
+	const country = getDefaultCountriesMap().get(
+		candidate.countryIso2 as CountryCode,
+	);
+	if (!country) {
+		return false;
+	}
+
+	const canonical = buildValue(country, candidate.nationalNumber, false);
+	return (
+		candidate.countryDialCode === canonical.countryDialCode &&
+		candidate.e164 === canonical.e164 &&
+		candidate.isValid === canonical.isValid
+	);
 }
 
+/** Returns the minimal payload written to a hidden form control. */
+export function toFormValue(value: PhoneFieldValue): PhoneFieldFormValue {
+	return {
+		countryIso2: value.countryIso2,
+		nationalNumber: value.nationalNumber,
+	};
+}
+
+const MAX_FORM_PHONE_LENGTH = 250;
+const MAX_FORM_PAYLOAD_LENGTH = 1_000;
+
 /**
- * Reads a serialized PhoneField.Value from FormData (JSON string). Returns null if missing or invalid.
+ * Validates a minimal serialized form payload and rebuilds a canonical PhoneFieldValue.
+ * Legacy full-value JSON is accepted, but client-supplied derived fields are ignored.
  */
 export function fromFormData(formData: FormData, name: string) {
-  const raw = formData.get(name);
-  if (typeof raw !== "string") {
-    return null;
-  }
+	const raw = formData.get(name);
+	if (typeof raw !== "string" || raw.length > MAX_FORM_PAYLOAD_LENGTH) {
+		return null;
+	}
 
-  try {
-    const parsed = JSON.parse(raw);
-    return isPhoneFieldValue(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
+	try {
+		const parsed: unknown = JSON.parse(raw);
+		if (!parsed || typeof parsed !== "object") {
+			return null;
+		}
+
+		const candidate = parsed as Partial<PhoneFieldFormValue>;
+		if (
+			typeof candidate.countryIso2 !== "string" ||
+			typeof candidate.nationalNumber !== "string" ||
+			candidate.nationalNumber.length > MAX_FORM_PHONE_LENGTH
+		) {
+			return null;
+		}
+
+		const country = getDefaultCountriesMap().get(
+			candidate.countryIso2 as CountryCode,
+		);
+		return country ? buildValue(country, candidate.nationalNumber, true) : null;
+	} catch {
+		return null;
+	}
 }
 
 /**
- * Helper facade for parse, isValid, fromFormData, getCountries, and default countries map.
+ * Helper facade for parsing, form serialization, and immutable country metadata.
  * Use from "phonefield/utils" on client or server.
  */
 export const PhoneFieldUtils = {
-  parse: parsePhoneField,
-  isValid: isValidPhoneField,
-  fromFormData,
-  getCountries: getCountriesMap,
-  get countries() {
-    return getDefaultCountriesMap();
-  },
+	parse: parsePhoneField,
+	isValid: isValidPhoneField,
+	fromFormData,
+	toFormValue,
+	getCountries: getCountriesMap,
+	get countries() {
+		return getDefaultCountriesMap();
+	},
 };

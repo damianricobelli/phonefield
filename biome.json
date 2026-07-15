@@ -9,9 +9,13 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
+			"**/tests/**/*",
+			"**/scripts/**/*",
 			"**/.vscode/**/*",
 			"**/index.html",
 			"**/vite.config.ts",
+			"**/vitest.config.ts",
+			"**/tsup.config.ts",
 			"!**/src/routeTree.gen.ts",
 			"!**/src/styles.css"
 		]
@@ -33,4 +37,3 @@
 		}
 	}
 }
-

@@ -111,18 +111,18 @@ export function HighlightedCode({
 	const lines = code.replace(/\n$/, "").split("\n");
 	return (
 		<pre
-			className={`overflow-x-auto overflow-y-auto rounded-xl border border-slate-200 bg-slate-950 p-4 text-xs sm:text-sm shadow-sm ${className}`}
+			className={`code-scrollbar max-h-[32rem] overflow-auto rounded-b-xl bg-slate-950 p-4 text-xs leading-6 sm:text-[13px] ${className}`}
 		>
-			<code className="block min-w-full w-max">
+			<code className="block w-max min-w-full">
 				{lines.map((line, lineIndex) => (
-					<div
+					<span
 						key={lineIndex}
 						className={
-							lineNumbers ? "grid grid-cols-[1.2rem_1fr] gap-3" : "block"
+							lineNumbers ? "grid grid-cols-[1.5rem_1fr] gap-3" : "block"
 						}
 					>
 						{lineNumbers && (
-							<span className="select-none text-right text-xs text-slate-500 mr-1">
+							<span className="mr-1 select-none text-right text-[11px] text-slate-600">
 								{lineIndex + 1}
 							</span>
 						)}
@@ -133,7 +133,7 @@ export function HighlightedCode({
 								</span>
 							))}
 						</span>
-					</div>
+					</span>
 				))}
 			</code>
 		</pre>
@@ -150,17 +150,27 @@ export function DocBlock({
 	code: string;
 }) {
 	return (
-		<article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-			<h2 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl">
-				{title}
-			</h2>
-			<p className="mt-2 mb-4 max-w-3xl text-sm text-slate-600 md:text-base">
-				{description}
-			</p>
+		<article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
+			<div className="px-5 pt-5 pb-4 sm:px-7 sm:pt-7">
+				<h3 className="text-lg font-semibold tracking-tight text-slate-950 md:text-xl">
+					{title}
+				</h3>
+				<p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+					{description}
+				</p>
+			</div>
 
-			<div className="relative">
-				<CopyButton text={code} className="absolute right-3 top-3 z-10" />
-				<HighlightedCode code={code} className="pr-24" />
+			<div className="border-t border-slate-200 bg-slate-950">
+				<div className="flex h-11 items-center justify-between border-b border-white/10 px-4">
+					<span className="font-mono text-[11px] font-medium text-slate-500">
+						TSX · {code.replace(/\n$/, "").split("\n").length} lines
+					</span>
+					<CopyButton
+						text={code}
+						className="border-white/10 bg-white/10 text-slate-300 shadow-none hover:bg-white/15 hover:text-white"
+					/>
+				</div>
+				<HighlightedCode code={code} className="rounded-none border-0" />
 			</div>
 		</article>
 	);
