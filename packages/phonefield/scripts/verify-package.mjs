@@ -8,6 +8,9 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const dist = resolve(scriptDirectory, "../dist");
 const clientEntry = readFileSync(resolve(dist, "index.js"), "utf8");
 const utilitiesEntry = readFileSync(resolve(dist, "utils.js"), "utf8");
+const publicDeclarations = ["index.d.ts", "component.d.ts", "types.d.ts"]
+	.map((file) => readFileSync(resolve(dist, file), "utf8"))
+	.join("\n");
 
 assert.match(
 	clientEntry,
@@ -18,6 +21,11 @@ assert.doesNotMatch(
 	utilitiesEntry,
 	/^"use client";/,
 	"dist/utils.js must remain importable from server code",
+);
+assert.doesNotMatch(
+	publicDeclarations,
+	/\b(?:PhoneFieldCountryCodeValue|PhoneFieldCountryName|CountryCodeValue|CountryName)\b/,
+	"published declarations must not expose removed deprecated country aliases",
 );
 
 for (const file of [

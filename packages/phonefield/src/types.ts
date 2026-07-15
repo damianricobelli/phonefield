@@ -16,12 +16,6 @@ export type PhoneFieldCountryMap = ReadonlyMap<CountryCode, PhoneFieldCountry>;
 /** ISO2 country code (e.g. `"US"`, `"GB"`). */
 export type PhoneFieldCountryCode = CountryCode;
 
-/** @deprecated Use `PhoneFieldCountryCode` or `PhoneField.CountryCode`. */
-export type PhoneFieldCountryCodeValue = PhoneFieldCountryCode;
-
-/** @deprecated This type is an ISO2 code, not a country name. Use `PhoneFieldCountryCode`. */
-export type PhoneFieldCountryName = PhoneFieldCountryCode;
-
 /** BCP 47 locale string or list of locale strings for country display names and sorting. */
 export type PhoneFieldLang = string | readonly string[];
 

@@ -7,9 +7,7 @@ import { mergeRefs } from "./merge-refs.js";
 import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryCode,
-	PhoneFieldCountryCodeValue,
 	PhoneFieldCountryMap,
-	PhoneFieldCountryName,
 	PhoneFieldFormValue,
 	PhoneFieldInputValue,
 	PhoneFieldLang,
@@ -451,10 +449,6 @@ export namespace PhoneField {
 	export type CountryMap = PhoneFieldCountryMap;
 	/** ISO2 country code (e.g. "US", "GB"). */
 	export type CountryCode = PhoneFieldCountryCode;
-	/** @deprecated Use `PhoneField.CountryCode`. */
-	export type CountryCodeValue = PhoneFieldCountryCodeValue;
-	/** @deprecated This is an ISO2 code, not a country name. Use `PhoneField.CountryCode`. */
-	export type CountryName = PhoneFieldCountryName;
 	/** BCP 47 locale for country names and sorting. */
 	export type Lang = PhoneFieldLang;
 	/** Complete emitted value: countryIso2, countryDialCode, nationalNumber, e164, isValid. */
