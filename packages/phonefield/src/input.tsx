@@ -38,6 +38,7 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 			<BaseInput
 				{...props}
 				ref={mergedRef}
+				data-slot="phone-field-input"
 				type={type}
 				inputMode={inputMode}
 				autoComplete={autoComplete}

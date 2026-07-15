@@ -104,7 +104,8 @@ export const countryProperties = [
 		name: "classNames",
 		type: "PhoneField.CountryClassNames",
 		defaultValue: "-",
-		description: "The only styling seam for rendered parts.",
+		description:
+			"Typed per-instance classes. Stable data-slot attributes also support global CSS.",
 	},
 	{
 		name: "positioning",

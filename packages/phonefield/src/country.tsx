@@ -59,8 +59,15 @@ function CountryComponent({
 			}}
 			isItemEqualToValue={(a, b) => a.iso2 === b.iso2}
 		>
-			<Combobox.Trigger {...slotProps?.trigger} className={classNames?.trigger}>
-				<Combobox.Value placeholder={placeholder} {...slotProps?.value}>
+			<Combobox.Trigger
+				{...slotProps?.trigger}
+				data-slot="phone-field-country-trigger"
+				className={classNames?.trigger}
+			>
+				<Combobox.Value
+					placeholder={placeholder}
+					{...slotProps?.value}
+				>
 					{(country: PhoneField.Country | null) =>
 						country
 							? (renderCountryValue?.(country) ??
@@ -68,7 +75,11 @@ function CountryComponent({
 							: placeholder
 					}
 				</Combobox.Value>
-				<Combobox.Icon {...slotProps?.icon} className={classNames?.icon}>
+				<Combobox.Icon
+					{...slotProps?.icon}
+					data-slot="phone-field-country-icon"
+					className={classNames?.icon}
+				>
 					{icon ?? <ChevronUpDownIcon />}
 				</Combobox.Icon>
 			</Combobox.Trigger>
@@ -77,15 +88,22 @@ function CountryComponent({
 				<Combobox.Positioner
 					{...slotProps?.positioner}
 					{...resolvedPositioning}
+					data-slot="phone-field-country-positioner"
 					className={classNames?.positioner}
 				>
-					<Combobox.Popup {...slotProps?.popup} className={classNames?.popup}>
+					<Combobox.Popup
+						{...slotProps?.popup}
+						data-slot="phone-field-country-popup"
+						className={classNames?.popup}
+					>
 						<div
 							{...slotProps?.searchInputContainer}
+							data-slot="phone-field-country-search-container"
 							className={classNames?.searchInputContainer}
 						>
 							<Combobox.Input
 								{...slotProps?.searchInput}
+								data-slot="phone-field-country-search-input"
 								className={classNames?.searchInput}
 								placeholder={inputPlaceholder}
 								aria-label={
@@ -93,10 +111,18 @@ function CountryComponent({
 								}
 							/>
 						</div>
-						<Combobox.Empty {...slotProps?.empty} className={classNames?.empty}>
+						<Combobox.Empty
+							{...slotProps?.empty}
+							data-slot="phone-field-country-empty"
+							className={classNames?.empty}
+						>
 							{noResultsText}
 						</Combobox.Empty>
-						<Combobox.List {...slotProps?.list} className={classNames?.list}>
+						<Combobox.List
+							{...slotProps?.list}
+							data-slot="phone-field-country-list"
+							className={classNames?.list}
+						>
 							{(country: PhoneField.Country) => {
 								const itemProps =
 									typeof slotProps?.item === "function"
@@ -107,6 +133,7 @@ function CountryComponent({
 										{...itemProps}
 										key={country.iso2}
 										value={country}
+										data-slot="phone-field-country-item"
 										className={classNames?.item}
 									>
 										{renderCountryItem?.(country) ??

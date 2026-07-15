@@ -1,6 +1,16 @@
-# Migration to 0.3
+# Migration from 0.x to v1
 
-Version 0.3 narrows the public interface before 1.0. The runtime value model and FormData payload remain compatible.
+Version 1 establishes a smaller, stable public interface. The runtime value model and FormData payload remain compatible, so no phone data migration is required.
+
+## Before you start
+
+V1 supports React 19, React DOM 19, Base UI 1.6 or newer, and Node.js 22 or newer.
+
+```bash
+pnpm add phonefield@^1
+```
+
+Apply the five mechanical replacements below, then run your typecheck and form submission tests.
 
 ## Utilities use named exports
 
@@ -67,3 +77,33 @@ Move part classes from `slotProps` to `classNames`, and popup geometry to `posit
 ```
 
 The `PhoneField.*` namespace is the canonical type interface.
+
+## Styling with stable data slots
+
+V1 also exposes namespaced `data-slot` attributes. This is additive: continue using `classNames` for typed, per-instance classes, or target slots from global CSS.
+
+```css
+[data-slot="phone-field"] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+[data-slot="phone-field-country-popup"] {
+  transform-origin: var(--transform-origin);
+}
+
+[data-slot="phone-field-country-item"][data-highlighted] {
+  background: var(--highlighted-country);
+}
+```
+
+Country popup selectors must be global because Base UI renders the popup in a portal.
+
+## Final checklist
+
+- No `PhoneFieldUtils` facade imports remain.
+- `onValueChange` and form `name` live on `PhoneField.Root`.
+- Country appearance uses `classNames`; popup geometry uses `positioning`.
+- Public types use the `PhoneField.*` namespace.
+- React, Base UI, and Node.js match the supported versions.
+- Typecheck and form submission tests pass.

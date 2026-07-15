@@ -160,13 +160,14 @@ const Root = React.forwardRef<HTMLDivElement, PhoneField.RootProps>(
 		return (
 			<PhoneFieldCountryContext.Provider value={countryContextValue}>
 				<PhoneFieldInputContext.Provider value={inputContextValue}>
-					<div ref={ref} className={className} {...props}>
+					<div {...props} ref={ref} className={className} data-slot="phone-field">
 						{children}
 						{name ? (
 							<input
 								type="hidden"
 								name={name}
 								value={JSON.stringify(toFormValue(normalizedValue))}
+								data-slot="phone-field-hidden-input"
 							/>
 						) : null}
 					</div>
@@ -208,6 +209,7 @@ export namespace PhoneField {
 	/**
 	 * Styling API for `PhoneField.Country` parts.
 	 * `PhoneField.Country` is unstyled by default; use this to style each part.
+	 * Stable `data-slot` attributes are also available for global CSS.
 	 */
 	export type CountryClassNames = {
 		trigger?: Combobox.Trigger.Props["className"];

@@ -183,6 +183,61 @@ describe("PhoneField", () => {
 		expect(usItem?.className).toContain("api-item");
 	});
 
+	it("exposes stable data slots for CSS styling", async () => {
+		const { container } = render(
+			<PhoneField.Root name="phone" data-slot="consumer-root">
+				<PhoneField.Country
+					slotProps={{
+						root: { open: true },
+						trigger: {
+							"aria-label": "Country",
+							"data-slot": "consumer-trigger",
+						},
+						searchInput: { "aria-label": "Find country" },
+					}}
+				/>
+				<PhoneField.Input aria-label="Phone number" data-slot="consumer-input" />
+			</PhoneField.Root>,
+		);
+
+		expect(container.querySelector('[data-slot="phone-field"]')).toBeTruthy();
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).dataset.slot,
+		).toBe("phone-field-country-trigger");
+		const searchInput = await screen.findByRole("combobox", {
+			name: "Find country",
+		});
+		expect(searchInput.dataset.slot).toBe("phone-field-country-search-input");
+		expect(
+			screen.getByRole("textbox", { name: "Phone number" }).dataset.slot,
+		).toBe("phone-field-input");
+		expect(
+			container.querySelector('input[type="hidden"]')?.getAttribute("data-slot"),
+		).toBe("phone-field-hidden-input");
+		expect(
+			document.querySelectorAll('[data-slot="phone-field-country-item"]')
+				.length,
+		).toBeGreaterThan(0);
+
+		for (const slot of [
+			"phone-field-country-icon",
+			"phone-field-country-positioner",
+			"phone-field-country-popup",
+			"phone-field-country-search-container",
+			"phone-field-country-list",
+		]) {
+			expect(
+				document.querySelector(`[data-slot="${slot}"]`),
+				`Expected ${slot} to be rendered`,
+			).toBeTruthy();
+		}
+
+		fireEvent.change(searchInput, { target: { value: "not-a-country" } });
+		expect(
+			(await screen.findByText("No countries found")).getAttribute("data-slot"),
+		).toBe("phone-field-country-empty");
+	});
+
 	it("does not rerender the country picker while the number changes", () => {
 		const renderCountryValue = vi.fn(
 			(country: PhoneField.Country) => country.dialCode,

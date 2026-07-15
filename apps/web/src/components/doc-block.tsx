@@ -144,10 +144,12 @@ export function DocBlock({
 	title,
 	description,
 	code,
+	language = "TSX",
 }: {
 	title: string;
 	description: string;
 	code: string;
+	language?: string;
 }) {
 	return (
 		<article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
@@ -163,7 +165,7 @@ export function DocBlock({
 			<div className="border-t border-slate-200 bg-slate-950">
 				<div className="flex h-11 items-center justify-between border-b border-white/10 px-4">
 					<span className="font-mono text-[11px] font-medium text-slate-500">
-						TSX · {code.replace(/\n$/, "").split("\n").length} lines
+						{language} · {code.replace(/\n$/, "").split("\n").length} lines
 					</span>
 					<CopyButton
 						text={code}

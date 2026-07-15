@@ -10,6 +10,8 @@ Composable React phone-field primitive built with Base UI and `libphonenumber-js
 
 [Documentation and playground](https://phonefield.vercel.app) · [Package guide](./packages/phonefield/README.md) · [Migration guide](./packages/phonefield/MIGRATION.md)
 
+The v1 line supports React 19, Base UI 1.6+, and Node.js 22+.
+
 ## Install
 
 ```bash

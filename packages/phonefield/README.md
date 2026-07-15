@@ -10,7 +10,7 @@ A composable, accessible React phone-field primitive for design systems.
 pnpm add phonefield
 ```
 
-Requires React 18/19, React DOM 18/19, and Base UI 1.x.
+Requires React 19, React DOM 19, Base UI 1.6 or newer, and Node.js 22 or newer.
 
 ## Quick start
 
@@ -81,4 +81,28 @@ All utility exports work on client and server. Namespace-style usage remains ava
 - renderers customize country content.
 - `slotProps` forwards advanced behavioral and ARIA props without duplicating styling or positioning.
 
+Define `classNames` once in your design-system wrapper instead of repeating it at every call site:
+
+```tsx
+const countryClassNames = {
+  trigger: "countryTrigger",
+  popup: "countryPopup",
+  item: "countryItem",
+} satisfies PhoneField.CountryClassNames;
+
+<PhoneField.Country classNames={countryClassNames} />;
+```
+
+For vanilla CSS and CSS Modules, every rendered part also exposes a stable, namespaced `data-slot`, including `phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, and `phone-field-country-item`. Country popup selectors must be global because the popup is portaled.
+
 See the documentation site for the complete API reference and a typechecked production preset.
+
+## Version support
+
+| Dependency | Supported |
+| --- | --- |
+| React / React DOM | `>=19 <20` |
+| Base UI | `>=1.6 <2` |
+| Node.js | `>=22` |
+
+The supported range is deliberately narrow and tested in CI on Node.js 22 and 24. See the [migration guide](./MIGRATION.md) when upgrading from 0.x.

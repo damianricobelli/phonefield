@@ -23,7 +23,7 @@ We use Biome for formatting and general linting. ESLint runs the official
 `eslint-plugin-react-hooks` recommended rules, including React Compiler
 diagnostics.
 
-The published library supports React 18 and 19 and is not precompiled with React
+The v1 library supports React 19 and is not precompiled with React
 Compiler. Keep intentional manual memoization in the package unless a profiler
 and regression tests show it can be removed. The documentation app does use
 React Compiler, so prefer plain functions and calculations there; add
