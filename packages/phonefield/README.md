@@ -1,118 +1,84 @@
-## PhoneField
+# phonefield
 
-Composable phone field primitive built with Base UI and libphonenumber-js.
+A composable, accessible React phone-field primitive for design systems.
 
-- Country picker with localized names, dial codes, and flags.
-- As-you-type formatting via `formatOnType`.
-- Controlled and uncontrolled usage.
-- FormData integration via `name` on `PhoneField.Root`.
-- Shared utils for parsing, validation, and country metadata.
+[Full documentation and playground](https://phonefield.vercel.app) · [Migration guide](./MIGRATION.md)
 
-### Install
+## Install
 
 ```bash
 pnpm add phonefield
-# or
-npm install phonefield
-yarn add phonefield
-bun add phonefield
 ```
 
-Requires `@base-ui/react >= 1.2 < 2`, `react >= 18 < 20`, and
-`react-dom >= 18 < 20` as peer dependencies.
+Requires React 18/19, React DOM 18/19, and Base UI 1.x.
 
-### Usage
+## Quick start
 
 ```tsx
 import { PhoneField } from "phonefield";
 
-export function SignupPhone() {
-  return (
-    <PhoneField.Root defaultCountry="US" lang="en">
-      <PhoneField.Country />
-      <PhoneField.Input aria-label="Phone number" />
-    </PhoneField.Root>
-  );
-}
+<PhoneField.Root defaultCountry="US" lang="en">
+  <PhoneField.Country />
+  <PhoneField.Input aria-label="Phone number" />
+</PhoneField.Root>;
 ```
 
-`PhoneField.Root` is uncontrolled by default. If `defaultCountry` is not set,
-it falls back to `"US"` when available, otherwise the first available country.
-`defaultValue` and `defaultCountry` are only read for initialization. Do not
-switch between controlled and uncontrolled usage during the component's
-lifetime.
+The compound interface intentionally has one authority for each concern:
+
+- `Root` owns `value`, `defaultValue`, `onValueChange`, and form `name`.
+- `Country` owns country selection and popup customization.
+- `Input` owns native input attributes, events, and styling.
+
+## Controlled
 
 ```tsx
-import * as React from "react";
-import { PhoneField } from "phonefield";
+const [phone, setPhone] = useState<PhoneField.InputValue>({
+  countryIso2: "US",
+  nationalNumber: "",
+});
 
-export function ControlledExample() {
-  const [phone, setPhone] = React.useState<PhoneField.Value>({
-    countryIso2: "US",
-    countryDialCode: "+1",
-    nationalNumber: "",
-    e164: null,
-    isValid: false,
-  });
-
-  return (
-    <PhoneField.Root value={phone} onValueChange={setPhone}>
-      <PhoneField.Country />
-      <PhoneField.Input aria-label="Phone number" />
-    </PhoneField.Root>
-  );
-}
+<PhoneField.Root value={phone} onValueChange={setPhone}>
+  <PhoneField.Country />
+  <PhoneField.Input aria-label="Phone number" />
+</PhoneField.Root>;
 ```
 
-`value` and `defaultValue` accept the minimal `PhoneField.InputValue`
-(`countryIso2` and `nationalNumber`) or a complete `PhoneField.Value`. Derived
-fields are always rebuilt, and `onValueChange` always emits the complete value.
+`onValueChange` emits a canonical `PhoneField.Value` with `countryDialCode`, `e164`, and `isValid`.
 
-### FormData
+## FormData
 
 ```tsx
-import { PhoneField } from "phonefield";
-import { PhoneFieldUtils } from "phonefield/utils";
+import { fromFormData } from "phonefield/utils";
 
-function ExampleForm() {
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        const formData = new FormData(event.currentTarget);
-        const phone = PhoneFieldUtils.fromFormData(formData, "phone");
-        // phone -> PhoneField.Value | null
-      }}
-    >
-      <PhoneField.Root name="phone" defaultCountry="US">
-        <PhoneField.Country />
-        <PhoneField.Input aria-label="Phone number" />
-      </PhoneField.Root>
-    </form>
-  );
-}
+<PhoneField.Root name="phone">
+  <PhoneField.Country />
+  <PhoneField.Input aria-label="Phone number" />
+</PhoneField.Root>;
+
+const phone = fromFormData(formData, "phone");
 ```
 
-Forms contain only `{ countryIso2, nationalNumber }`. Treat this as untrusted
-input: `fromFormData` validates it and rebuilds `countryDialCode`, `e164`, and
-`isValid` instead of accepting client-supplied derived fields.
-
-### Utilities (`phonefield/utils`)
+## Utilities
 
 ```ts
-import { PhoneFieldUtils } from "phonefield/utils";
-
-const parsed = PhoneFieldUtils.parse("+14155552671");
-const isValid = PhoneFieldUtils.isValid("+14155552671");
+import {
+  buildValue,
+  countries,
+  fromFormData,
+  getCountries,
+  isValid,
+  parse,
+  toFormValue,
+} from "phonefield/utils";
 ```
 
-`parse` and `isValid` accept either `PhoneField.Value` or a phone string. Parsing
-is strict by default. Pass `options.defaultCountry` for national strings, or
-`{ extract: true }` to intentionally extract a number from surrounding text.
+All utility exports work on client and server. Namespace-style usage remains available through `import * as PhoneFieldUtils from "phonefield/utils"`.
 
-`PhoneField.Input` defaults to telephone-friendly native attributes and both
-`PhoneField.Root` and `PhoneField.Input` forward refs. React 19 callback-ref
-cleanup functions are preserved. See the full documentation for `slotProps`,
-immutable country metadata, and the complete API.
+## Customization
 
-More documentation and API reference: https://phonefield.vercel.app
+- `classNames` styles country-picker parts.
+- `positioning` controls popup geometry.
+- renderers customize country content.
+- `slotProps` forwards advanced behavioral and ARIA props without duplicating styling or positioning.
+
+See the documentation site for the complete API reference and a typechecked production preset.

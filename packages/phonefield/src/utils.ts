@@ -387,18 +387,3 @@ export function fromFormData(formData: FormData, name: string) {
 		return null;
 	}
 }
-
-/**
- * Helper facade for parsing, form serialization, and immutable country metadata.
- * Use from "phonefield/utils" on client or server.
- */
-export const PhoneFieldUtils = {
-	parse: parsePhoneField,
-	isValid: isValidPhoneField,
-	fromFormData,
-	toFormValue,
-	getCountries: getCountriesMap,
-	get countries() {
-		return getDefaultCountriesMap();
-	},
-};

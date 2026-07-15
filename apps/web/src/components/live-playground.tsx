@@ -1,7 +1,7 @@
 import { Field } from "@base-ui/react/field";
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
-import { PhoneFieldUtils } from "phonefield/utils";
+import { isValid, parse } from "phonefield/utils";
 import * as React from "react";
 import { FormatRow } from "@/components/format-row";
 
@@ -64,7 +64,7 @@ export function LivePlayground() {
 	});
 	const [phoneTouched, setPhoneTouched] = React.useState(false);
 
-	const parsed = PhoneFieldUtils.parse(value);
+	const parsed = parse(value);
 	const hasNumber = value.nationalNumber.trim().length > 0;
 	const requiredError = phoneTouched && !hasNumber;
 	const invalidError = phoneTouched && hasNumber && !value.isValid;
@@ -151,7 +151,7 @@ export function LivePlayground() {
 							<PhoneField.Input
 								className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-base text-slate-900 shadow-sm outline-none transition-colors duration-150 placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/15 data-invalid:border-red-500 data-invalid:ring-2 data-invalid:ring-red-500/10 data-valid:border-emerald-500 sm:flex-1"
 								onBlur={() => setPhoneTouched(true)}
-								onValueChange={() => setPhoneTouched(true)}
+								onChange={() => setPhoneTouched(true)}
 								placeholder="Enter phone number"
 							/>
 						</PhoneField.Root>
@@ -197,7 +197,7 @@ export function LivePlayground() {
 								Canonical output
 							</h3>
 							<p className="mt-1 text-xs leading-5 text-slate-400">
-								Live values from <code>PhoneFieldUtils.parse</code>.
+								Live values from <code>parse</code>.
 							</p>
 						</div>
 						<span
@@ -221,7 +221,7 @@ export function LivePlayground() {
 						))}
 						<FormatRow
 							label="Validity"
-							value={PhoneFieldUtils.isValid(value) ? "true" : "false"}
+							value={isValid(value) ? "true" : "false"}
 						/>
 					</dl>
 				</div>

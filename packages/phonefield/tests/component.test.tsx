@@ -147,10 +147,9 @@ describe("PhoneField", () => {
 		expect(input.getAttribute("pattern")).toBe("[0-9]+");
 	});
 
-	it("forwards country slot props and applies classNames precedence", async () => {
+	it("keeps styling in classNames while forwarding behavioral slot props", async () => {
 		const itemSlot = vi.fn((country: PhoneField.Country) => ({
-			"data-country-slot": country.iso2,
-			className: "slot-item",
+			disabled: country.iso2 === "US",
 		}));
 
 		render(
@@ -161,10 +160,8 @@ describe("PhoneField", () => {
 						root: { open: true },
 						trigger: {
 							"aria-label": "Country",
-							className: "slot-trigger",
 						},
-						value: { placeholder: "Choose country" },
-						popup: { className: "slot-popup" },
+						popup: { title: "Country options" },
 						searchInput: { "aria-label": "Find country" },
 						item: itemSlot,
 					}}
@@ -178,12 +175,12 @@ describe("PhoneField", () => {
 		expect(
 			await screen.findByRole("combobox", { name: "Find country" }),
 		).toBeTruthy();
-		expect(document.querySelector(".slot-popup")).toBeTruthy();
+		expect(document.querySelector('[title="Country options"]')).toBeTruthy();
 		expect(itemSlot).toHaveBeenCalled();
 
-		const usItem = document.querySelector('[data-country-slot="US"]');
+		const usItem = screen.getByRole("option", { name: /United States/ });
+		expect(usItem.getAttribute("aria-disabled")).toBe("true");
 		expect(usItem?.className).toContain("api-item");
-		expect(usItem?.className).not.toContain("slot-item");
 	});
 
 	it("does not rerender the country picker while the number changes", () => {
