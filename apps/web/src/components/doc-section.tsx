@@ -217,9 +217,11 @@ export function DocSection() {
 								keeps only the nationally formatted number in the input. If the
 								detected country is excluded by <code>countries</code>, the
 								original text is preserved and emitted as invalid instead of
-								being reinterpreted. A valid number also becomes invalid when
-								its detected country differs from the country selected by the
-								user, including countries that share a calling code.
+								being reinterpreted. The <code>+</code> prefix is accepted from
+								paste but blocked during direct typing; a preserved prefix can
+								still be removed with Backspace. A valid number becomes invalid
+								when its detected country differs from the country selected by
+								the user, including countries that share a calling code.
 							</div>
 
 							<DocBlock

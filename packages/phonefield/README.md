@@ -71,10 +71,13 @@ When input begins with `+`, PhoneField parses it as an international number. If
 the detected country is available, Root selects it automatically and Input keeps
 only its nationally formatted number. For example, pasting
 `+44 20 7946 0018` selects the United Kingdom and displays `020 7946 0018`.
+The `+` prefix is accepted from paste, but direct keyboard entry is blocked to
+avoid a partially international value that cannot be edited predictably.
 
 When `countries` excludes the detected country, PhoneField preserves the pasted
 text and emits an invalid value with `e164: null` instead of reinterpreting those
-digits as a number from the currently selected country.
+digits as a number from the currently selected country. The preserved `+` can
+still be removed normally with Backspace.
 
 Validity also includes the country selection. If a valid Canadian `+1` number is
 shown while the user manually selects the United States, `e164` and parsing

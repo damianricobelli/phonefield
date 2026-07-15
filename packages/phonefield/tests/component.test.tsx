@@ -413,6 +413,51 @@ describe("PhoneField", () => {
 		expect(input.selectionEnd).toBe(2);
 	});
 
+	it("prevents typing a plus sign", () => {
+		const onValueChange = vi.fn();
+		render(
+			<PhoneField.Root defaultCountry="US" onValueChange={onValueChange}>
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		const wasNotCanceled = fireEvent.keyDown(input, {
+			key: "+",
+			shiftKey: true,
+		});
+		expect(wasNotCanceled).toBe(false);
+		expect(input.value).toBe("");
+		expect(onValueChange).not.toHaveBeenCalled();
+	});
+
+	it("lets Backspace remove a plus sign preserved from paste", () => {
+		const onPaste = vi.fn();
+		render(
+			<PhoneField.Root countries={["US"]} defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" onPaste={onPaste} />
+			</PhoneField.Root>,
+		);
+
+		const input = screen.getByRole<HTMLInputElement>("textbox", {
+			name: "Phone number",
+		});
+		fireEvent.paste(input, {
+			clipboardData: { getData: () => "+54 9 11 4321-1234" },
+		});
+		fireEvent.change(input, { target: { value: "+54 9 11 4321-1234" } });
+		input.setSelectionRange(1, 1);
+
+		const wasNotCanceled = fireEvent.keyDown(input, { key: "Backspace" });
+
+		expect(onPaste).toHaveBeenCalledOnce();
+		expect(wasNotCanceled).toBe(true);
+		fireEvent.change(input, { target: { value: "54 9 11 4321-1234" } });
+		expect(input.value.startsWith("+")).toBe(false);
+	});
+
 	it("removes the selected country calling code from an international paste", () => {
 		const onValueChange = vi.fn();
 		render(

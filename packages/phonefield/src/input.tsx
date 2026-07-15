@@ -54,6 +54,28 @@ function getKeyboardInputType(event: React.KeyboardEvent<HTMLInputElement>) {
 	return undefined;
 }
 
+class PlusInputPolicy {
+	#allowNextPaste = false;
+
+	armPaste() {
+		this.#allowNextPaste = true;
+		setTimeout(() => {
+			this.#allowNextPaste = false;
+		}, 0);
+	}
+
+	reset() {
+		this.#allowNextPaste = false;
+	}
+
+	shouldBlock(event: InputEvent) {
+		const isPaste =
+			this.#allowNextPaste || event.inputType?.startsWith("insertFromPaste");
+		this.reset();
+		return !isPaste && event.data?.includes("+");
+	}
+}
+
 /** Number input bound to the selected country. */
 export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 	function Input(
@@ -66,6 +88,7 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 			onBeforeInput,
 			onInputCapture,
 			onKeyDown,
+			onPaste,
 			onPointerDown,
 			onSelect,
 			...props
@@ -81,6 +104,7 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 			redo,
 		} = usePhoneFieldInputContext();
 		const inputRef = React.useRef<HTMLInputElement>(null);
+		const plusInputPolicyRef = React.useRef(new PlusInputPolicy());
 		const pendingEditRef = React.useRef<{
 			kind: PhoneFieldEditKind;
 			selection: PhoneFieldInputSelection;
@@ -135,11 +159,17 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 				}}
 				onBeforeInput={(event) => {
 					onBeforeInput?.(event);
+					const nativeEvent = event.nativeEvent as InputEvent;
 					if (event.defaultPrevented) return;
+					if (plusInputPolicyRef.current.shouldBlock(nativeEvent)) {
+						event.preventDefault();
+						pendingEditRef.current.kind = "unknown";
+						return;
+					}
 					const selection = readSelection();
 					rememberSelection(selection);
 					pendingEditRef.current.selection = selection;
-					const { inputType } = event.nativeEvent as InputEvent;
+					const { inputType } = nativeEvent;
 					if (inputType) {
 						pendingEditRef.current.kind = getEditKind(inputType, selection);
 					}
@@ -147,6 +177,7 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 				onKeyDown={(event) => {
 					onKeyDown?.(event);
 					if (event.defaultPrevented) return;
+					plusInputPolicyRef.current.reset();
 
 					rememberSelection(readSelection());
 					const key = event.key.toLowerCase();
@@ -162,6 +193,11 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 						if (target) {
 							pendingRestoreRef.current = target;
 						}
+						return;
+					}
+					if (event.key === "+" && !event.metaKey && !event.ctrlKey) {
+						event.preventDefault();
+						pendingEditRef.current.kind = "unknown";
 						return;
 					}
 					const selection = readSelection();
@@ -189,9 +225,9 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 					if (start !== end || start === 0 || !previousCharacter) return;
 					if (!/\D/.test(previousCharacter)) return;
 
-					event.preventDefault();
 					const digitIndex = findPrevDigitIndex(element.value, start);
 					if (digitIndex < 0) return;
+					event.preventDefault();
 
 					pendingEditRef.current.kind = "unknown";
 					setNumber(removeCharAt(element.value, digitIndex), "delete-backward");
@@ -201,6 +237,7 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 				}}
 				onInputCapture={(event) => {
 					onInputCapture?.(event);
+					plusInputPolicyRef.current.reset();
 					if (event.defaultPrevented) return;
 					const { inputType } = event.nativeEvent as InputEvent;
 					if (inputType) {
@@ -213,6 +250,10 @@ export const Input = React.forwardRef<HTMLInputElement, PhoneField.InputProps>(
 				onSelect={(event) => {
 					onSelect?.(event);
 					rememberSelection(readSelection());
+				}}
+				onPaste={(event) => {
+					onPaste?.(event);
+					if (!event.defaultPrevented) plusInputPolicyRef.current.armPaste();
 				}}
 				onPointerDown={(event) => {
 					onPointerDown?.(event);
