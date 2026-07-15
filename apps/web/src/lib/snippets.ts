@@ -11,19 +11,19 @@ export function SignupPhone() {
 
 export const stylingCountrySelectSnippet = `// This classNames preset is based entirely on Base UI's example:
 // https://base-ui.com/react/components/combobox#input-inside-popup
-// You can style the Combobox however you want.
+// Replace every class with your own design-system tokens.
 <PhoneField.Country
   classNames={{
     // Trigger button that opens the country Combobox.
     trigger:
-      "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
+      "inline-flex h-10 min-w-[7.5rem] cursor-default select-none items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-gray-200 bg-white pr-2.5 pl-3 text-base text-gray-900 transition-colors duration-150 hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-[popup-open]:bg-gray-100",
     // Trigger icon.
     icon: "flex text-gray-600",
     // Positioning layer for z-index and popup alignment.
     positioner: "z-50",
     // Popup panel with dimensions and enter/exit transitions.
     popup:
-      "origin-[var(--transform-origin)] flex max-w-[var(--available-width)] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-[canvas] text-gray-900 shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,scale,opacity] data-[ending-style]:scale-90 data-[ending-style]:opacity-0 data-[starting-style]:scale-90 data-[starting-style]:opacity-0 dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
+      "origin-[var(--transform-origin)] flex max-w-[var(--available-width)] max-h-[24rem] flex-col overflow-hidden rounded-lg bg-[canvas] text-gray-900 shadow-lg shadow-gray-200 outline-1 outline-gray-200 transition-[transform,opacity] duration-[180ms] [transition-timing-function:cubic-bezier(0.23,1,0.32,1)] data-[ending-style]:scale-[0.97] data-[ending-style]:opacity-0 data-[starting-style]:scale-[0.97] data-[starting-style]:opacity-0 motion-reduce:transform-none motion-reduce:transition-none dark:shadow-none dark:-outline-offset-1 dark:outline-gray-300",
     // Wrapper around the search input.
     searchInputContainer: "shrink-0 p-2",
     // Search input inside the popup.

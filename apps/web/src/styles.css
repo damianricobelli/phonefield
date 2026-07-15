@@ -1,6 +1,6 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@import 'tw-animate-css';
+@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,9 +13,58 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: oklch(0.88 0.06 240);
+  color: oklch(0.21 0.03 250);
+}
+
+:root {
+  --ease-out-ui: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-ui: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.docs-grid {
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.ui-pressable {
+  transition: transform 140ms var(--ease-out-ui);
+}
+
+.ui-pressable:active {
+  transform: scale(0.97);
+}
+
+.code-scrollbar {
+  scrollbar-color: rgb(71 85 105) transparent;
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ui-pressable {
+    transition: none;
+  }
+
+  .ui-pressable:active {
+    transform: none;
+  }
+}
+
 code {
   font-family:
-    source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 :root {
