@@ -1,5 +1,11 @@
 # phonefield
 
+## 0.2.0
+
+### Minor Changes
+
+- [#6](https://github.com/damianricobelli/phonefield/pull/6) [`0916dff`](https://github.com/damianricobelli/phonefield/commit/0916dffc609d7424f45ed900b6b43f7d4fce73f0) Thanks [@damianricobelli](https://github.com/damianricobelli)! - Canonicalize E.164 values across national trunk prefixes, harden FormData parsing, preserve the React client boundary, support React 18 refs, expose country slot props, and align phone input semantics, types, packaging, tests, and documentation.
+
 ## 0.1.1
 
 ### Patch Changes
