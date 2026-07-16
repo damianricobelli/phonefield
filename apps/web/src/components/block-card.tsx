@@ -59,7 +59,7 @@ export function BlockCard({
 					onValueChange={handleViewChange}
 					className="h-full min-h-0 gap-0"
 				>
-					<header className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6 lg:h-44 lg:shrink-0">
+					<header className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6 lg:min-h-24 lg:shrink-0">
 						<div className="min-w-0">
 							<div className="flex flex-wrap items-center gap-2">
 								<h3 className="text-base font-semibold tracking-tight text-slate-950">
@@ -94,7 +94,7 @@ export function BlockCard({
 					<TabsContent
 						value="preview"
 						id={previewId}
-						className="flex min-h-56 flex-1 items-start justify-center bg-slate-50 p-4 sm:p-5"
+						className="flex min-h-56 flex-1 items-center justify-center bg-slate-50 p-4 sm:p-5"
 						style={{
 							backgroundImage:
 								"linear-gradient(to right, rgb(148 163 184 / 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgb(148 163 184 / 0.1) 1px, transparent 1px)",

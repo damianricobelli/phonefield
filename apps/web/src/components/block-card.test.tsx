@@ -11,7 +11,7 @@ import { BlockCard } from "@/components/block-card";
 afterEach(cleanup);
 
 describe("BlockCard", () => {
-	it("top-aligns the preview so compact blocks do not get blank space above", () => {
+	it("uses a compact header and centers the preview in the available height", () => {
 		render(
 			<BlockCard
 				title="Inline country select"
@@ -24,8 +24,8 @@ describe("BlockCard", () => {
 		);
 
 		const preview = screen.getByRole("tabpanel");
-		expect(preview.className).toContain("items-start");
-		expect(preview.className).not.toContain("items-center");
+		expect(preview.className).toContain("items-center");
+		expect(preview.className).not.toContain("items-start");
 		expect(preview.className).toContain("min-h-56");
 		expect(preview.className).not.toContain("min-h-52");
 		expect(preview.className).not.toContain("min-h-80");
@@ -33,7 +33,9 @@ describe("BlockCard", () => {
 		const card = preview.closest("article");
 		expect(card?.className).toContain("h-full");
 		expect(card?.className).toContain("lg:h-[402px]");
-		expect(card?.querySelector("header")?.className).toContain("lg:h-44");
+		expect(card?.querySelector("header")?.className).toContain("lg:min-h-24");
+		expect(card?.querySelector("header")?.className).not.toContain("lg:h-28");
+		expect(card?.querySelector("header")?.className).not.toContain("lg:h-44");
 		expect(card?.querySelector('[data-slot="card"]')).toBeTruthy();
 		expect(card?.querySelector('[data-slot="tabs"]')).toBeTruthy();
 		expect(card?.querySelector('[data-slot="tabs-list"]')).toBeTruthy();
