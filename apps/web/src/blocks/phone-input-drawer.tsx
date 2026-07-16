@@ -51,7 +51,7 @@ export function PhoneInputDrawer() {
 								<Button
 									type="button"
 									variant="ghost"
-									className="h-full rounded-none border-r border-input px-3"
+									className="h-full rounded-none border-0 border-r border-input bg-transparent px-3 shadow-none focus-visible:border-r focus-visible:ring-0"
 									aria-label="Choose country"
 								/>
 							}

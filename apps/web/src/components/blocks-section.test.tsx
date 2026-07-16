@@ -41,6 +41,5 @@ describe("BlocksSection", () => {
 		}
 		expect(document.querySelectorAll("#blocks article")).toHaveLength(10);
 		expect(document.querySelector('[data-slot="input-group"]')).toBeTruthy();
-		expect(document.querySelector('[data-slot="button-group"]')).toBeTruthy();
 	});
 });

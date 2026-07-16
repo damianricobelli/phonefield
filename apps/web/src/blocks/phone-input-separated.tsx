@@ -57,7 +57,7 @@ export function PhoneInputSeparated() {
 					render={<Input />}
 					id="separated-phone"
 					placeholder="11 4321-1234"
-					className="h-10 shadow-sm"
+					className="h-10 bg-background shadow-sm dark:bg-background"
 				/>
 			</Field>
 		</PhoneField.Root>

@@ -44,7 +44,14 @@ export function PhoneInputValidation() {
 			<FieldLabel htmlFor={inputId}>Phone number</FieldLabel>
 			<PhoneField.Root
 				value={value}
-				onValueChange={setValue}
+				onValueChange={(nextValue) => {
+					setValue(nextValue);
+					setTouched(
+						(currentTouched) =>
+							currentTouched ||
+							Boolean(value.nationalNumber || nextValue.nationalNumber),
+					);
+				}}
 				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-2 has-aria-invalid:ring-destructive/20"
 			>
 				<PhoneField.Country
@@ -70,7 +77,6 @@ export function PhoneInputValidation() {
 					id={inputId}
 					aria-describedby={invalid ? errorId : undefined}
 					aria-invalid={invalid || undefined}
-					onBlur={() => setTouched(true)}
 					placeholder="(202) 555-0123"
 					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
 				/>

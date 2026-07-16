@@ -2,16 +2,13 @@ import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { fromFormData } from "phonefield/utils";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import {
-	Field,
-	FieldDescription,
-	FieldGroup,
-	FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+	InputGroup,
+	InputGroupAddon,
+	InputGroupButton,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const countryClassNames = {
 	trigger:
@@ -40,64 +37,56 @@ export function PhoneInputFormData() {
 				setSubmitted(fromFormData(new FormData(event.currentTarget), "phone"));
 			}}
 		>
-			<FieldGroup className="gap-3">
-				<Field className="gap-1">
-					<FieldLabel htmlFor="form-data-phone">Contact phone</FieldLabel>
-					<ButtonGroup className="w-full">
-						<PhoneField.Root
-							defaultCountry="US"
-							name="phone"
-							className="flex h-10 min-w-0 flex-1 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50"
-						>
-							<PhoneField.Country
-								classNames={countryClassNames}
-								icon={<ChevronDownIcon className="size-4" />}
-								slotProps={{ trigger: { "aria-label": "Country" } }}
-								renderCountryValue={(country) => (
-									<>
-										<span aria-hidden>{country.flag}</span>
-										<span>{country.dialCode}</span>
-									</>
-								)}
-								renderCountryItem={(country) => (
-									<>
-										<span aria-hidden>{country.flag}</span>
-										<span className="min-w-0 flex-1 truncate">
-											{country.name}
-										</span>
-										<span className="text-muted-foreground">
-											{country.dialCode}
-										</span>
-									</>
-								)}
-							/>
-							<PhoneField.Input
-								render={<Input />}
-								id="form-data-phone"
-								placeholder="(202) 555-0123"
-								className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
-							/>
-						</PhoneField.Root>
-						<Button type="submit" size="lg" className="h-10 px-4">
-							Submit
-						</Button>
-					</ButtonGroup>
-					<FieldDescription className="truncate font-mono text-xs">
-						{submitted === undefined
-							? "FormData → canonical value"
-							: (submitted?.e164 ?? "Invalid or empty value")}
-					</FieldDescription>
-				</Field>
-				<Field className="gap-1">
-					<FieldLabel htmlFor="contact-note">Note (optional)</FieldLabel>
-					<Textarea
-						id="contact-note"
-						name="note"
-						placeholder="Best time to call"
-						className="h-12 min-h-12 resize-none"
-					/>
-				</Field>
-			</FieldGroup>
+			<Field className="gap-1">
+				<FieldLabel htmlFor="form-data-phone">Contact phone</FieldLabel>
+				<PhoneField.Root defaultCountry="US" name="phone" className="w-full">
+					<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
+						<PhoneField.Country
+							classNames={countryClassNames}
+							icon={<ChevronDownIcon className="size-4" />}
+							slotProps={{ trigger: { "aria-label": "Country" } }}
+							renderCountryValue={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span>{country.dialCode}</span>
+								</>
+							)}
+							renderCountryItem={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{country.name}
+									</span>
+									<span className="text-muted-foreground">
+										{country.dialCode}
+									</span>
+								</>
+							)}
+						/>
+						<PhoneField.Input
+							render={<InputGroupInput />}
+							id="form-data-phone"
+							placeholder="(202) 555-0123"
+							className="h-full px-3"
+						/>
+						<InputGroupAddon align="inline-end" className="h-full p-0">
+							<InputGroupButton
+								type="submit"
+								variant="default"
+								size="sm"
+								className="h-full rounded-none px-4"
+							>
+								Submit
+							</InputGroupButton>
+						</InputGroupAddon>
+					</InputGroup>
+				</PhoneField.Root>
+				<FieldDescription className="truncate font-mono text-xs">
+					{submitted === undefined
+						? "FormData → canonical value"
+						: (submitted?.e164 ?? "Invalid or empty value")}
+				</FieldDescription>
+			</Field>
 		</form>
 	);
 }

@@ -6,6 +6,7 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -38,7 +39,7 @@ export function PhoneInputVerification() {
 	return (
 		<Card
 			size="sm"
-			className="w-full max-w-md gap-2 bg-slate-950 py-3.5 text-white shadow-xl ring-0"
+			className="w-full max-w-md gap-0 bg-slate-950 py-3.5 text-white shadow-xl ring-1 ring-slate-800"
 		>
 			<CardHeader className="gap-0 px-3.5">
 				<CardTitle className="flex items-center gap-2 text-sm text-white">
@@ -87,16 +88,18 @@ export function PhoneInputVerification() {
 							className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 text-white shadow-none placeholder:text-slate-500 focus-visible:ring-0 dark:bg-transparent"
 						/>
 					</PhoneField.Root>
-					<Button
-						type="button"
-						size="lg"
-						disabled={!value.nationalNumber}
-						className="w-full bg-white text-slate-950 hover:bg-slate-200"
-					>
-						Send verification code
-					</Button>
 				</Field>
 			</CardContent>
+			<CardFooter className="border-0 bg-transparent px-3.5 pt-2 pb-0">
+				<Button
+					type="button"
+					size="lg"
+					disabled={!value.nationalNumber}
+					className="w-full bg-white text-slate-950 hover:bg-slate-200"
+				>
+					Send verification code
+				</Button>
+			</CardFooter>
 		</Card>
 	);
 }

@@ -180,10 +180,9 @@ export function BlocksSection() {
 					</strong>{" "}
 					install <code>phonefield</code> and add the shadcn components imported
 					by that recipe. Across this collection they are <code>button</code>,{" "}
-					<code>button-group</code>, <code>card</code>, <code>drawer</code>,{" "}
-					<code>field</code>, <code>input</code>, <code>input-group</code>,{" "}
-					<code>input-otp</code>, <code>separator</code>, <code>tabs</code>, and{" "}
-					<code>textarea</code>.
+					<code>card</code>, <code>drawer</code>, <code>field</code>,{" "}
+					<code>input</code>, <code>input-group</code>, <code>input-otp</code>,{" "}
+					<code>separator</code>, and <code>tabs</code>.
 				</div>
 			</div>
 		</section>
