@@ -77,13 +77,12 @@ export function PhoneInputReactHookForm() {
 									<InputGroupAddon align="inline-start" className="pr-2">
 										<span aria-hidden>🇺🇸</span> +1
 									</InputGroupAddon>
-									<InputGroupAddon align="inline-end" className="h-full p-0">
+									<InputGroupAddon align="inline-end">
 										<InputGroupButton
 											type="submit"
 											variant="default"
 											size="sm"
 											disabled={!form.formState.isValid}
-											className="h-full rounded-none px-4"
 										>
 											Save
 										</InputGroupButton>

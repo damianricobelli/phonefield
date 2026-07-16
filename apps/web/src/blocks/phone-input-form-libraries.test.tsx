@@ -15,6 +15,17 @@ describe.each([
 	["React Hook Form", PhoneInputReactHookForm],
 	["TanStack Form", PhoneInputTanStackForm],
 ])("%s integration", (_name, Example) => {
+	it("keeps the trailing action inset and rounded", () => {
+		render(<Example />);
+		const save = screen.getByRole("button", { name: "Save" });
+		const addon = save.closest('[data-slot="input-group-addon"]');
+
+		expect(addon?.getAttribute("data-align")).toBe("inline-end");
+		expect(addon?.className).not.toContain("p-0");
+		expect(save.className).not.toContain("h-full");
+		expect(save.className).not.toContain("rounded-none");
+	});
+
 	it("validates while typing and submits the canonical number", async () => {
 		render(<Example />);
 		const input = screen.getByRole("textbox", { name: "Phone number" });

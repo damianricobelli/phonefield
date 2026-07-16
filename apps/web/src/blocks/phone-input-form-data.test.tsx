@@ -13,6 +13,9 @@ describe("PhoneInputFormData", () => {
 
 		expect(addon?.getAttribute("data-align")).toBe("inline-end");
 		expect(addon?.closest('[data-slot="input-group"]')).toBeTruthy();
+		expect(addon?.className).not.toContain("p-0");
+		expect(submit.className).not.toContain("h-full");
+		expect(submit.className).not.toContain("rounded-none");
 		expect(
 			screen.queryByRole("textbox", { name: "Note (optional)" }),
 		).toBeNull();

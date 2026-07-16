@@ -74,13 +74,8 @@ export function PhoneInputFormData() {
 								)}
 							/>
 						</InputGroupAddon>
-						<InputGroupAddon align="inline-end" className="h-full p-0">
-							<InputGroupButton
-								type="submit"
-								variant="default"
-								size="sm"
-								className="h-full rounded-none px-4"
-							>
+						<InputGroupAddon align="inline-end">
+							<InputGroupButton type="submit" variant="default" size="sm">
 								Submit
 							</InputGroupButton>
 						</InputGroupAddon>

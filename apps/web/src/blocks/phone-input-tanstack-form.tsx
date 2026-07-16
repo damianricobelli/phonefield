@@ -80,7 +80,7 @@ export function PhoneInputTanStackForm() {
 									<InputGroupAddon align="inline-start" className="pr-2">
 										<span aria-hidden>🇺🇸</span> +1
 									</InputGroupAddon>
-									<InputGroupAddon align="inline-end" className="h-full p-0">
+									<InputGroupAddon align="inline-end">
 										<form.Subscribe
 											selector={(state) => [
 												state.canSubmit,
@@ -92,7 +92,6 @@ export function PhoneInputTanStackForm() {
 													variant="default"
 													size="sm"
 													disabled={!canSubmit || isSubmitting}
-													className="h-full rounded-none px-4"
 												>
 													Save
 												</InputGroupButton>
