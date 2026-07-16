@@ -1,5 +1,7 @@
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const countryClassNames = {
 	trigger:
@@ -24,12 +26,14 @@ export function PhoneInputSeparated() {
 			name="phone"
 			className="grid w-full max-w-lg gap-3 sm:grid-cols-[max-content_minmax(0,1fr)]"
 		>
-			<div className="w-fit space-y-2">
-				<span className="text-sm font-medium">Country</span>
+			<Field className="w-fit">
+				<FieldLabel htmlFor="separated-country">Country</FieldLabel>
 				<PhoneField.Country
 					classNames={countryClassNames}
 					icon={<ChevronDownIcon className="size-4" />}
-					slotProps={{ trigger: { "aria-label": "Country" } }}
+					slotProps={{
+						trigger: { id: "separated-country", "aria-label": "Country" },
+					}}
 					renderCountryValue={(country) => (
 						<span className="flex items-center gap-2">
 							<span aria-hidden>{country.flag}</span>
@@ -45,18 +49,17 @@ export function PhoneInputSeparated() {
 						</>
 					)}
 				/>
-			</div>
+			</Field>
 
-			<div className="space-y-2">
-				<label htmlFor="separated-phone" className="text-sm font-medium">
-					Phone number
-				</label>
+			<Field>
+				<FieldLabel htmlFor="separated-phone">Phone number</FieldLabel>
 				<PhoneField.Input
+					render={<Input />}
 					id="separated-phone"
 					placeholder="11 4321-1234"
-					className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring/50"
+					className="h-10 shadow-sm"
 				/>
-			</div>
+			</Field>
 		</PhoneField.Root>
 	);
 }

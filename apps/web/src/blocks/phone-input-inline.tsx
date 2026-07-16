@@ -1,5 +1,7 @@
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const countryClassNames = {
 	trigger:
@@ -19,10 +21,8 @@ const countryClassNames = {
 
 export function PhoneInputInline() {
 	return (
-		<div className="w-full max-w-md space-y-2">
-			<label htmlFor="inline-phone" className="text-sm font-medium">
-				Phone number
-			</label>
+		<Field className="w-full max-w-md">
+			<FieldLabel htmlFor="inline-phone">Phone number</FieldLabel>
 			<PhoneField.Root
 				defaultCountry="US"
 				name="phone"
@@ -49,14 +49,15 @@ export function PhoneInputInline() {
 					)}
 				/>
 				<PhoneField.Input
+					render={<Input />}
 					id="inline-phone"
 					placeholder="(202) 555-0123"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
 				/>
 			</PhoneField.Root>
-			<p className="text-xs text-muted-foreground">
+			<FieldDescription className="text-xs">
 				Best for settings, profiles, and compact forms.
-			</p>
-		</div>
+			</FieldDescription>
+		</Field>
 	);
 }

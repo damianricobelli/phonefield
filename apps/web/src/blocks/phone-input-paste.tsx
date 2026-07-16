@@ -2,6 +2,12 @@ import { ClipboardPasteIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { getCountries } from "phonefield/utils";
 import * as React from "react";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const countries = getCountries();
 
@@ -16,26 +22,29 @@ export function PhoneInputPaste() {
 	const country = countries.get(value.countryIso2);
 
 	return (
-		<div className="w-full max-w-md space-y-2">
-			<label htmlFor="paste-phone" className="text-sm font-medium">
+		<Field className="w-full max-w-md">
+			<FieldLabel htmlFor="paste-phone">
 				Paste an international number
-			</label>
+			</FieldLabel>
 			<PhoneField.Root
 				value={value}
 				onValueChange={setValue}
-				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50"
+				className="w-full"
 			>
-				<span className="flex min-w-20 shrink-0 items-center gap-2 border-r border-input bg-muted/50 px-3 text-sm">
-					<span aria-hidden>{country?.flag}</span>
-					<span>{country?.dialCode}</span>
-				</span>
-				<PhoneField.Input
-					id="paste-phone"
-					placeholder="Try +54 11 4321 1234"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
-				/>
+				<InputGroup className="h-10 bg-background shadow-sm">
+					<InputGroupAddon className="min-w-20 border-r border-input pr-3">
+						<span aria-hidden>{country?.flag}</span>
+						<span>{country?.dialCode}</span>
+					</InputGroupAddon>
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id="paste-phone"
+						placeholder="Try +54 11 4321 1234"
+						className="h-full px-3"
+					/>
+				</InputGroup>
 			</PhoneField.Root>
-			<div className="flex items-center gap-2 text-xs text-muted-foreground">
+			<FieldDescription className="flex items-center gap-2 text-xs">
 				<ClipboardPasteIcon className="size-3.5" />
 				{value.nationalNumber ? (
 					<span>
@@ -44,7 +53,7 @@ export function PhoneInputPaste() {
 				) : (
 					<span>The country updates from a pasted + prefix.</span>
 				)}
-			</div>
-		</div>
+			</FieldDescription>
+		</Field>
 	);
 }

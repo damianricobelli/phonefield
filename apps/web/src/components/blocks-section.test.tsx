@@ -22,8 +22,25 @@ describe("BlocksSection", () => {
 		render(<BlocksSection />);
 
 		for (const title of blockTitles) {
-			expect(screen.getByRole("heading", { name: title })).toBeTruthy();
+			const heading = screen.getByRole("heading", { name: title });
+			const card = heading.closest("article");
+			expect(card).toBeTruthy();
+			expect(
+				card?.querySelector('[data-slot="field"]'),
+				`${title} should use the shadcn Field`,
+			).toBeTruthy();
+			const phoneInput = card?.querySelector('[data-slot="phone-field-input"]');
+			expect(
+				phoneInput,
+				`${title} should render a PhoneField input`,
+			).toBeTruthy();
+			expect(
+				phoneInput?.className,
+				`${title} should compose the shadcn Input styles`,
+			).toContain("transition-colors");
 		}
 		expect(document.querySelectorAll("#blocks article")).toHaveLength(10);
+		expect(document.querySelector('[data-slot="input-group"]')).toBeTruthy();
+		expect(document.querySelector('[data-slot="button-group"]')).toBeTruthy();
 	});
 });

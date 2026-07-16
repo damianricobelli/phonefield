@@ -1,5 +1,7 @@
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const LATAM_COUNTRIES = ["AR", "BR", "CL", "CO", "MX", "US"] as const;
 
@@ -21,10 +23,8 @@ const countryClassNames = {
 
 export function PhoneInputSubset() {
 	return (
-		<div className="w-full max-w-md space-y-2">
-			<label htmlFor="latam-phone" className="text-sm font-medium">
-				Teléfono de contacto
-			</label>
+		<Field className="w-full max-w-md">
+			<FieldLabel htmlFor="latam-phone">Teléfono de contacto</FieldLabel>
 			<PhoneField.Root
 				countries={LATAM_COUNTRIES}
 				defaultCountry="AR"
@@ -53,14 +53,15 @@ export function PhoneInputSubset() {
 					)}
 				/>
 				<PhoneField.Input
+					render={<Input />}
 					id="latam-phone"
 					placeholder="11 4321-1234"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
 				/>
 			</PhoneField.Root>
-			<p className="text-xs text-muted-foreground">
+			<FieldDescription className="text-xs">
 				Lista acotada y nombres localizados en español.
-			</p>
-		</div>
+			</FieldDescription>
+		</Field>
 	);
 }

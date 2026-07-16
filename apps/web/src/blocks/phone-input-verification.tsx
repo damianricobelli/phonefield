@@ -1,6 +1,17 @@
 import { ChevronDownIcon, LockKeyholeIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 
 const countryClassNames = {
 	trigger:
@@ -25,52 +36,67 @@ export function PhoneInputVerification() {
 	});
 
 	return (
-		<div className="w-full max-w-md rounded-2xl bg-slate-950 p-3.5 text-white shadow-xl">
-			<div className="flex items-center gap-2 text-sm font-medium">
-				<LockKeyholeIcon className="size-4 text-emerald-400" />
-				Secure verification
-			</div>
-			<p className="mt-1 text-xs leading-5 text-slate-400">
-				We will text a one-time code to this number.
-			</p>
-
-			<PhoneField.Root
-				value={value}
-				onValueChange={setValue}
-				className="mt-3 flex h-10 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20"
-			>
-				<PhoneField.Country
-					classNames={countryClassNames}
-					icon={<ChevronDownIcon className="size-4" />}
-					slotProps={{ trigger: { "aria-label": "Country" } }}
-					renderCountryValue={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span>{country.dialCode}</span>
-						</>
-					)}
-					renderCountryItem={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span className="min-w-0 flex-1 truncate">{country.name}</span>
-							<span className="text-slate-400">{country.dialCode}</span>
-						</>
-					)}
-				/>
-				<PhoneField.Input
-					aria-label="Phone number"
-					placeholder="20 7946 0018"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm text-white outline-none placeholder:text-slate-500"
-				/>
-			</PhoneField.Root>
-
-			<button
-				type="button"
-				disabled={!value.nationalNumber}
-				className="mt-2 h-9 w-full rounded-xl bg-white text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
-			>
-				Send verification code
-			</button>
-		</div>
+		<Card
+			size="sm"
+			className="w-full max-w-md gap-2 bg-slate-950 py-3.5 text-white shadow-xl ring-0"
+		>
+			<CardHeader className="gap-0 px-3.5">
+				<CardTitle className="flex items-center gap-2 text-sm text-white">
+					<LockKeyholeIcon className="size-4 text-emerald-400" />
+					Secure verification
+				</CardTitle>
+				<CardDescription className="text-xs leading-5 text-slate-400">
+					We will text a one-time code to this number.
+				</CardDescription>
+			</CardHeader>
+			<Separator className="bg-slate-800" />
+			<CardContent className="px-3.5">
+				<Field>
+					<FieldLabel htmlFor="verification-phone" className="sr-only">
+						Phone number
+					</FieldLabel>
+					<PhoneField.Root
+						value={value}
+						onValueChange={setValue}
+						className="flex h-10 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20"
+					>
+						<PhoneField.Country
+							classNames={countryClassNames}
+							icon={<ChevronDownIcon className="size-4" />}
+							slotProps={{ trigger: { "aria-label": "Country" } }}
+							renderCountryValue={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span>{country.dialCode}</span>
+								</>
+							)}
+							renderCountryItem={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{country.name}
+									</span>
+									<span className="text-slate-400">{country.dialCode}</span>
+								</>
+							)}
+						/>
+						<PhoneField.Input
+							render={<Input />}
+							id="verification-phone"
+							placeholder="20 7946 0018"
+							className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 text-white shadow-none placeholder:text-slate-500 focus-visible:ring-0 dark:bg-transparent"
+						/>
+					</PhoneField.Root>
+					<Button
+						type="button"
+						size="lg"
+						disabled={!value.nationalNumber}
+						className="w-full bg-white text-slate-950 hover:bg-slate-200"
+					>
+						Send verification code
+					</Button>
+				</Field>
+			</CardContent>
+		</Card>
 	);
 }

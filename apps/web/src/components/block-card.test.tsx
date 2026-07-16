@@ -32,6 +32,9 @@ describe("BlockCard", () => {
 		const card = preview.closest("article");
 		expect(card?.className).toContain("h-full");
 		expect(card?.querySelector("header")?.className).toContain("lg:h-44");
+		expect(card?.querySelector('[data-slot="card"]')).toBeTruthy();
+		expect(card?.querySelector('[data-slot="tabs"]')).toBeTruthy();
+		expect(card?.querySelector('[data-slot="tabs-list"]')).toBeTruthy();
 	});
 
 	it("switches from the live preview to copyable source code", () => {
@@ -89,7 +92,9 @@ describe("BlockCard", () => {
 			);
 		});
 		expect(
-			screen.getByRole("button", { name: "Copy code" }).hasAttribute("disabled"),
+			screen
+				.getByRole("button", { name: "Copy code" })
+				.hasAttribute("disabled"),
 		).toBe(false);
 	});
 });

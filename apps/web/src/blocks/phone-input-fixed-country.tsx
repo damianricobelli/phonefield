@@ -1,13 +1,17 @@
 import { LockIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 export function PhoneInputFixedCountry() {
 	return (
-		<div className="w-full max-w-md space-y-2">
+		<Field className="w-full max-w-md">
 			<div className="flex items-center justify-between gap-3">
-				<label htmlFor="fixed-country-phone" className="text-sm font-medium">
-					US phone number
-				</label>
+				<FieldLabel htmlFor="fixed-country-phone">US phone number</FieldLabel>
 				<span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
 					<LockIcon className="size-3" /> Fixed region
 				</span>
@@ -16,21 +20,24 @@ export function PhoneInputFixedCountry() {
 				defaultCountry="US"
 				countries={["US"]}
 				name="phone"
-				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50"
+				className="w-full"
 			>
-				<span className="flex shrink-0 items-center gap-2 border-r border-input bg-muted/50 px-3 text-sm">
-					<span aria-hidden>🇺🇸</span>
-					<span>+1</span>
-				</span>
-				<PhoneField.Input
-					id="fixed-country-phone"
-					placeholder="(202) 555-0123"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
-				/>
+				<InputGroup className="h-10 bg-background shadow-sm">
+					<InputGroupAddon className="border-r border-input pr-3">
+						<span aria-hidden>🇺🇸</span>
+						<span>+1</span>
+					</InputGroupAddon>
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id="fixed-country-phone"
+						placeholder="(202) 555-0123"
+						className="h-full px-3"
+					/>
+				</InputGroup>
 			</PhoneField.Root>
-			<p className="text-xs text-muted-foreground">
+			<FieldDescription className="text-xs">
 				No country picker when the market is already known.
-			</p>
-		</div>
+			</FieldDescription>
+		</Field>
 	);
 }

@@ -7,6 +7,7 @@ import {
 	FieldError,
 	FieldLabel,
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 const countryClassNames = {
 	trigger:
@@ -65,12 +66,13 @@ export function PhoneInputValidation() {
 					)}
 				/>
 				<PhoneField.Input
+					render={<Input />}
 					id={inputId}
 					aria-describedby={invalid ? errorId : undefined}
 					aria-invalid={invalid || undefined}
 					onBlur={() => setTouched(true)}
 					placeholder="(202) 555-0123"
-					className="min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
+					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
 				/>
 			</PhoneField.Root>
 			{invalid ? (
