@@ -7,7 +7,11 @@ import {
 	FieldError,
 	FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const countryClassNames = {
 	trigger:
@@ -52,34 +56,45 @@ export function PhoneInputValidation() {
 							Boolean(value.nationalNumber || nextValue.nationalNumber),
 					);
 				}}
-				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50 has-aria-invalid:border-destructive has-aria-invalid:ring-2 has-aria-invalid:ring-destructive/20"
+				className="w-full"
 			>
-				<PhoneField.Country
-					classNames={countryClassNames}
-					icon={<ChevronDownIcon className="size-4" />}
-					slotProps={{ trigger: { "aria-label": "Country" } }}
-					renderCountryValue={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span>{country.dialCode}</span>
-						</>
-					)}
-					renderCountryItem={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span className="min-w-0 flex-1 truncate">{country.name}</span>
-							<span className="text-muted-foreground">{country.dialCode}</span>
-						</>
-					)}
-				/>
-				<PhoneField.Input
-					render={<Input />}
-					id={inputId}
-					aria-describedby={invalid ? errorId : undefined}
-					aria-invalid={invalid || undefined}
-					placeholder="(202) 555-0123"
-					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
-				/>
+				<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id={inputId}
+						aria-describedby={invalid ? errorId : undefined}
+						aria-invalid={invalid || undefined}
+						placeholder="(202) 555-0123"
+						className="h-full px-3"
+					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="h-full cursor-default p-0"
+					>
+						<PhoneField.Country
+							classNames={countryClassNames}
+							icon={<ChevronDownIcon className="size-4" />}
+							slotProps={{ trigger: { "aria-label": "Country" } }}
+							renderCountryValue={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span>{country.dialCode}</span>
+								</>
+							)}
+							renderCountryItem={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{country.name}
+									</span>
+									<span className="text-muted-foreground">
+										{country.dialCode}
+									</span>
+								</>
+							)}
+						/>
+					</InputGroupAddon>
+				</InputGroup>
 			</PhoneField.Root>
 			{invalid ? (
 				<FieldError id={errorId}>

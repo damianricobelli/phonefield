@@ -1,7 +1,11 @@
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const countryClassNames = {
 	trigger:
@@ -23,37 +27,44 @@ export function PhoneInputInline() {
 	return (
 		<Field className="w-full max-w-md">
 			<FieldLabel htmlFor="inline-phone">Phone number</FieldLabel>
-			<PhoneField.Root
-				defaultCountry="US"
-				name="phone"
-				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm transition focus-within:ring-2 focus-within:ring-ring/50 has-data-popup-open:ring-2 has-data-popup-open:ring-ring/50"
-			>
-				<PhoneField.Country
-					classNames={countryClassNames}
-					icon={<ChevronDownIcon className="size-4" />}
-					slotProps={{ trigger: { "aria-label": "Country" } }}
-					renderCountryValue={(country) => (
-						<span className="flex items-center gap-2">
-							<span aria-hidden>{country.flag}</span>
-							<span>{country.dialCode}</span>
-							<span className="sr-only">{country.name}</span>
-						</span>
-					)}
-					renderCountryItem={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span className="min-w-0 flex-1 truncate">{country.name}</span>
-							<span className="text-muted-foreground">{country.dialCode}</span>
-							<CheckIcon className="hidden size-4 group-data-selected:block" />
-						</>
-					)}
-				/>
-				<PhoneField.Input
-					render={<Input />}
-					id="inline-phone"
-					placeholder="(202) 555-0123"
-					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
-				/>
+			<PhoneField.Root defaultCountry="US" name="phone" className="w-full">
+				<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id="inline-phone"
+						placeholder="(202) 555-0123"
+						className="h-full px-3"
+					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="h-full cursor-default p-0"
+					>
+						<PhoneField.Country
+							classNames={countryClassNames}
+							icon={<ChevronDownIcon className="size-4" />}
+							slotProps={{ trigger: { "aria-label": "Country" } }}
+							renderCountryValue={(country) => (
+								<span className="flex items-center gap-2">
+									<span aria-hidden>{country.flag}</span>
+									<span>{country.dialCode}</span>
+									<span className="sr-only">{country.name}</span>
+								</span>
+							)}
+							renderCountryItem={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{country.name}
+									</span>
+									<span className="text-muted-foreground">
+										{country.dialCode}
+									</span>
+									<CheckIcon className="hidden size-4 group-data-selected:block" />
+								</>
+							)}
+						/>
+					</InputGroupAddon>
+				</InputGroup>
 			</PhoneField.Root>
 			<FieldDescription className="text-xs">
 				Best for settings, profiles, and compact forms.

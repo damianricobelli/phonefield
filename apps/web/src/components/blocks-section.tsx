@@ -140,7 +140,7 @@ export function BlocksSection() {
 					<BlockCard
 						title="Verification card"
 						description="A controlled composition with a purpose-built call to action for OTP and onboarding flows."
-						labels={["controlled", "dark"]}
+						labels={["controlled", "card"]}
 						code={loadVerificationCode}
 					>
 						<PhoneInputVerification />

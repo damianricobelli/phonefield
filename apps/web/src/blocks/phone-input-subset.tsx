@@ -1,7 +1,11 @@
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const LATAM_COUNTRIES = ["AR", "BR", "CL", "CO", "MX", "US"] as const;
 
@@ -30,34 +34,45 @@ export function PhoneInputSubset() {
 				defaultCountry="AR"
 				lang="es-AR"
 				name="phone"
-				className="flex h-10 overflow-hidden rounded-lg border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50 has-data-popup-open:ring-2 has-data-popup-open:ring-ring/50"
+				className="w-full"
 			>
-				<PhoneField.Country
-					inputPlaceholder="Buscar país"
-					noResultsText="Sin resultados"
-					classNames={countryClassNames}
-					icon={<ChevronDownIcon className="size-4" />}
-					slotProps={{ trigger: { "aria-label": "País" } }}
-					renderCountryValue={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span>{country.dialCode}</span>
-						</>
-					)}
-					renderCountryItem={(country) => (
-						<>
-							<span aria-hidden>{country.flag}</span>
-							<span className="min-w-0 flex-1 truncate">{country.name}</span>
-							<span className="text-muted-foreground">{country.dialCode}</span>
-						</>
-					)}
-				/>
-				<PhoneField.Input
-					render={<Input />}
-					id="latam-phone"
-					placeholder="11 4321-1234"
-					className="h-full min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
-				/>
+				<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id="latam-phone"
+						placeholder="11 4321-1234"
+						className="h-full px-3"
+					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="h-full cursor-default p-0"
+					>
+						<PhoneField.Country
+							inputPlaceholder="Buscar país"
+							noResultsText="Sin resultados"
+							classNames={countryClassNames}
+							icon={<ChevronDownIcon className="size-4" />}
+							slotProps={{ trigger: { "aria-label": "País" } }}
+							renderCountryValue={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span>{country.dialCode}</span>
+								</>
+							)}
+							renderCountryItem={(country) => (
+								<>
+									<span aria-hidden>{country.flag}</span>
+									<span className="min-w-0 flex-1 truncate">
+										{country.name}
+									</span>
+									<span className="text-muted-foreground">
+										{country.dialCode}
+									</span>
+								</>
+							)}
+						/>
+					</InputGroupAddon>
+				</InputGroup>
 			</PhoneField.Root>
 			<FieldDescription className="text-xs">
 				Lista acotada y nombres localizados en español.

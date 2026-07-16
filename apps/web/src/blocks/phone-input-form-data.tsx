@@ -41,34 +41,39 @@ export function PhoneInputFormData() {
 				<FieldLabel htmlFor="form-data-phone">Contact phone</FieldLabel>
 				<PhoneField.Root defaultCountry="US" name="phone" className="w-full">
 					<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
-						<PhoneField.Country
-							classNames={countryClassNames}
-							icon={<ChevronDownIcon className="size-4" />}
-							slotProps={{ trigger: { "aria-label": "Country" } }}
-							renderCountryValue={(country) => (
-								<>
-									<span aria-hidden>{country.flag}</span>
-									<span>{country.dialCode}</span>
-								</>
-							)}
-							renderCountryItem={(country) => (
-								<>
-									<span aria-hidden>{country.flag}</span>
-									<span className="min-w-0 flex-1 truncate">
-										{country.name}
-									</span>
-									<span className="text-muted-foreground">
-										{country.dialCode}
-									</span>
-								</>
-							)}
-						/>
 						<PhoneField.Input
 							render={<InputGroupInput />}
 							id="form-data-phone"
 							placeholder="(202) 555-0123"
 							className="h-full px-3"
 						/>
+						<InputGroupAddon
+							align="inline-start"
+							className="h-full cursor-default p-0"
+						>
+							<PhoneField.Country
+								classNames={countryClassNames}
+								icon={<ChevronDownIcon className="size-4" />}
+								slotProps={{ trigger: { "aria-label": "Country" } }}
+								renderCountryValue={(country) => (
+									<>
+										<span aria-hidden>{country.flag}</span>
+										<span>{country.dialCode}</span>
+									</>
+								)}
+								renderCountryItem={(country) => (
+									<>
+										<span aria-hidden>{country.flag}</span>
+										<span className="min-w-0 flex-1 truncate">
+											{country.name}
+										</span>
+										<span className="text-muted-foreground">
+											{country.dialCode}
+										</span>
+									</>
+								)}
+							/>
+						</InputGroupAddon>
 						<InputGroupAddon align="inline-end" className="h-full p-0">
 							<InputGroupButton
 								type="submit"

@@ -38,8 +38,25 @@ describe("BlocksSection", () => {
 				phoneInput?.className,
 				`${title} should compose the shadcn Input styles`,
 			).toContain("transition-colors");
+
+			const inputGroup = card?.querySelector('[data-slot="input-group"]');
+			if (title === "Separated country select") {
+				expect(inputGroup).toBeNull();
+				continue;
+			}
+
+			expect(
+				inputGroup,
+				`${title} should use the shadcn InputGroup`,
+			).toBeTruthy();
+			expect(
+				phoneInput?.hasAttribute("data-input-group-control"),
+				`${title} should participate in InputGroup focus management`,
+			).toBe(true);
 		}
 		expect(document.querySelectorAll("#blocks article")).toHaveLength(10);
-		expect(document.querySelector('[data-slot="input-group"]')).toBeTruthy();
+		expect(
+			document.querySelectorAll('#blocks [data-slot="input-group"]'),
+		).toHaveLength(9);
 	});
 });

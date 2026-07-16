@@ -114,15 +114,18 @@ export function PhoneInputOtp() {
 				className="w-full"
 			>
 				<InputGroup className="h-10 bg-background shadow-sm">
-					<InputGroupAddon className="border-r border-input pr-3">
-						<span aria-hidden>🇺🇸</span> +1
-					</InputGroupAddon>
 					<PhoneField.Input
 						render={<InputGroupInput />}
 						id="otp-phone"
 						placeholder="(202) 555-0123"
 						className="h-full px-3"
 					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="border-r border-input pr-3"
+					>
+						<span aria-hidden>🇺🇸</span> +1
+					</InputGroupAddon>
 				</InputGroup>
 			</PhoneField.Root>
 			<Button

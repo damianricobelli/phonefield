@@ -23,16 +23,19 @@ export function PhoneInputFixedCountry() {
 				className="w-full"
 			>
 				<InputGroup className="h-10 bg-background shadow-sm">
-					<InputGroupAddon className="border-r border-input pr-3">
-						<span aria-hidden>🇺🇸</span>
-						<span>+1</span>
-					</InputGroupAddon>
 					<PhoneField.Input
 						render={<InputGroupInput />}
 						id="fixed-country-phone"
 						placeholder="(202) 555-0123"
 						className="h-full px-3"
 					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="border-r border-input pr-3"
+					>
+						<span aria-hidden>🇺🇸</span>
+						<span>+1</span>
+					</InputGroupAddon>
 				</InputGroup>
 			</PhoneField.Root>
 			<FieldDescription className="text-xs">

@@ -15,5 +15,10 @@ describe("PhoneInputVerification", () => {
 		expect(card?.querySelector('[data-slot="card-header"]')).toBeTruthy();
 		expect(card?.querySelector('[data-slot="card-content"]')).toBeTruthy();
 		expect(card?.querySelector('[data-slot="card-footer"]')).toBeTruthy();
+		expect(card?.className).toContain("bg-card");
+		expect(card?.className).not.toContain("slate-950");
+		expect(
+			screen.getByRole("button", { name: "Send verification code" }).className,
+		).not.toContain("bg-white");
 	});
 });

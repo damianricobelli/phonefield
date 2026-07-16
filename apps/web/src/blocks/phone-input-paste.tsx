@@ -32,16 +32,19 @@ export function PhoneInputPaste() {
 				className="w-full"
 			>
 				<InputGroup className="h-10 bg-background shadow-sm">
-					<InputGroupAddon className="min-w-20 border-r border-input pr-3">
-						<span aria-hidden>{country?.flag}</span>
-						<span>{country?.dialCode}</span>
-					</InputGroupAddon>
 					<PhoneField.Input
 						render={<InputGroupInput />}
 						id="paste-phone"
 						placeholder="Try +54 11 4321 1234"
 						className="h-full px-3"
 					/>
+					<InputGroupAddon
+						align="inline-start"
+						className="min-w-20 border-r border-input pr-3"
+					>
+						<span aria-hidden>{country?.flag}</span>
+						<span>{country?.dialCode}</span>
+					</InputGroupAddon>
 				</InputGroup>
 			</PhoneField.Root>
 			<FieldDescription className="flex items-center gap-2 text-xs">
