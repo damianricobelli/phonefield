@@ -1,3 +1,5 @@
+import { MenuIcon } from "lucide-react";
+import * as React from "react";
 import {
 	ComponentApiReference,
 	UtilitiesApiReference,
@@ -5,6 +7,17 @@ import {
 import { DocBlock } from "@/components/doc-block";
 import { InstallTabs } from "@/components/install-tabs";
 import { MigrationComparison } from "@/components/migration-comparison";
+import { RecipeBrowser } from "@/components/recipe-browser";
+import { recipeCategories, recipes } from "@/components/recipe-catalog";
+import { Button } from "@/components/ui/button";
+import {
+	Drawer,
+	DrawerContent,
+	DrawerDescription,
+	DrawerHeader,
+	DrawerTitle,
+	DrawerTrigger,
+} from "@/components/ui/drawer";
 import { useDocumentationScrollSpy } from "@/hooks/use-documentation-scroll-spy";
 import { migrationComparisons } from "@/lib/migration";
 import {
@@ -20,7 +33,7 @@ import {
 } from "@/lib/snippets";
 import { cn } from "@/lib/utils";
 
-const DOC_NAV = [
+const REFERENCE_NAV = [
 	{ id: "getting-started", label: "Getting started" },
 	{ id: "styling", label: "Styling" },
 	{ id: "forms", label: "Forms & submission" },
@@ -29,7 +42,10 @@ const DOC_NAV = [
 	{ id: "migration", label: "Migrate to v1" },
 ] as const;
 
-const DOC_SECTION_IDS = DOC_NAV.map((item) => item.id);
+const DOC_SECTION_IDS = [
+	...recipes.map((recipe) => `recipe-${recipe.id}`),
+	...REFERENCE_NAV.map((item) => item.id),
+];
 
 const STYLING_SLOTS = [
 	["phone-field", "Root layout"],
@@ -45,6 +61,115 @@ const STYLING_SLOTS = [
 	["phone-field-country-item", "Country option"],
 	["phone-field-country-empty", "Empty state"],
 ] as const;
+
+function DocumentationNav({
+	currentHash,
+	onNavigate,
+}: {
+	currentHash: string;
+	onNavigate?: () => void;
+}) {
+	return (
+		<nav aria-label="Documentation sections" className="space-y-5">
+			<div>
+				<p className="px-3 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+					Recipes
+				</p>
+				<div className="mt-2 space-y-4">
+					{recipeCategories.map((category) => (
+						<div key={category}>
+							<p className="px-3 text-[11px] font-medium text-slate-400">
+								{category}
+							</p>
+							<div className="mt-1 space-y-0.5">
+								{recipes
+									.filter((recipe) => recipe.category === category)
+									.map((recipe) => (
+										<a
+											key={recipe.id}
+											href={`#recipe-${recipe.id}`}
+											aria-current={
+												currentHash === `recipe-${recipe.id}`
+													? "location"
+													: undefined
+											}
+											onClick={onNavigate}
+											className={cn(
+												"ui-pressable block rounded-lg px-3 py-1.5 text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-600",
+												currentHash === `recipe-${recipe.id}` &&
+													"bg-sky-50 font-semibold text-sky-800",
+											)}
+										>
+											{recipe.shortTitle}
+										</a>
+									))}
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+
+			<div>
+				<p className="px-3 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+					Guides & reference
+				</p>
+				<div className="mt-2 space-y-0.5">
+					{REFERENCE_NAV.map((item) => (
+						<a
+							key={item.id}
+							href={`#${item.id}`}
+							aria-current={currentHash === item.id ? "location" : undefined}
+							onClick={onNavigate}
+							className={cn(
+								"ui-pressable block rounded-lg px-3 py-1.5 text-sm text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-600",
+								currentHash === item.id && "font-semibold text-slate-950",
+							)}
+						>
+							{item.label}
+						</a>
+					))}
+				</div>
+			</div>
+		</nav>
+	);
+}
+
+function MobileDocumentationNav({ currentHash }: { currentHash: string }) {
+	const [open, setOpen] = React.useState(false);
+
+	return (
+		<div className="lg:hidden">
+			<Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
+				<DrawerTrigger
+					render={
+						<Button
+							type="button"
+							variant="outline"
+							className="w-full justify-between"
+						/>
+					}
+				>
+					<span className="truncate">Browse recipes &amp; docs</span>
+					<MenuIcon className="size-4 text-slate-500" />
+				</DrawerTrigger>
+				<DrawerContent className="mx-auto max-w-xl">
+					<DrawerHeader className="border-b px-5 pb-4 text-left">
+						<DrawerTitle>Browse PhoneField</DrawerTitle>
+						<DrawerDescription>
+							Recipes, integration guides, and API reference.
+						</DrawerDescription>
+					</DrawerHeader>
+					<div className="min-h-0 flex-1 overflow-y-auto p-4">
+						<DocumentationNav
+							currentHash={currentHash}
+							onNavigate={() => setOpen(false)}
+						/>
+					</div>
+				</DrawerContent>
+			</Drawer>
+		</div>
+	);
+}
 
 function DocSubsection({
 	id,
@@ -73,8 +198,7 @@ function DocSubsection({
 }
 
 export function DocSection() {
-	const { currentHash, beginHashNavigation } =
-		useDocumentationScrollSpy(DOC_SECTION_IDS);
+	const { currentHash } = useDocumentationScrollSpy(DOC_SECTION_IDS);
 
 	return (
 		<section className="relative border-t border-slate-200 bg-white">
@@ -92,45 +216,44 @@ export function DocSection() {
 					</p>
 				</header>
 
-				<div className="mt-12 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-start">
-					<aside className="min-w-0 lg:sticky lg:top-24 lg:h-fit lg:self-start">
-						<p className="mb-3 hidden text-xs font-semibold tracking-wide text-slate-500 uppercase lg:block">
-							On this page
-						</p>
-						<nav
-							aria-label="Documentation sections"
-							className="code-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 pb-2 lg:mx-0 lg:block lg:space-y-1 lg:overflow-visible lg:px-0 lg:pb-0"
-						>
-							{DOC_NAV.map((item) => (
-								<a
-									key={item.id}
-									href={`#${item.id}`}
-									aria-current={
-										currentHash === item.id ? "location" : undefined
-									}
-									onClick={(event) => {
-										if (
-											event.button === 0 &&
-											!event.altKey &&
-											!event.ctrlKey &&
-											!event.metaKey &&
-											!event.shiftKey
-										) {
-											beginHashNavigation(item.id);
-										}
-									}}
-									className={cn(
-										"ui-pressable block shrink-0 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-600",
-										currentHash === item.id && "font-semibold text-slate-950",
-									)}
-								>
-									{item.label}
-								</a>
-							))}
-						</nav>
+				<div className="mt-10">
+					<MobileDocumentationNav currentHash={currentHash} />
+				</div>
+
+				<div className="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-12 lg:mt-12 lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start">
+					<aside className="code-scrollbar hidden max-h-[calc(100dvh-7rem)] min-w-0 overflow-y-auto pr-2 lg:sticky lg:top-24 lg:block lg:self-start">
+						<DocumentationNav currentHash={currentHash} />
 					</aside>
 
 					<div className="min-w-0 space-y-16 md:space-y-20">
+						<DocSubsection
+							id="recipes"
+							title="Copy-paste recipes"
+							description="Browse every production pattern as regular documentation. Sidebar links are native anchors, so the page remains predictable while you scroll."
+						>
+							<div className="space-y-16 md:space-y-20">
+								{recipeCategories.map((category) => (
+									<section
+										key={category}
+										aria-labelledby={`recipe-category-${category.toLowerCase().replaceAll(" ", "-")}`}
+										className="space-y-10"
+									>
+										<h3
+											id={`recipe-category-${category.toLowerCase().replaceAll(" ", "-")}`}
+											className="text-sm font-semibold tracking-wide text-slate-500 uppercase"
+										>
+											{category}
+										</h3>
+										{recipes
+											.filter((recipe) => recipe.category === category)
+											.map((recipe) => (
+												<RecipeBrowser key={recipe.id} recipe={recipe} />
+											))}
+									</section>
+								))}
+							</div>
+						</DocSubsection>
+
 						<DocSubsection
 							id="getting-started"
 							title="Getting started"
@@ -235,6 +358,14 @@ export function DocSection() {
 								description="Localize country names and sorting with the lang prop."
 								code={i18nSnippet}
 							/>
+
+							<div className="rounded-r-xl border-sky-400 border-l-2 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-700">
+								<strong>SSR-safe country defaults.</strong> Resolve the account
+								or tenant country on the server and pass it through{" "}
+								<code>defaultCountry</code>. Do not replace it after mount from
+								a browser-only locale lookup: defaults are intentionally read
+								once, and replacing them can overwrite a user's selection.
+							</div>
 						</DocSubsection>
 
 						<DocSubsection
@@ -326,6 +457,12 @@ export function DocSection() {
 								Use <strong>uncontrolled</strong> for simple forms. Switch to{" "}
 								<strong>controlled</strong> when external state needs to
 								orchestrate validation, steps, or async flows.
+							</div>
+							<div className="rounded-r-xl border-slate-400 border-l-2 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+								<strong>Validate again on the server.</strong> Treat submitted
+								country and national-number fields as untrusted. Use{" "}
+								<code>fromFormData</code> at the server boundary to rebuild
+								E.164 and validity instead of accepting derived client values.
 							</div>
 							<DocBlock
 								title="Uncontrolled + FormData (Client / Server)"
