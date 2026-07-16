@@ -25,7 +25,7 @@ export function PhoneInputVerification() {
 	});
 
 	return (
-		<div className="w-full max-w-md rounded-2xl bg-slate-950 p-5 text-white shadow-xl">
+		<div className="w-full max-w-md rounded-2xl bg-slate-950 p-3.5 text-white shadow-xl">
 			<div className="flex items-center gap-2 text-sm font-medium">
 				<LockKeyholeIcon className="size-4 text-emerald-400" />
 				Secure verification
@@ -37,7 +37,7 @@ export function PhoneInputVerification() {
 			<PhoneField.Root
 				value={value}
 				onValueChange={setValue}
-				className="mt-4 flex h-11 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20"
+				className="mt-3 flex h-10 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20"
 			>
 				<PhoneField.Country
 					classNames={countryClassNames}
@@ -67,7 +67,7 @@ export function PhoneInputVerification() {
 			<button
 				type="button"
 				disabled={!value.nationalNumber}
-				className="mt-3 h-10 w-full rounded-xl bg-white text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+				className="mt-2 h-9 w-full rounded-xl bg-white text-sm font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
 			>
 				Send verification code
 			</button>

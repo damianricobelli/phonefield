@@ -3,7 +3,7 @@ import { PhoneField } from "phonefield";
 
 const countryClassNames = {
 	trigger:
-		"group/phone-country-trigger flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition-[border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:ring-2 data-popup-open:ring-ring/50",
+		"group/phone-country-trigger flex h-10 w-fit items-center justify-between gap-3 rounded-lg border border-input bg-background px-3 text-sm shadow-sm outline-none transition-[border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:ring-2 data-popup-open:ring-ring/50",
 	icon: "text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
@@ -22,9 +22,9 @@ export function PhoneInputSeparated() {
 		<PhoneField.Root
 			defaultCountry="AR"
 			name="phone"
-			className="grid w-full max-w-lg gap-3 sm:grid-cols-[12rem_1fr]"
+			className="grid w-full max-w-lg gap-3 sm:grid-cols-[max-content_minmax(0,1fr)]"
 		>
-			<div className="space-y-2">
+			<div className="w-fit space-y-2">
 				<span className="text-sm font-medium">Country</span>
 				<PhoneField.Country
 					classNames={countryClassNames}

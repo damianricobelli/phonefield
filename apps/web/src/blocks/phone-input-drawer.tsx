@@ -40,7 +40,7 @@ export function PhoneInputDrawer() {
 			<PhoneField.Root
 				value={value}
 				onValueChange={setValue}
-				className="flex h-11 overflow-hidden rounded-xl border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50"
+				className="flex h-10 overflow-hidden rounded-xl border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/50"
 			>
 				<Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
 					<DrawerTrigger
