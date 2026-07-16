@@ -40,11 +40,6 @@ describe("BlocksSection", () => {
 			).toContain("transition-colors");
 
 			const inputGroup = card?.querySelector('[data-slot="input-group"]');
-			if (title === "Separated country select") {
-				expect(inputGroup).toBeNull();
-				continue;
-			}
-
 			expect(
 				inputGroup,
 				`${title} should use the shadcn InputGroup`,
@@ -57,6 +52,6 @@ describe("BlocksSection", () => {
 		expect(document.querySelectorAll("#blocks article")).toHaveLength(10);
 		expect(
 			document.querySelectorAll('#blocks [data-slot="input-group"]'),
-		).toHaveLength(9);
+		).toHaveLength(10);
 	});
 });

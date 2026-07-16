@@ -18,8 +18,10 @@ describe("PhoneInputSeparated", () => {
 		const countryTrigger = screen.getByRole("combobox", { name: "Country" });
 		expect(countryTrigger.className).toContain("w-fit");
 		expect(countryTrigger.className).not.toContain("w-full");
-		expect(
-			screen.getByRole("textbox", { name: "Phone number" }).className,
-		).toContain("bg-background");
+		const inputGroup = screen
+			.getByRole("textbox", { name: "Phone number" })
+			.closest('[data-slot="input-group"]');
+		expect(inputGroup).toBeTruthy();
+		expect(inputGroup?.className).toContain("bg-background");
 	});
 });

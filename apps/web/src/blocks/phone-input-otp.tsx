@@ -120,10 +120,7 @@ export function PhoneInputOtp() {
 						placeholder="(202) 555-0123"
 						className="h-full px-3"
 					/>
-					<InputGroupAddon
-						align="inline-start"
-						className="border-r border-input pr-3"
-					>
+					<InputGroupAddon align="inline-start" className="pr-2">
 						<span aria-hidden>🇺🇸</span> +1
 					</InputGroupAddon>
 				</InputGroup>

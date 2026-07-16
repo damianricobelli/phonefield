@@ -3,21 +3,26 @@ import { PhoneField } from "phonefield";
 import { isValid, parse } from "phonefield/utils";
 import * as React from "react";
 import { FormatRow } from "@/components/format-row";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 
 const liveCountryClassNames: PhoneField.CountryClassNames = {
 	trigger:
-		"group/phone-country-trigger flex h-full w-fit shrink-0 cursor-default items-center gap-2 border-slate-200 border-r bg-white px-3 text-left text-base text-slate-900 outline-none transition-colors duration-150 select-none hover:bg-slate-50 focus-visible:bg-slate-50 data-[popup-open]:bg-slate-50",
-	icon: "flex shrink-0 text-slate-500 transition-transform duration-150 [transition-timing-function:var(--ease-out-ui)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
+		"group/phone-country-trigger flex h-full w-fit shrink-0 items-center gap-2 border-r border-input px-3 text-sm outline-none transition-colors duration-150 hover:bg-accent focus-visible:bg-accent data-popup-open:bg-accent",
+	icon: "shrink-0 text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
 	positioner: "isolate z-50",
 	popup:
-		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl bg-white text-slate-900 shadow-2xl shadow-slate-900/15 ring-1 ring-slate-900/5 transition-[transform,opacity] duration-150 [transition-timing-function:var(--ease-out-ui)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
-	searchInputContainer: "shrink-0 border-slate-100 border-b p-1.5",
+		"group/phone-country relative flex max-h-[min(24rem,var(--available-height))] w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] flex-col overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
+	searchInputContainer: "shrink-0 border-b p-2",
 	searchInput:
-		"h-9 w-full rounded-lg border border-transparent bg-slate-100 px-3 text-sm font-normal text-slate-900 outline-none placeholder:text-slate-500 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/15",
+		"h-9 w-full rounded-lg bg-muted px-3 text-sm outline-none focus:ring-2 focus:ring-ring",
 	list: "min-h-0 flex-1 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0",
-	item: "relative flex w-full cursor-default items-center gap-2.5 rounded-lg py-2 pr-3 pl-3 text-sm outline-hidden select-none data-[highlighted]:bg-slate-100 data-[highlighted]:text-slate-950 data-[selected]:bg-slate-100 data-[selected]:text-slate-950",
+	item: "relative flex w-full cursor-default items-center gap-2.5 rounded-lg py-2 pr-3 pl-3 text-sm outline-hidden select-none data-highlighted:bg-accent data-selected:bg-accent",
 	empty:
-		"hidden w-full justify-center px-3 py-6 text-center text-sm text-slate-500 group-data-empty/phone-country:flex",
+		"hidden w-full justify-center px-3 py-6 text-center text-sm text-muted-foreground group-data-empty/phone-country:flex",
 };
 
 const SAMPLES = [
@@ -114,56 +119,66 @@ export function LivePlayground() {
 						<PhoneField.Root
 							value={value}
 							onValueChange={setValue}
-							className="flex h-11 min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/15 has-data-popup-open:border-sky-500 has-data-popup-open:ring-2 has-data-popup-open:ring-sky-500/15 has-aria-invalid:border-red-500 has-aria-invalid:ring-2 has-aria-invalid:ring-red-500/10 has-aria-invalid:focus-within:border-red-500 has-aria-invalid:focus-within:ring-red-500/10 has-data-valid:border-emerald-500"
+							className="w-full"
 						>
-							<PhoneField.Country
-								inputPlaceholder="Search country"
-								noResultsText="No countries found"
-								slotProps={{
-									trigger: {
-										"aria-label": "Country",
-									},
-								}}
-								classNames={liveCountryClassNames}
-								icon={<ChevronDownIcon aria-hidden className="size-4" />}
-								positioning={{
-									side: "bottom",
-									align: "start",
-									sideOffset: 8,
-								}}
-								renderCountryValue={(country) => (
-									<span className="flex min-w-0 items-center gap-2">
-										<span aria-hidden>{country.flag}</span>
-										<span>{country.dialCode}</span>
-										<span className="sr-only">{country.name}</span>
-									</span>
-								)}
-								renderCountryItem={(country) => (
-									<span className="flex min-w-0 flex-1 items-center gap-2.5">
-										<span aria-hidden className="shrink-0">
-											{country.flag}
-										</span>
-										<span className="min-w-0 flex-1 truncate">
-											{country.name}
-										</span>
-										<span className="shrink-0 text-slate-500">
-											{country.dialCode}
-										</span>
-									</span>
-								)}
-							/>
-							<PhoneField.Input
-								aria-describedby={showPhoneError ? phoneErrorId : undefined}
-								aria-invalid={showPhoneError || undefined}
-								data-valid={
-									phoneTouched && hasNumber && !showPhoneError ? "" : undefined
-								}
-								id={phoneInputId}
-								className="h-full w-auto min-w-0 flex-1 border-0 bg-white px-3 text-base text-slate-900 outline-none placeholder:text-slate-400"
-								onBlur={() => setPhoneTouched(true)}
-								onChange={() => setPhoneTouched(true)}
-								placeholder="Enter phone number"
-							/>
+							<InputGroup className="h-10 overflow-hidden bg-background shadow-sm has-data-popup-open:border-ring has-data-popup-open:ring-3 has-data-popup-open:ring-ring/50 has-data-valid:border-emerald-500">
+								<PhoneField.Input
+									render={<InputGroupInput />}
+									aria-describedby={showPhoneError ? phoneErrorId : undefined}
+									aria-invalid={showPhoneError || undefined}
+									data-valid={
+										phoneTouched && hasNumber && !showPhoneError
+											? ""
+											: undefined
+									}
+									id={phoneInputId}
+									className="h-full px-3"
+									onBlur={() => setPhoneTouched(true)}
+									onChange={() => setPhoneTouched(true)}
+									placeholder="Enter phone number"
+								/>
+								<InputGroupAddon
+									align="inline-start"
+									className="h-full cursor-default p-0"
+								>
+									<PhoneField.Country
+										inputPlaceholder="Search country"
+										noResultsText="No countries found"
+										slotProps={{
+											trigger: {
+												"aria-label": "Country",
+											},
+										}}
+										classNames={liveCountryClassNames}
+										icon={<ChevronDownIcon aria-hidden className="size-4" />}
+										positioning={{
+											side: "bottom",
+											align: "start",
+											sideOffset: 8,
+										}}
+										renderCountryValue={(country) => (
+											<span className="flex min-w-0 items-center gap-2">
+												<span aria-hidden>{country.flag}</span>
+												<span>{country.dialCode}</span>
+												<span className="sr-only">{country.name}</span>
+											</span>
+										)}
+										renderCountryItem={(country) => (
+											<span className="flex min-w-0 flex-1 items-center gap-2.5">
+												<span aria-hidden className="shrink-0">
+													{country.flag}
+												</span>
+												<span className="min-w-0 flex-1 truncate">
+													{country.name}
+												</span>
+												<span className="shrink-0 text-slate-500">
+													{country.dialCode}
+												</span>
+											</span>
+										)}
+									/>
+								</InputGroupAddon>
+							</InputGroup>
 						</PhoneField.Root>
 
 						{showPhoneError ? (

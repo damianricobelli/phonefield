@@ -38,10 +38,7 @@ export function PhoneInputPaste() {
 						placeholder="Try +54 11 4321 1234"
 						className="h-full px-3"
 					/>
-					<InputGroupAddon
-						align="inline-start"
-						className="min-w-20 border-r border-input pr-3"
-					>
+					<InputGroupAddon align="inline-start" className="min-w-20 pr-2">
 						<span aria-hidden>{country?.flag}</span>
 						<span>{country?.dialCode}</span>
 					</InputGroupAddon>

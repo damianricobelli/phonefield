@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 
 const countryClassNames = {
 	trigger:
@@ -53,12 +53,14 @@ export function PhoneInputSeparated() {
 
 			<Field>
 				<FieldLabel htmlFor="separated-phone">Phone number</FieldLabel>
-				<PhoneField.Input
-					render={<Input />}
-					id="separated-phone"
-					placeholder="11 4321-1234"
-					className="h-10 bg-background shadow-sm dark:bg-background"
-				/>
+				<InputGroup className="h-10 bg-background shadow-sm">
+					<PhoneField.Input
+						render={<InputGroupInput />}
+						id="separated-phone"
+						placeholder="11 4321-1234"
+						className="h-full px-3"
+					/>
+				</InputGroup>
 			</Field>
 		</PhoneField.Root>
 	);

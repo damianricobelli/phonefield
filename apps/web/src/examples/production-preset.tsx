@@ -1,6 +1,11 @@
 import { ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
 import { inputClassName } from "@/components/ui/input";
+import {
+	InputGroup,
+	InputGroupAddon,
+	InputGroupInput,
+} from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
 const defaultCountryClassNames = {
@@ -74,38 +79,43 @@ export function ProductionPhoneField({
 	return (
 		<PhoneField.Root
 			{...props}
-			className={cn(
-				"flex h-10 min-w-0 overflow-hidden rounded-lg border border-input bg-background shadow-sm transition-[border-color,box-shadow] duration-150",
-				"focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50",
-				"has-data-popup-open:border-ring has-data-popup-open:ring-2 has-data-popup-open:ring-ring/50",
-				"has-aria-invalid:border-destructive has-aria-invalid:ring-2 has-aria-invalid:ring-destructive/20",
-				className,
-			)}
+			className={cn("w-full", className)}
 			defaultCountry={defaultCountry}
 		>
-			<PhoneField.Country
-				{...resolvedCountryProps}
-				classNames={countryClassNames}
-				icon={icon}
-				renderCountryItem={countryItemRenderer}
-				renderCountryValue={countryValueRenderer}
-				slotProps={{
-					...resolvedCountrySlotProps,
-					trigger: {
-						"aria-label": "Country",
-						...countryTriggerProps,
-					},
-				}}
-			/>
-			<PhoneField.Input
-				{...resolvedInputProps}
-				aria-label={inputAriaLabel}
+			<InputGroup
 				className={cn(
-					inputClassName,
-					"h-full w-auto min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0",
-					inputClassNameOverride,
+					"h-10 overflow-hidden bg-background shadow-sm transition-[border-color,box-shadow] duration-150",
+					"focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50",
+					"has-data-popup-open:border-ring has-data-popup-open:ring-2 has-data-popup-open:ring-ring/50",
+					"has-aria-invalid:border-destructive has-aria-invalid:ring-2 has-aria-invalid:ring-destructive/20",
 				)}
-			/>
+			>
+				<PhoneField.Input
+					render={<InputGroupInput />}
+					{...resolvedInputProps}
+					aria-label={inputAriaLabel}
+					className={cn("h-full px-3", inputClassNameOverride)}
+				/>
+				<InputGroupAddon
+					align="inline-start"
+					className="h-full cursor-default p-0"
+				>
+					<PhoneField.Country
+						{...resolvedCountryProps}
+						classNames={countryClassNames}
+						icon={icon}
+						renderCountryItem={countryItemRenderer}
+						renderCountryValue={countryValueRenderer}
+						slotProps={{
+							...resolvedCountrySlotProps,
+							trigger: {
+								"aria-label": "Country",
+								...countryTriggerProps,
+							},
+						}}
+					/>
+				</InputGroupAddon>
+			</InputGroup>
 		</PhoneField.Root>
 	);
 }

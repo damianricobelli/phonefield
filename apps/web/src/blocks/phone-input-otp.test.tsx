@@ -18,6 +18,9 @@ describe("PhoneInputOtp", () => {
 			},
 		);
 		render(<PhoneInputOtp />);
+		const addon = document.querySelector('[data-slot="input-group-addon"]');
+		expect(addon).toBeTruthy();
+		expect(addon?.className).not.toContain("border-r");
 
 		fireEvent.change(
 			screen.getByRole("textbox", { name: "Verify your phone" }),
