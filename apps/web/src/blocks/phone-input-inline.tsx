@@ -3,17 +3,18 @@ import { PhoneField } from "phonefield";
 
 const countryClassNames = {
 	trigger:
-		"group flex h-full shrink-0 items-center gap-2 border-r border-input px-3 text-sm outline-none transition-colors hover:bg-accent focus-visible:bg-accent data-popup-open:bg-accent",
-	icon: "text-muted-foreground transition-transform group-data-popup-open:rotate-180",
-	positioner: "z-50",
+		"group/phone-country-trigger flex h-full shrink-0 items-center gap-2 border-r border-input px-3 text-sm outline-none transition-colors duration-150 hover:bg-accent focus-visible:bg-accent data-popup-open:bg-accent",
+	icon: "text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
+	positioner: "isolate z-50",
 	popup:
-		"w-72 max-w-[var(--available-width)] overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl",
+		"group/phone-country w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-xl transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
 	searchInputContainer: "border-b p-2",
 	searchInput:
 		"h-9 w-full rounded-lg bg-muted px-3 text-sm outline-none focus:ring-2 focus:ring-ring",
 	list: "max-h-64 overflow-y-auto p-1",
-	item: "group flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-accent data-selected:bg-accent",
-	empty: "p-6 text-center text-sm text-muted-foreground",
+	item: "group flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none transition-colors duration-100 data-highlighted:bg-accent data-selected:bg-accent",
+	empty:
+		"hidden w-full justify-center px-3 py-6 text-center text-sm text-muted-foreground group-data-empty/phone-country:flex",
 } satisfies PhoneField.CountryClassNames;
 
 export function PhoneInputInline() {

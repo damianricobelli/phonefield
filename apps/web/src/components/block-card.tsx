@@ -87,7 +87,7 @@ export function BlockCard({
 				<div
 					id={previewId}
 					role="tabpanel"
-					className="flex min-h-80 items-center justify-center bg-slate-50 p-5 sm:p-8"
+					className="flex min-h-80 items-start justify-center bg-slate-50 p-5 sm:p-8"
 					style={{
 						backgroundImage:
 							"linear-gradient(to right, rgb(148 163 184 / 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgb(148 163 184 / 0.1) 1px, transparent 1px)",

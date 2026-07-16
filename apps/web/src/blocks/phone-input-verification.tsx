@@ -4,17 +4,18 @@ import * as React from "react";
 
 const countryClassNames = {
 	trigger:
-		"group flex h-full shrink-0 items-center gap-1.5 border-r border-slate-700 bg-slate-900 px-3 text-sm text-white outline-none hover:bg-slate-800 focus-visible:bg-slate-800",
-	icon: "text-slate-400 transition-transform group-data-popup-open:rotate-180",
-	positioner: "z-50",
+		"group/phone-country-trigger flex h-full shrink-0 items-center gap-1.5 border-r border-slate-700 bg-slate-900 px-3 text-sm text-white outline-none transition-colors duration-150 hover:bg-slate-800 focus-visible:bg-slate-800 data-popup-open:bg-slate-800",
+	icon: "text-slate-400 transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
+	positioner: "isolate z-50",
 	popup:
-		"w-72 max-w-[var(--available-width)] overflow-hidden rounded-xl border border-slate-700 bg-slate-900 text-white shadow-2xl",
+		"group/phone-country w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] overflow-hidden rounded-xl border border-slate-700 bg-slate-900 text-white shadow-2xl transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
 	searchInputContainer: "border-b border-slate-700 p-2",
 	searchInput:
 		"h-9 w-full rounded-lg bg-slate-800 px-3 text-sm outline-none placeholder:text-slate-500 focus:ring-2 focus:ring-sky-500",
 	list: "max-h-64 overflow-y-auto p-1",
-	item: "flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-slate-800 data-selected:bg-slate-800",
-	empty: "p-6 text-center text-sm text-slate-400",
+	item: "flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none transition-colors duration-100 data-highlighted:bg-slate-800 data-selected:bg-slate-800",
+	empty:
+		"hidden w-full justify-center px-3 py-6 text-center text-sm text-slate-400 group-data-empty/phone-country:flex",
 } satisfies PhoneField.CountryClassNames;
 
 export function PhoneInputVerification() {
@@ -41,6 +42,7 @@ export function PhoneInputVerification() {
 				<PhoneField.Country
 					classNames={countryClassNames}
 					icon={<ChevronDownIcon className="size-4" />}
+					slotProps={{ trigger: { "aria-label": "Country" } }}
 					renderCountryValue={(country) => (
 						<>
 							<span aria-hidden>{country.flag}</span>
