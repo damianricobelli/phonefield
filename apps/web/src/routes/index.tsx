@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { BlocksSection } from "@/components/blocks-section";
 import { DocSection } from "@/components/doc-section";
 import { HeroSection } from "@/components/hero-section";
 import { LivePlayground } from "@/components/live-playground";
@@ -24,6 +25,8 @@ function App() {
 				>
 					<LivePlayground />
 				</section>
+
+				<BlocksSection />
 
 				<section id="docs" className="relative scroll-mt-20">
 					<DocSection />
