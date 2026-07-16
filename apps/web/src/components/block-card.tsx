@@ -52,7 +52,7 @@ export function BlockCard({
 	};
 
 	return (
-		<article className="h-full min-w-0 lg:h-[386px]">
+		<article className="h-full min-w-0 lg:h-[402px]">
 			<Card className="h-full gap-0 rounded-2xl border border-slate-200 py-0 shadow-sm shadow-slate-200/50 ring-0">
 				<Tabs
 					value={view}
@@ -94,7 +94,7 @@ export function BlockCard({
 					<TabsContent
 						value="preview"
 						id={previewId}
-						className="flex min-h-52 flex-1 items-start justify-center bg-slate-50 p-4 sm:p-5"
+						className="flex min-h-56 flex-1 items-start justify-center bg-slate-50 p-4 sm:p-5"
 						style={{
 							backgroundImage:
 								"linear-gradient(to right, rgb(148 163 184 / 0.1) 1px, transparent 1px), linear-gradient(to bottom, rgb(148 163 184 / 0.1) 1px, transparent 1px)",
@@ -106,7 +106,7 @@ export function BlockCard({
 					<TabsContent
 						value="code"
 						id={codeId}
-						className="min-h-52 flex-1 flex-col bg-slate-950 data-active:flex"
+						className="min-h-56 flex-1 flex-col bg-slate-950 data-active:flex"
 					>
 						<div className="flex h-11 items-center justify-between border-b border-white/10 px-4">
 							<span className="font-mono text-[11px] text-slate-500">
@@ -120,7 +120,7 @@ export function BlockCard({
 						</div>
 						<HighlightedCode
 							code={displayedSource}
-							className="max-h-40 rounded-none"
+							className="max-h-44 rounded-none"
 						/>
 					</TabsContent>
 				</Tabs>

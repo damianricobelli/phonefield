@@ -26,11 +26,13 @@ describe("BlockCard", () => {
 		const preview = screen.getByRole("tabpanel");
 		expect(preview.className).toContain("items-start");
 		expect(preview.className).not.toContain("items-center");
-		expect(preview.className).toContain("min-h-52");
+		expect(preview.className).toContain("min-h-56");
+		expect(preview.className).not.toContain("min-h-52");
 		expect(preview.className).not.toContain("min-h-80");
 
 		const card = preview.closest("article");
 		expect(card?.className).toContain("h-full");
+		expect(card?.className).toContain("lg:h-[402px]");
 		expect(card?.querySelector("header")?.className).toContain("lg:h-44");
 		expect(card?.querySelector('[data-slot="card"]')).toBeTruthy();
 		expect(card?.querySelector('[data-slot="tabs"]')).toBeTruthy();
@@ -60,7 +62,8 @@ describe("BlockCard", () => {
 		expect(
 			screen.getByRole("tab", { name: "Code" }).getAttribute("aria-selected"),
 		).toBe("true");
-		expect(document.querySelector("pre")?.className).toContain("max-h-40");
+		expect(document.querySelector("pre")?.className).toContain("max-h-44");
+		expect(document.querySelector("pre")?.className).not.toContain("max-h-40");
 		expect(document.querySelector("pre")?.className).not.toContain(
 			"max-h-[32rem]",
 		);
