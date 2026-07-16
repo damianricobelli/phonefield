@@ -86,7 +86,7 @@ export type Recipe = {
 	accessibility: string;
 };
 
-export const recipes: readonly Recipe[] = [
+export const recipes = [
 	{
 		id: "inline",
 		title: "Inline country select",
@@ -339,7 +339,9 @@ export const recipes: readonly Recipe[] = [
 		accessibility:
 			"The trigger names its purpose and the modal drawer keeps search and options reachable.",
 	},
-] as const;
+] as const satisfies readonly Recipe[];
+
+export type RecipeId = (typeof recipes)[number]["id"];
 
 export const recipeCategories = [
 	"Basics",
@@ -352,8 +354,10 @@ export const featuredRecipeIds = [
 	"inline",
 	"react-hook-form",
 	"drawer",
-] as const;
+] as const satisfies readonly RecipeId[];
 
-export function findRecipe(id: string | undefined) {
-	return recipes.find((recipe) => recipe.id === id) ?? recipes[0];
+export function findRecipe(id: RecipeId) {
+	const recipe = recipes.find((item) => item.id === id);
+	if (!recipe) throw new Error(`Unknown recipe: ${id}`);
+	return recipe;
 }
