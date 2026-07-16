@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("PhoneInputOtp", () => {
-	it("renders the OTP slots on a solid background", () => {
+	it("keeps every verification step in one neutral card", () => {
 		vi.stubGlobal(
 			"ResizeObserver",
 			class {
@@ -18,6 +18,7 @@ describe("PhoneInputOtp", () => {
 			},
 		);
 		render(<PhoneInputOtp />);
+		expect(document.querySelector('[data-slot="card"]')).toBeTruthy();
 		const addon = document.querySelector('[data-slot="input-group-addon"]');
 		expect(addon).toBeTruthy();
 		expect(addon?.className).not.toContain("border-r");
@@ -37,5 +38,16 @@ describe("PhoneInputOtp", () => {
 		for (const slot of slots) {
 			expect(slot.className).toContain("bg-background");
 		}
+
+		fireEvent.change(
+			screen.getByRole("textbox", { name: "Enter the 6-digit code" }),
+			{ target: { value: "123456" } },
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Verify code" }));
+
+		expect(screen.getByText("Phone verified")).toBeTruthy();
+		const card = document.querySelector('[data-slot="card"]');
+		expect(card).toBeTruthy();
+		expect(card?.className).not.toContain("emerald");
 	});
 });
