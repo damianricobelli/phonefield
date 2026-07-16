@@ -121,7 +121,7 @@ export const recipes = [
 			),
 		useWhen:
 			"Use it when labels and column alignment matter more than compactness.",
-		requires: ["field", "input", "input-group"],
+		requires: ["field", "input"],
 		accessibility: "Each control has its own visible label and focus target.",
 	},
 	{
