@@ -41,7 +41,7 @@ export function HeroSection() {
 							<ArrowRight className="size-4" aria-hidden="true" />
 						</a>
 						<a
-							href="#docs"
+							href="/docs"
 							className="ui-pressable inline-flex h-11 items-center rounded-xl border border-slate-300 bg-white/85 px-5 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-150 hover:border-slate-400 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600"
 						>
 							Read docs

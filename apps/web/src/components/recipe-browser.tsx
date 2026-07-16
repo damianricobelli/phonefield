@@ -6,7 +6,11 @@ export function RecipeBrowser({ recipe }: { recipe: Recipe }) {
 	const Preview = recipe.component;
 
 	return (
-		<div id={`recipe-${recipe.id}`} className="scroll-mt-24 space-y-4">
+		<div
+			id={`doc-recipe-${recipe.id}`}
+			data-doc-anchor={`recipe-${recipe.id}`}
+			className="scroll-mt-24 space-y-4"
+		>
 			<BlockCard
 				key={recipe.id}
 				title={recipe.title}

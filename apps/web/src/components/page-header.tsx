@@ -1,9 +1,9 @@
 import { SiGithub as Github } from "@icons-pack/react-simple-icons";
 
 const nav = [
-	{ label: "Playground", href: "#playground" },
-	{ label: "Recipes", href: "#recipe-inline" },
-	{ label: "Documentation", href: "#getting-started" },
+	{ label: "Playground", href: "/#playground" },
+	{ label: "Recipes", href: "/recipes" },
+	{ label: "Documentation", href: "/docs" },
 ] as const;
 
 export function PageHeader() {

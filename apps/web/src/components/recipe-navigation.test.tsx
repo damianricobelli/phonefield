@@ -1,8 +1,13 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { DocSection } from "@/components/doc-section";
+import { documentationNavigation } from "@/components/doc-section";
+import {
+	DocumentationSection,
+	DocumentationShell,
+} from "@/components/documentation-shell";
 import { FeaturedRecipesSection } from "@/components/featured-recipes-section";
 import { recipeCategories, recipes } from "@/components/recipe-catalog";
+import { RecipesSection, recipeNavigation } from "@/components/recipes-section";
 
 afterEach(() => {
 	cleanup();
@@ -32,22 +37,56 @@ describe("recipe catalog", () => {
 	});
 });
 
-describe("documentation recipe browser", () => {
-	it("renders every recipe in the document flow behind native anchor links", () => {
-		render(<DocSection />);
+describe("recipes page", () => {
+	it("renders every recipe in its own document flow", () => {
+		render(<RecipesSection />);
 		expect(
 			screen.getByRole("heading", { name: "Inline country select" }),
 		).toBeTruthy();
 		expect(
 			screen.getByRole("heading", { name: "React Hook Form + Zod" }),
 		).toBeTruthy();
-		expect(document.querySelectorAll("#recipes [id^=recipe-]")).toHaveLength(
-			recipes.length + recipeCategories.length,
-		);
 		expect(
-			screen
-				.getAllByRole("link", { name: "React Hook Form" })[0]
-				?.getAttribute("href"),
-		).toBe("#recipe-react-hook-form");
+			document.querySelectorAll('[data-doc-anchor^="recipe-"]'),
+		).toHaveLength(recipes.length);
+		expect(
+			recipeNavigation
+				.flatMap((group) => group.items)
+				.find((item) => item.label === "React Hook Form")?.hash,
+		).toBe("recipe-react-hook-form");
+	});
+
+	it("uses the shared active style for guides and reference links", async () => {
+		window.history.replaceState(null, "", "/#getting-started");
+		render(
+			<DocumentationShell
+				header={{
+					eyebrow: "Reference",
+					title: "Documentation",
+					description: "Reference",
+				}}
+				navigation={documentationNavigation}
+				mobileNavigation={{
+					label: "Browse documentation",
+					title: "Documentation",
+					description: "Reference",
+				}}
+			>
+				<DocumentationSection
+					anchor="getting-started"
+					title="Getting started"
+					description="Start here"
+				>
+					<div />
+				</DocumentationSection>
+			</DocumentationShell>,
+		);
+
+		await waitFor(() => {
+			const link = screen.getByRole("link", { name: "Getting started" });
+			expect(link.className).toContain("bg-sky-50");
+			expect(link.className).toContain("font-semibold");
+			expect(link.className).toContain("text-sky-800");
+		});
 	});
 });

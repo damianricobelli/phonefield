@@ -5,8 +5,9 @@ const links: readonly {
 	href: string;
 	external?: boolean;
 }[] = [
-	{ label: "Try it", href: "#playground" },
-	{ label: "Docs", href: "#docs" },
+	{ label: "Try it", href: "/#playground" },
+	{ label: "Recipes", href: "/recipes" },
+	{ label: "Docs", href: "/docs" },
 	{
 		label: "GitHub",
 		href: "https://github.com/damianricobelli/phonefield",
