@@ -1,9 +1,10 @@
 import { SiGithub as Github } from "@icons-pack/react-simple-icons";
+import { Link } from "@tanstack/react-router";
 
 const nav = [
-	{ label: "Playground", href: "/#playground" },
-	{ label: "Recipes", href: "/recipes" },
-	{ label: "Documentation", href: "/docs" },
+	{ label: "Playground", to: "/", hash: "playground" },
+	{ label: "Recipes", to: "/recipes", hash: undefined },
+	{ label: "Documentation", to: "/docs", hash: undefined },
 ] as const;
 
 export function PageHeader() {
@@ -26,14 +27,33 @@ export function PageHeader() {
 					className="flex items-center gap-0.5"
 					aria-label="Primary navigation"
 				>
-					{nav.map(({ label, href }) => (
-						<a
-							key={href}
-							href={href}
-							className="ui-pressable hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-sky-600 sm:inline-flex"
+					{nav.map(({ label, to, hash }) => (
+						<Link
+							key={to}
+							to={to}
+							hash={hash}
+							viewTransition
+							activeOptions={{ exact: true, includeHash: false }}
+							activeProps={{ className: "text-slate-950" }}
+							inactiveProps={{
+								className:
+									"text-slate-600 hover:bg-slate-100 hover:text-slate-950",
+							}}
+							className="ui-pressable relative isolate hidden overflow-hidden rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-sky-600 sm:inline-flex"
 						>
-							{label}
-						</a>
+							{({ isActive }) => (
+								<>
+									{isActive && (
+										<span
+											className="primary-nav-indicator absolute inset-0 -z-10 rounded-lg bg-slate-100 shadow-[inset_0_0_0_1px_rgb(226_232_240/0.8)]"
+											data-testid="primary-nav-indicator"
+											aria-hidden="true"
+										/>
+									)}
+									<span className="relative z-10">{label}</span>
+								</>
+							)}
+						</Link>
 					))}
 					<a
 						href="https://github.com/damianricobelli/phonefield"
