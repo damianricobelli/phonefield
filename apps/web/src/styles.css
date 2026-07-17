@@ -19,7 +19,6 @@ body {
 
 html {
   scroll-behavior: smooth;
-  view-transition-name: none;
 }
 
 ::selection {
@@ -112,21 +111,6 @@ html {
   transform: scale(0.97);
 }
 
-.primary-nav-indicator {
-  view-transition-name: primary-nav-indicator;
-}
-
-::view-transition-group(primary-nav-indicator) {
-  animation-duration: 240ms;
-  animation-timing-function: var(--ease-in-out-ui);
-}
-
-::view-transition-old(primary-nav-indicator),
-::view-transition-new(primary-nav-indicator) {
-  animation: none;
-  mix-blend-mode: normal;
-}
-
 .code-scrollbar {
   scrollbar-color: rgb(71 85 105) transparent;
   scrollbar-width: thin;
@@ -143,10 +127,6 @@ html {
 
   .ui-pressable:active {
     transform: none;
-  }
-
-  .primary-nav-indicator {
-    view-transition-name: none;
   }
 }
 
