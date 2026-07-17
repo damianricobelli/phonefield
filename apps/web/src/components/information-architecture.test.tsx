@@ -1,23 +1,33 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DocSection } from "@/components/doc-section";
-import { FeaturedDocumentationSection } from "@/components/featured-documentation-section";
 import { FeaturedRecipesSection } from "@/components/featured-recipes-section";
+import { HeroSection } from "@/components/hero-section";
+import { HomePage } from "@/components/home-page";
+import { PageFooter } from "@/components/page-footer";
 import { PageHeader } from "@/components/page-header";
+
+vi.mock("@/components/live-playground", () => ({
+	LivePlayground: () => null,
+}));
 
 afterEach(cleanup);
 
 describe("site information architecture", () => {
-	it("keeps documentation on the home page and out of the header", () => {
+	it("renders the complete documentation on the home page and out of the header", () => {
+		render(<HomePage />);
+		expect(
+			screen.getByRole("heading", { name: "Getting started" }),
+		).toBeTruthy();
+		expect(screen.getByRole("heading", { name: "Component API" })).toBeTruthy();
+		expect(screen.queryByRole("link", { name: "Documentation" })).toBeNull();
+	});
+
+	it("keeps recipes in the primary navigation", () => {
 		render(<PageHeader />);
 		expect(
 			screen.getByRole("link", { name: "Recipes" }).getAttribute("href"),
 		).toBe("/recipes");
-		expect(screen.queryByRole("link", { name: "Documentation" })).toBeNull();
-
-		cleanup();
-		render(<FeaturedDocumentationSection />);
-		expect(screen.getByText("Documentation")).toBeTruthy();
 	});
 
 	it("sends featured recipes to their dedicated page", () => {
@@ -29,16 +39,17 @@ describe("site information architecture", () => {
 		).toBe("/recipes#recipe-react-hook-form");
 	});
 
-	it("offers documentation entry points below the featured recipes", () => {
-		render(<FeaturedDocumentationSection />);
+	it("links documentation entry points back to the home section", () => {
+		render(<HeroSection />);
 		expect(
-			screen
-				.getByRole("link", { name: /Getting started/ })
-				.getAttribute("href"),
-		).toBe("/docs#getting-started");
+			screen.getByRole("link", { name: "Read docs" }).getAttribute("href"),
+		).toBe("/#documentation");
+
+		cleanup();
+		render(<PageFooter />);
 		expect(
-			screen.getByRole("link", { name: /Component API/ }).getAttribute("href"),
-		).toBe("/docs#api");
+			screen.getByRole("link", { name: "Docs" }).getAttribute("href"),
+		).toBe("/#documentation");
 	});
 
 	it("keeps recipes out of the documentation content", () => {

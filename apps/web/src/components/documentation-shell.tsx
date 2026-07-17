@@ -148,14 +148,17 @@ function MobileDocumentationNav({
 export function DocumentationShell({
 	children,
 	header,
+	headingLevel = 1,
 	mobileNavigation,
 	navigation,
 }: {
 	children: React.ReactNode;
 	header: DocumentationHeader;
+	headingLevel?: 1 | 2;
 	mobileNavigation: MobileNavigationCopy;
 	navigation: readonly DocumentationNavGroup[];
 }) {
+	const Heading = headingLevel === 1 ? "h1" : "h2";
 	const [mobileNavigationOpen, setMobileNavigationOpen] = React.useState(false);
 	const hashes = React.useMemo(
 		() => navigation.flatMap((group) => group.items.map((item) => item.hash)),
@@ -171,9 +174,9 @@ export function DocumentationShell({
 					<p className="text-xs font-semibold tracking-[0.14em] text-sky-700 uppercase">
 						{header.eyebrow}
 					</p>
-					<h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
+					<Heading className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">
 						{header.title}
-					</h1>
+					</Heading>
 					<p className="mt-3 text-base leading-7 text-slate-600">
 						{header.description}
 					</p>

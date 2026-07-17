@@ -7,7 +7,7 @@ const links: readonly {
 }[] = [
 	{ label: "Try it", href: "/#playground" },
 	{ label: "Recipes", href: "/recipes" },
-	{ label: "Docs", href: "/docs" },
+	{ label: "Docs", href: "/#documentation" },
 	{
 		label: "GitHub",
 		href: "https://github.com/damianricobelli/phonefield",
