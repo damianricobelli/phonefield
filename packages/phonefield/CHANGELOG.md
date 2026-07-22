@@ -1,5 +1,11 @@
 # phonefield
 
+## 1.0.2
+
+### Patch Changes
+
+- [#14](https://github.com/damianricobelli/phonefield/pull/14) [`dd5c887`](https://github.com/damianricobelli/phonefield/commit/dd5c887f39a7a372c13f0c88b35d317471ca498c) Thanks [@damianricobelli](https://github.com/damianricobelli)! - feat(web,phonefield): add copy-paste PhoneField recipes, revamp documentation and update package deps
+
 ## 1.0.1
 
 ### Patch Changes
