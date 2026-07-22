@@ -1,4 +1,5 @@
 import { CopyButton } from "@/components/copy-button";
+import { cn } from "@/lib/utils";
 
 type TokenType = "plain" | "keyword" | "string" | "comment" | "type" | "tag";
 
@@ -111,7 +112,10 @@ export function HighlightedCode({
 	const lines = code.replace(/\n$/, "").split("\n");
 	return (
 		<pre
-			className={`code-scrollbar max-h-[32rem] overflow-auto rounded-b-xl bg-slate-950 p-4 text-xs leading-6 sm:text-[13px] ${className}`}
+			className={cn(
+				"code-scrollbar max-h-[32rem] overflow-auto rounded-b-xl bg-slate-950 p-4 text-xs leading-6 sm:text-[13px]",
+				className,
+			)}
 		>
 			<code className="block w-max min-w-full">
 				{lines.map((line, lineIndex) => (

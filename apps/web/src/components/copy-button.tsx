@@ -1,5 +1,7 @@
 import { Check, Copy } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function CopyButton({
 	text,
@@ -8,7 +10,7 @@ export function CopyButton({
 }: {
 	text: string;
 	className?: string;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+} & Omit<React.ComponentProps<typeof Button>, "children">) {
 	const [copied, setCopied] = React.useState(false);
 	const resetTimerRef = React.useRef<number | null>(null);
 
@@ -37,10 +39,11 @@ export function CopyButton({
 	};
 
 	return (
-		<button
+		<Button
 			type="button"
+			variant="outline"
 			onClick={handleCopy}
-			className={`ui-pressable inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 text-xs font-medium text-slate-600 shadow-sm transition-colors duration-150 hover:bg-slate-50 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${className}`}
+			className={cn("ui-pressable text-xs", className)}
 			aria-label={copied ? "Copied" : "Copy code"}
 			{...props}
 		>
@@ -50,6 +53,6 @@ export function CopyButton({
 				<Copy className="size-3.5" aria-hidden="true" />
 			)}
 			<span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
-		</button>
+		</Button>
 	);
 }

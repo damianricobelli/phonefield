@@ -42,10 +42,15 @@ describe("ProductionPhoneField", () => {
 		const country = screen.getByRole("combobox", { name: "Country" });
 		const phone = screen.getByRole("textbox", { name: "Phone number" });
 		const root = container.querySelector('[data-slot="phone-field"]');
+		const inputGroup = container.querySelector('[data-slot="input-group"]');
 
 		expect(root).not.toBeNull();
-		expect(root?.className).toContain("overflow-hidden");
-		expect(root?.className).toContain("has-aria-invalid:border-destructive");
+		expect(inputGroup).not.toBeNull();
+		expect(inputGroup?.className).toContain("overflow-hidden");
+		expect(inputGroup?.className).toContain(
+			"has-aria-invalid:border-destructive",
+		);
+		expect(phone.hasAttribute("data-input-group-control")).toBe(true);
 		expect(country.id).not.toBe(phone.id);
 	});
 
@@ -74,11 +79,26 @@ describe("ProductionPhoneField", () => {
 
 describe("LivePlayground", () => {
 	it("does not move the country trigger while it is pressed", () => {
-		render(<LivePlayground />);
+		const { container } = render(<LivePlayground />);
 
 		expect(
 			screen.getByRole("combobox", { name: "Country" }).className,
+		).toContain("border-r");
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).className,
+		).toContain("border-input");
+		expect(
+			screen.getByRole("combobox", { name: "Country" }).className,
 		).not.toContain("ui-pressable");
+		expect(container.querySelector('[data-slot="input-group"]')).toBeTruthy();
+		expect(
+			container.querySelector('[data-slot="input-group"]')?.className,
+		).toContain("h-10");
+		expect(
+			screen
+				.getByRole("textbox", { name: "Phone number" })
+				.hasAttribute("data-input-group-control"),
+		).toBe(true);
 	});
 
 	it("uses the same interruptible popup motion as the production preset", async () => {
