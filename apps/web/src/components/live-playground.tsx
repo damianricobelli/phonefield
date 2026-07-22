@@ -121,7 +121,7 @@ export function LivePlayground() {
 							onValueChange={setValue}
 							className="w-full"
 						>
-							<InputGroup className="h-10 overflow-hidden bg-background shadow-sm has-data-popup-open:border-ring has-data-popup-open:ring-3 has-data-popup-open:ring-ring/50 has-data-valid:border-emerald-500">
+							<InputGroup className="h-10 overflow-hidden bg-background shadow-sm has-data-popup-open:border-ring has-data-popup-open:ring-3 has-data-popup-open:ring-ring/50">
 								<PhoneField.Input
 									render={<InputGroupInput />}
 									aria-describedby={showPhoneError ? phoneErrorId : undefined}

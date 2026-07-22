@@ -46,7 +46,7 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "tsup && tsc -p tsconfig.build.json && node scripts/verify-package.mjs",
+    "build": "tsup && node scripts/verify-package.mjs",
     "check": "biome check src tests scripts",
     "dev": "tsup --watch",
     "lint": "biome lint src tests scripts",
@@ -60,7 +60,7 @@
     "react-dom": ">=19 <20"
   },
   "dependencies": {
-    "libphonenumber-js": "^1.13.8"
+    "libphonenumber-js": "^1.13.9"
   },
   "devDependencies": {
     "@base-ui/react": "^1.6.0",
