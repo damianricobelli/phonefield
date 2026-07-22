@@ -7,7 +7,8 @@ export function FeaturedRecipesSection() {
 		return {
 			title: recipe.title,
 			description: recipe.description,
-			href: `/recipes#recipe-${recipe.id}`,
+			to: "/recipes" as const,
+			hash: `recipe-${recipe.id}`,
 		};
 	});
 
@@ -15,7 +16,8 @@ export function FeaturedRecipesSection() {
 		<FeaturedLinksSection
 			eyebrow="Recipes"
 			title="Start from a production pattern."
-			browseHref="/recipes#recipe-inline"
+			browseTo="/recipes"
+			browseHash="recipe-inline"
 			browseLabel="Browse all"
 			items={featuredRecipes}
 		/>

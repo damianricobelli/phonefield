@@ -1,5 +1,6 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import type { ComponentProps } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { documentationNavigation } from "@/components/doc-section";
 import {
 	DocumentationSection,
@@ -8,6 +9,17 @@ import {
 import { FeaturedRecipesSection } from "@/components/featured-recipes-section";
 import { recipeCategories, recipes } from "@/components/recipe-catalog";
 import { RecipesSection, recipeNavigation } from "@/components/recipes-section";
+
+vi.mock("@tanstack/react-router", () => ({
+	Link: ({
+		hash,
+		to,
+		...props
+	}: Omit<ComponentProps<"a">, "href"> & {
+		hash?: string;
+		to: string;
+	}) => <a {...props} href={`${to}${hash ? `#${hash}` : ""}`} />,
+}));
 
 afterEach(() => {
 	cleanup();

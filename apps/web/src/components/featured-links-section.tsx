@@ -1,20 +1,24 @@
+import { Link } from "@tanstack/react-router";
 import { ArrowRightIcon } from "lucide-react";
 
 export type FeaturedLink = {
 	description: string;
-	href: string;
+	hash?: string;
 	title: string;
+	to: "/" | "/recipes";
 };
 
 export function FeaturedLinksSection({
-	browseHref,
+	browseHash,
 	browseLabel,
+	browseTo,
 	eyebrow,
 	items,
 	title,
 }: {
-	browseHref: string;
+	browseHash?: string;
 	browseLabel: string;
+	browseTo: FeaturedLink["to"];
 	eyebrow: string;
 	items: readonly FeaturedLink[];
 	title: string;
@@ -31,19 +35,21 @@ export function FeaturedLinksSection({
 							{title}
 						</h2>
 					</div>
-					<a
-						href={browseHref}
+					<Link
+						to={browseTo}
+						hash={browseHash}
 						className="ui-pressable hidden items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50 sm:inline-flex"
 					>
 						{browseLabel} <ArrowRightIcon className="size-4" />
-					</a>
+					</Link>
 				</div>
 
 				<div className="mt-7 grid gap-3 md:grid-cols-3">
 					{items.map((item) => (
-						<a
-							key={item.href}
-							href={item.href}
+						<Link
+							key={`${item.to}#${item.hash ?? ""}`}
+							to={item.to}
+							hash={item.hash}
 							className="ui-pressable group rounded-xl border border-slate-200 bg-slate-50 p-5 transition-[border-color,background-color] duration-150 hover:border-sky-200 hover:bg-sky-50/60 focus-visible:outline-2 focus-visible:outline-sky-600"
 						>
 							<div className="flex items-start justify-between gap-4">
@@ -55,7 +61,7 @@ export function FeaturedLinksSection({
 							<p className="mt-2 text-sm leading-6 text-slate-600">
 								{item.description}
 							</p>
-						</a>
+						</Link>
 					))}
 				</div>
 			</div>

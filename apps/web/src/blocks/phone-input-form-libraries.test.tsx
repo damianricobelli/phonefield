@@ -26,6 +26,17 @@ describe.each([
 		expect(save.className).not.toContain("rounded-none");
 	});
 
+	it("does not dim the field when only the trailing action is disabled", () => {
+		render(<Example />);
+		const save = screen.getByRole("button", { name: "Save" });
+		const inputGroup = save.closest('[data-slot="input-group"]');
+
+		expect(inputGroup?.className).toContain(
+			"has-[[data-input-group-control]:disabled]:opacity-50",
+		);
+		expect(inputGroup?.className).not.toContain("has-disabled:opacity-50");
+	});
+
 	it("validates while typing and submits the canonical number", async () => {
 		render(<Example />);
 		const input = screen.getByRole("textbox", { name: "Phone number" });
