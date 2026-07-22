@@ -25,7 +25,11 @@ export function useDocumentationScrollSpy(
 	const pausedRef = useRef(paused);
 	const unlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const sectionIdKey = sectionIds.join(SECTION_SEPARATOR);
-	pausedRef.current = paused;
+
+	useEffect(() => {
+		pausedRef.current = paused;
+	}, [paused]);
+
 	const pauseScrollSpy = useCallback(() => {
 		pausedRef.current = true;
 	}, []);
