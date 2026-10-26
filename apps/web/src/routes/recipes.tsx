@@ -2,19 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { DocumentationShell } from "@/components/documentation-shell";
 import { RecipesSection, recipeNavigation } from "@/components/recipes-section";
 import { SitePage } from "@/components/site-page";
+import { pageSeo } from "@/lib/seo";
 
 export const Route = createFileRoute("/recipes")({
 	component: RecipesPage,
-	head: () => ({
-		meta: [
-			{ title: "Recipes — PhoneField" },
-			{
-				name: "description",
-				content:
-					"Copy-paste PhoneField recipes for forms, verification, mobile flows, and localization.",
-			},
-		],
-	}),
+	head: () =>
+		pageSeo({
+			title: "Recipes — PhoneField React phone input examples",
+			description:
+				"Copy-paste React phone input recipes: shadcn/ui, React Hook Form, TanStack Form, validation, OTP, paste detection, drawers, and localization.",
+			path: "/recipes",
+		}),
 });
 
 function RecipesPage() {
