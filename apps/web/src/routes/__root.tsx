@@ -2,58 +2,16 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
+import { NotFoundPage } from "@/components/not-found-page";
+import { siteLinks, siteMeta } from "@/lib/seo";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
 	head: () => ({
-		meta: [
-			{
-				charSet: "utf-8",
-			},
-			{
-				name: "viewport",
-				content: "width=device-width, initial-scale=1",
-			},
-			{
-				title: "PhoneField — React phone input primitive",
-			},
-			{
-				name: "description",
-				content:
-					"An accessible, composable React phone input primitive built with Base UI and libphonenumber-js.",
-			},
-			{
-				property: "og:image",
-				content: "/opengraph.png",
-			},
-			{
-				property: "og:image:width",
-				content: "1200",
-			},
-			{
-				property: "og:image:height",
-				content: "630",
-			},
-			{
-				property: "og:image:alt",
-				content: "PhoneField",
-			},
-			{
-				property: "og:image:type",
-				content: "image/png",
-			},
-			{
-				property: "og:image:url",
-				content: "/opengraph.png",
-			},
-		],
-		links: [
-			{
-				rel: "stylesheet",
-				href: appCss,
-			},
-		],
+		meta: siteMeta,
+		links: [{ rel: "stylesheet", href: appCss }, ...siteLinks],
 	}),
+	notFoundComponent: NotFoundPage,
 	shellComponent: RootDocument,
 });
 

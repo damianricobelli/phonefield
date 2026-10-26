@@ -16,9 +16,9 @@ const config = defineConfig({
   },
   plugins: [
     devtools(),
-    nitro(),
     tailwindcss(),
     tanstackStart(),
+    nitro(),
     viteReact(),
     babel({
       exclude: [/[/\\]node_modules[/\\]/, /^\0rolldown\/runtime\.js$/],

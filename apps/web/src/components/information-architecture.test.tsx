@@ -54,7 +54,7 @@ describe("site information architecture", () => {
 		).toBe("true");
 		expect(
 			screen
-				.getByRole("link", { name: "PhoneField" })
+				.getByRole("link", { name: /^PhoneField/ })
 				.getAttribute("data-router-link"),
 		).toBe("true");
 		expect(

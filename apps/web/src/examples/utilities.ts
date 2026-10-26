@@ -4,23 +4,24 @@ import {
 	countries,
 	fromFormData,
 	getCountries,
+	getExampleNumber,
 	isValid,
 	parse,
 	toFormValue,
 } from "phonefield/utils";
 
 export function inspectPhone(value: PhoneField.Value, formData: FormData) {
-	const parsed = parse(value);
-	const extracted = parse("Call +1 415 555 2671", { extract: true });
 	const unitedStates = getCountries("en").get("US");
 
 	return {
 		built: unitedStates ? buildValue(unitedStates, "4155552671", true) : null,
 		defaultCountry: countries.get("US"),
-		extracted,
+		example: getExampleNumber("GB", "international"), // "+44 7400 123456"
+		extracted: parse("Call +1 415 555 2671", { extract: true }),
 		fromForm: fromFormData(formData, "phone"),
 		isValid: isValid(value),
-		parsed,
+		national: parse("(415) 555-2671", { defaultCountry: "US" }),
+		parsed: parse(value),
 		serialized: toFormValue(value),
 	};
 }

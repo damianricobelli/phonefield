@@ -1,6 +1,8 @@
 import { FeaturedRecipesSection } from "@/components/featured-recipes-section";
 import { HeroSection } from "@/components/hero-section";
 import { HomeDocumentationSection } from "@/components/home-documentation-section";
+import { CompositionSection } from "@/components/landing/composition-section";
+import { FeaturesSection } from "@/components/landing/features-section";
 import { LivePlayground } from "@/components/live-playground";
 import { SitePage } from "@/components/site-page";
 
@@ -8,6 +10,8 @@ export function HomePage() {
 	return (
 		<SitePage decorated>
 			<HeroSection />
+			<FeaturesSection />
+			<CompositionSection />
 
 			<section
 				id="playground"

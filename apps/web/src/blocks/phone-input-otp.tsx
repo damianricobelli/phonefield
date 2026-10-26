@@ -17,18 +17,11 @@ import {
 	InputOTPSlot,
 } from "@/components/ui/input-otp";
 
-const US_ONLY = ["US"] as const;
-
 export function PhoneInputOtp() {
 	const [step, setStep] = React.useState<"phone" | "code" | "done">("phone");
 	const [code, setCode] = React.useState("");
-	const [phone, setPhone] = React.useState<PhoneField.Value>({
-		countryIso2: "US",
-		countryDialCode: "+1",
-		nationalNumber: "",
-		e164: null,
-		isValid: false,
-	});
+	// Root stays uncontrolled; `defaultValue` restores the number after "back".
+	const [phone, setPhone] = React.useState<PhoneField.Value>();
 
 	return (
 		<Card className="w-full max-w-md py-4 ring-0">
@@ -38,7 +31,7 @@ export function PhoneInputOtp() {
 						<CheckCircle2Icon className="size-5 shrink-0 text-muted-foreground" />
 						<div>
 							<p className="text-sm font-semibold">Phone verified</p>
-							<p className="text-xs text-muted-foreground">{phone.e164}</p>
+							<p className="text-xs text-muted-foreground">{phone?.e164}</p>
 						</div>
 					</div>
 				) : step === "code" ? (
@@ -50,7 +43,7 @@ export function PhoneInputOtp() {
 							onClick={() => setStep("phone")}
 							className="w-fit text-muted-foreground"
 						>
-							<ArrowLeftIcon className="size-3.5" /> {phone.e164}
+							<ArrowLeftIcon className="size-3.5" /> {phone?.e164}
 						</Button>
 						<div className="space-y-2">
 							<FieldLabel htmlFor="otp-code">Enter the 6-digit code</FieldLabel>
@@ -101,27 +94,26 @@ export function PhoneInputOtp() {
 							Verify your phone
 						</FieldLabel>
 						<PhoneField.Root
-							countries={US_ONLY}
-							value={phone}
+							countries={["US"]}
+							defaultValue={phone}
 							onValueChange={setPhone}
-							className="w-full"
+							render={<InputGroup />}
+							className="h-10 bg-background shadow-sm"
 						>
-							<InputGroup className="h-10 bg-background shadow-sm">
-								<PhoneField.Input
-									render={<InputGroupInput />}
-									id="otp-phone"
-									placeholder="(202) 555-0123"
-									className="h-full px-3"
-								/>
-								<InputGroupAddon align="inline-start" className="pr-2">
-									<span aria-hidden>🇺🇸</span> +1
-								</InputGroupAddon>
-							</InputGroup>
+							<InputGroupAddon align="inline-start" className="pr-2">
+								<span aria-hidden>🇺🇸</span> +1
+							</InputGroupAddon>
+							<PhoneField.Input
+								render={<InputGroupInput />}
+								id="otp-phone"
+								placeholder="(202) 555-0123"
+								className="h-full px-3"
+							/>
 						</PhoneField.Root>
 						<Button
 							type="button"
 							size="lg"
-							disabled={!phone.isValid}
+							disabled={!phone?.isValid}
 							onClick={() => setStep("code")}
 							className="w-full"
 						>

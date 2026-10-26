@@ -1,10 +1,13 @@
+import { PhoneNumber as CorePhoneNumber } from "libphonenumber-js/core";
 import {
 	AsYouType,
 	type CountryCode,
 	getCountries,
 	getCountryCallingCode,
 	parsePhoneNumberFromString,
-} from "libphonenumber-js/min";
+	validatePhoneNumberLength,
+} from "libphonenumber-js/min/es6";
+import minMetadata from "libphonenumber-js/min/metadata";
 import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryCode,
@@ -161,6 +164,38 @@ export function getCountriesMap(lang?: PhoneFieldLang) {
 	return countriesMap;
 }
 
+// libphonenumber's parser builds numbers for an explicit region with this
+// constructor form; it is not part of the published typings.
+type RegionPhoneNumberConstructor = new (
+	country: CountryCode,
+	nationalNumber: string,
+	metadata: typeof minMetadata,
+) => { isValid(): boolean };
+
+/**
+ * Whether a national significant number is valid for this exact region.
+ * Detection alone attributes numbers in shared plans (Åland, Isle of Man,
+ * Christmas Island, Vatican City…) to the main country, which would make
+ * correct numbers for those territories impossible to validate.
+ */
+export function isValidForCountry(
+	country: CountryCode,
+	nationalNumber: string,
+) {
+	if (!nationalNumber) return false;
+	try {
+		const RegionPhoneNumber =
+			CorePhoneNumber as unknown as RegionPhoneNumberConstructor;
+		return new RegionPhoneNumber(
+			country,
+			nationalNumber,
+			minMetadata,
+		).isValid();
+	} catch {
+		return false;
+	}
+}
+
 /** Default country code used when none is specified (e.g. "US"). */
 export const DEFAULT_COUNTRY: CountryCode = "US";
 
@@ -223,6 +258,54 @@ export function toAvailableCountries(
 	}
 
 	return entries;
+}
+
+/**
+ * Splits countries into a pinned "preferred" group and the remaining "all" group.
+ * Preferred countries keep the given order and are not repeated below.
+ * Returns `null` when nothing is pinned.
+ */
+export function toCountryGroups(
+	availableCountries: readonly PhoneFieldCountry[],
+	preferredCountries?: readonly PhoneFieldCountryCode[],
+) {
+	if (!preferredCountries?.length) return null;
+
+	const byCode = new Map(
+		availableCountries.map((country) => [country.iso2, country]),
+	);
+	const preferred: PhoneFieldCountry[] = [];
+	for (const code of new Set(preferredCountries)) {
+		const country = byCode.get(code);
+		if (country) preferred.push(country);
+	}
+	if (preferred.length === 0) return null;
+
+	const pinned = new Set(preferred);
+	return [
+		{ id: "preferred" as const, items: preferred },
+		{
+			id: "all" as const,
+			items: availableCountries.filter((country) => !pinned.has(country)),
+		},
+	];
+}
+
+/**
+ * Whether a national or `+` international number has more digits than any
+ * number in the given country can have.
+ */
+export function isTooLong(country: PhoneFieldCountry, rawNumber: string) {
+	const trimmed = rawNumber.trim();
+	const digits = onlyDigits(trimmed);
+	if (!digits) return false;
+	try {
+		return trimmed.startsWith("+")
+			? validatePhoneNumberLength(`+${digits}`) === "TOO_LONG"
+			: validatePhoneNumberLength(digits, country.iso2) === "TOO_LONG";
+	} catch {
+		return false;
+	}
 }
 
 /**
@@ -292,7 +375,10 @@ export function buildValue(
 		countryDialCode,
 		nationalNumber,
 		e164: formatter.getNumberValue() ?? null,
-		isValid: parsed?.country === country.iso2 && parsed.isValid(),
+		isValid:
+			parsed !== undefined &&
+			parsed.countryCallingCode === country.dialCode.slice(1) &&
+			isValidForCountry(country.iso2, parsed.nationalNumber),
 	};
 }
 
@@ -336,9 +422,11 @@ export function isValidPhoneField(
 	options?: PhoneFieldParseOptions,
 ) {
 	const parsed = parsePhoneField(value, options);
+	if (parsed?.isValid() !== true) return false;
+	if (typeof value === "string") return true;
 	return (
-		parsed?.isValid() === true &&
-		(typeof value === "string" || parsed.country === value.countryIso2)
+		parsed.countryCallingCode === getCountryCallingCode(value.countryIso2) &&
+		isValidForCountry(value.countryIso2, parsed.nationalNumber)
 	);
 }
 

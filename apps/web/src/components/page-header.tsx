@@ -2,6 +2,7 @@ import { SiGithub as Github } from "@icons-pack/react-simple-icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 
 const nav = linkOptions([
+	{ label: "Features", to: "/", hash: "features" },
 	{ label: "Playground", to: "/", hash: "playground" },
 	{ label: "Recipes", to: "/recipes" },
 ]);
@@ -21,6 +22,9 @@ export function PageHeader() {
 						aria-hidden="true"
 					/>
 					PhoneField
+					<span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium text-slate-500">
+						v2
+					</span>
 				</Link>
 				<nav
 					className="flex items-center gap-0.5"

@@ -53,52 +53,56 @@ export function PhoneInputReactHookForm() {
 			<Controller
 				name="phone"
 				control={form.control}
-				render={({ field, fieldState }) => {
-					const invalid = fieldState.isDirty && fieldState.invalid;
-
-					return (
-						<Field data-invalid={invalid || undefined}>
-							<FieldLabel htmlFor="rhf-phone">Phone number</FieldLabel>
-							<PhoneField.Root
-								countries={["US"]}
-								value={field.value}
-								onValueChange={field.onChange}
-								className="w-full"
-							>
-								<InputGroup className="h-10 bg-background shadow-sm">
-									<PhoneField.Input
-										render={<InputGroupInput />}
-										id="rhf-phone"
-										onBlur={field.onBlur}
-										aria-invalid={invalid || undefined}
-										placeholder="(202) 555-0123"
-										className="h-full px-3"
-									/>
-									<InputGroupAddon align="inline-start" className="pr-2">
-										<span aria-hidden>🇺🇸</span> +1
-									</InputGroupAddon>
-									<InputGroupAddon align="inline-end">
-										<InputGroupButton
-											type="submit"
-											variant="default"
-											size="sm"
-											disabled={!form.formState.isValid}
-										>
-											Save
-										</InputGroupButton>
-									</InputGroupAddon>
-								</InputGroup>
-							</PhoneField.Root>
-							{invalid ? (
-								<FieldError errors={[fieldState.error]} />
-							) : (
-								<FieldDescription className="truncate font-mono text-xs">
-									{submitted ?? "React Hook Form + Zod"}
-								</FieldDescription>
-							)}
-						</Field>
-					);
-				}}
+				render={({ field, fieldState }) => (
+					<PhoneField.Root
+						countries={["US"]}
+						value={field.value}
+						onValueChange={field.onChange}
+						invalid={fieldState.invalid}
+						render={<Field />}
+					>
+						<PhoneField.Label
+							render={<FieldLabel />}
+							className="data-invalid:text-destructive"
+						>
+							Phone number
+						</PhoneField.Label>
+						<PhoneField.Group
+							render={<InputGroup />}
+							className="h-10 bg-background shadow-sm"
+						>
+							<InputGroupAddon align="inline-start" className="pr-2">
+								<span aria-hidden>🇺🇸</span> +1
+							</InputGroupAddon>
+							<PhoneField.Input
+								render={<InputGroupInput />}
+								ref={field.ref}
+								onBlur={field.onBlur}
+								placeholder="(202) 555-0123"
+								className="h-full px-3"
+							/>
+							<InputGroupAddon align="inline-end">
+								<InputGroupButton
+									type="submit"
+									variant="default"
+									size="sm"
+									disabled={!form.formState.isValid}
+								>
+									Save
+								</InputGroupButton>
+							</InputGroupAddon>
+						</PhoneField.Group>
+						<PhoneField.Error render={<FieldError />}>
+							{fieldState.error?.message}
+						</PhoneField.Error>
+						<PhoneField.Description
+							render={<FieldDescription />}
+							className="truncate font-mono text-xs"
+						>
+							{submitted ?? "React Hook Form + Zod"}
+						</PhoneField.Description>
+					</PhoneField.Root>
+				)}
 			/>
 		</form>
 	);

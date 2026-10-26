@@ -7,12 +7,12 @@ import {
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { LivePlayground } from "@/components/live-playground";
-import { ProductionPhoneField } from "./production-preset";
+import { PhoneInput } from "./production-preset";
 
 afterEach(cleanup);
 
-async function openCountryPopup() {
-	fireEvent.click(screen.getByRole("combobox", { name: "Country" }));
+async function openCountryPopup(name: RegExp | string = /United States/) {
+	fireEvent.click(screen.getByRole("combobox", { name }));
 
 	return waitFor(() => {
 		const popup = document.querySelector<HTMLElement>(
@@ -24,6 +24,9 @@ async function openCountryPopup() {
 }
 
 function expectInterruptiblePopupMotion(popup: HTMLElement) {
+	// Tailwind's scale-* utilities set the `scale` property, which a
+	// transform transition would not animate.
+	expect(popup.className).toContain("transition-[transform,opacity]");
 	expect(popup.className).toContain(
 		"data-starting-style:[transform:scale(0.97)]",
 	);
@@ -35,73 +38,61 @@ function expectInterruptiblePopupMotion(popup: HTMLElement) {
 	);
 }
 
-describe("ProductionPhoneField", () => {
-	it("groups two independently named controls in one visual shell", () => {
-		const { container } = render(<ProductionPhoneField />);
-
-		const country = screen.getByRole("combobox", { name: "Country" });
-		const phone = screen.getByRole("textbox", { name: "Phone number" });
-		const root = container.querySelector('[data-slot="phone-field"]');
-		const inputGroup = container.querySelector('[data-slot="input-group"]');
-
-		expect(root).not.toBeNull();
-		expect(inputGroup).not.toBeNull();
-		expect(inputGroup?.className).toContain("overflow-hidden");
-		expect(inputGroup?.className).toContain(
-			"has-aria-invalid:border-destructive",
+describe("PhoneInput preset", () => {
+	it("uses Group as the visual shell around two independently named controls", () => {
+		const { container } = render(
+			<PhoneInput label="Phone number" defaultCountry="US" />,
 		);
-		expect(phone.hasAttribute("data-input-group-control")).toBe(true);
+
+		const country = screen.getByRole("combobox", { name: /United States/ });
+		const phone = screen.getByRole("textbox", { name: "Phone number" });
+		const group = container.querySelector('[data-slot="phone-field-group"]');
+
+		expect(group?.className).toContain("data-focused:border-ring");
+		expect(group?.className).toContain("data-invalid:border-destructive");
+		expect(group?.getAttribute("data-country")).toBe("US");
+		expect(group?.contains(phone)).toBe(true);
 		expect(country.id).not.toBe(phone.id);
 	});
 
 	it("preserves consumer accessible names", () => {
-		render(
-			<ProductionPhoneField
-				countryProps={{
-					slotProps: { trigger: { "aria-label": "Dialing country" } },
-				}}
-				inputProps={{ "aria-label": "Mobile number" }}
-			/>,
-		);
+		render(<PhoneInput inputProps={{ "aria-label": "Mobile number" }} />);
 
-		expect(
-			screen.getByRole("combobox", { name: "Dialing country" }),
-		).toBeTruthy();
 		expect(screen.getByRole("textbox", { name: "Mobile number" })).toBeTruthy();
 	});
 
+	it("renders extra parts inside Root", () => {
+		render(
+			<PhoneInput>
+				<output>extra</output>
+			</PhoneInput>,
+		);
+		expect(
+			screen.getByRole("status").closest('[data-slot="phone-field"]'),
+		).toBeTruthy();
+	});
+
 	it("animates popup scale through the declared transform transition", async () => {
-		render(<ProductionPhoneField />);
+		render(<PhoneInput defaultCountry="US" />);
 
 		expectInterruptiblePopupMotion(await openCountryPopup());
 	});
 });
 
 describe("LivePlayground", () => {
-	it("does not move the country trigger while it is pressed", () => {
-		const { container } = render(<LivePlayground />);
+	it("reflects Root props in the generated code", () => {
+		render(<LivePlayground />);
 
+		fireEvent.click(screen.getByRole("switch", { name: "required" }));
+		fireEvent.click(screen.getByRole("tab", { name: "Code" }));
+
+		expect(screen.getByRole("tabpanel").textContent).toContain("required");
 		expect(
-			screen.getByRole("combobox", { name: "Country" }).className,
-		).toContain("border-r");
-		expect(
-			screen.getByRole("combobox", { name: "Country" }).className,
-		).toContain("border-input");
-		expect(
-			screen.getByRole("combobox", { name: "Country" }).className,
-		).not.toContain("ui-pressable");
-		expect(container.querySelector('[data-slot="input-group"]')).toBeTruthy();
-		expect(
-			container.querySelector('[data-slot="input-group"]')?.className,
-		).toContain("h-10");
-		expect(
-			screen
-				.getByRole("textbox", { name: "Phone number" })
-				.hasAttribute("data-input-group-control"),
-		).toBe(true);
+			screen.getByRole("textbox", { name: /Phone number/ }),
+		).toHaveProperty("required", true);
 	});
 
-	it("uses the same interruptible popup motion as the production preset", async () => {
+	it("uses the preset's interruptible popup motion", async () => {
 		render(<LivePlayground />);
 
 		expectInterruptiblePopupMotion(await openCountryPopup());

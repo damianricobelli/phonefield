@@ -1,49 +1,23 @@
 import type React from "react";
 
-/**
- * Compose refs while adapting teardown to the installed React contract.
- * React 19 consumes the returned cleanup; React 18 calls the merged ref with null.
- */
+/** Compose refs using React 19 callback-ref cleanups. */
 export function mergeRefs<T>(
-	reactVersion: string,
 	...refs: Array<React.Ref<T> | undefined>
 ): React.RefCallback<T> {
-	const supportsCleanupReturn = Number.parseInt(reactVersion, 10) >= 19;
-	let cleanups: Array<() => void> = [];
-
-	function cleanup() {
-		const pendingCleanups = cleanups;
-		cleanups = [];
-		for (const cleanupRef of pendingCleanups) {
-			cleanupRef();
-		}
-	}
-
 	return (value) => {
-		if (value === null) {
-			cleanup();
-			return;
-		}
-
-		cleanup();
-		for (const ref of refs) {
-			if (!ref) continue;
-
+		const cleanups = refs.map((ref) => {
+			if (!ref) return undefined;
 			if (typeof ref === "function") {
-				const cleanupRef = ref(value);
-				cleanups.push(
-					typeof cleanupRef === "function" ? cleanupRef : () => ref(null),
-				);
-			} else {
-				(ref as React.RefObject<T | null>).current = value;
-				cleanups.push(() => {
-					(ref as React.RefObject<T | null>).current = null;
-				});
+				const cleanup = ref(value);
+				return typeof cleanup === "function" ? cleanup : () => ref(null);
 			}
-		}
-
-		if (supportsCleanupReturn) {
-			return cleanup;
-		}
+			ref.current = value;
+			return () => {
+				ref.current = null;
+			};
+		});
+		return () => {
+			for (const cleanup of cleanups) cleanup?.();
+		};
 	};
 }

@@ -1,7 +1,10 @@
 import { Combobox } from "@base-ui/react/combobox";
 import React from "react";
 import type { PhoneField } from "./component.js";
-import { usePhoneFieldCountryContext } from "./context.js";
+import {
+	PhoneFieldCountryLabelsContext,
+	usePhoneFieldCountryContext,
+} from "./context.js";
 import { defaultCountrySearchText } from "./utils.js";
 
 function ChevronUpDownIcon(props: React.ComponentProps<"svg">) {
@@ -22,132 +25,270 @@ function ChevronUpDownIcon(props: React.ComponentProps<"svg">) {
 	);
 }
 
+function CheckIcon(props: React.ComponentProps<"svg">) {
+	return (
+		<svg
+			width="10"
+			height="10"
+			viewBox="0 0 10 10"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.5"
+			aria-hidden="true"
+			{...props}
+		>
+			<path d="M1 5.5L3.75 8L9 2" />
+		</svg>
+	);
+}
+
+function toIso2(country: PhoneField.Country) {
+	return country.iso2;
+}
+
+const EMPTY_LABELS = {};
+
+function isSameCountry(a: PhoneField.Country, b: PhoneField.Country) {
+	return a.iso2 === b.iso2;
+}
+
+function DefaultCountryAnatomy() {
+	return (
+		<>
+			<CountryTrigger />
+			<CountryPortal>
+				<CountryPositioner>
+					<CountryPopup>
+						<CountrySearch />
+						<CountryEmpty />
+						<CountryList />
+					</CountryPopup>
+				</CountryPositioner>
+			</CountryPortal>
+		</>
+	);
+}
+
 function CountryComponent({
-	placeholder = "Select country",
-	noResultsText = "No countries found",
-	inputPlaceholder = "Search country",
-	icon,
-	classNames,
-	positioning,
-	renderCountryItem,
-	renderCountryValue,
-	slotProps,
+	children,
+	labels,
+	...props
 }: PhoneField.CountryProps) {
-	const { selectedCountry, availableCountries, setCountry } =
-		usePhoneFieldCountryContext();
-
-	const selectedInList =
-		availableCountries.find(
-			(country) => country.iso2 === selectedCountry.iso2,
-		) ?? availableCountries[0];
-
-	const resolvedPositioning = {
-		side: "bottom" as const,
-		align: "start" as const,
-		sideOffset: 4,
-		...positioning,
-	};
+	const {
+		selectedCountry,
+		availableCountries,
+		groups,
+		locale,
+		disabled,
+		readOnly,
+		setCountry,
+	} = usePhoneFieldCountryContext();
 
 	return (
 		<Combobox.Root
-			{...slotProps?.root}
-			items={availableCountries}
-			value={selectedInList}
+			autoHighlight
+			locale={locale}
+			{...props}
+			disabled={disabled || props.disabled}
+			readOnly={readOnly || props.readOnly}
+			items={groups ?? availableCountries}
+			// Root always resolves the selection from the available countries.
+			value={selectedCountry}
 			itemToStringLabel={defaultCountrySearchText}
+			itemToStringValue={toIso2}
+			isItemEqualToValue={isSameCountry}
 			onValueChange={(next) => {
 				if (next) setCountry(next);
 			}}
-			isItemEqualToValue={(a, b) => a.iso2 === b.iso2}
 		>
-			<Combobox.Trigger
-				{...slotProps?.trigger}
-				data-slot="phone-field-country-trigger"
-				className={classNames?.trigger}
-			>
-				<Combobox.Value
-					placeholder={placeholder}
-					{...slotProps?.value}
-				>
-					{(country: PhoneField.Country | null) =>
-						country
-							? (renderCountryValue?.(country) ??
-								`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`)
-							: placeholder
-					}
-				</Combobox.Value>
-				<Combobox.Icon
-					{...slotProps?.icon}
-					data-slot="phone-field-country-icon"
-					className={classNames?.icon}
-				>
-					{icon ?? <ChevronUpDownIcon />}
-				</Combobox.Icon>
-			</Combobox.Trigger>
-
-			<Combobox.Portal {...slotProps?.portal}>
-				<Combobox.Positioner
-					{...slotProps?.positioner}
-					{...resolvedPositioning}
-					data-slot="phone-field-country-positioner"
-					className={classNames?.positioner}
-				>
-					<Combobox.Popup
-						{...slotProps?.popup}
-						data-slot="phone-field-country-popup"
-						className={classNames?.popup}
-					>
-						<div
-							{...slotProps?.searchInputContainer}
-							data-slot="phone-field-country-search-container"
-							className={classNames?.searchInputContainer}
-						>
-							<Combobox.Input
-								{...slotProps?.searchInput}
-								data-slot="phone-field-country-search-input"
-								className={classNames?.searchInput}
-								placeholder={inputPlaceholder}
-								aria-label={
-									slotProps?.searchInput?.["aria-label"] ?? inputPlaceholder
-								}
-							/>
-						</div>
-						<Combobox.Empty
-							{...slotProps?.empty}
-							data-slot="phone-field-country-empty"
-							className={classNames?.empty}
-						>
-							{noResultsText}
-						</Combobox.Empty>
-						<Combobox.List
-							{...slotProps?.list}
-							data-slot="phone-field-country-list"
-							className={classNames?.list}
-						>
-							{(country: PhoneField.Country) => {
-								const itemProps =
-									typeof slotProps?.item === "function"
-										? slotProps.item(country)
-										: slotProps?.item;
-								return (
-									<Combobox.Item
-										{...itemProps}
-										key={country.iso2}
-										value={country}
-										data-slot="phone-field-country-item"
-										className={classNames?.item}
-									>
-										{renderCountryItem?.(country) ??
-											`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`}
-									</Combobox.Item>
-								);
-							}}
-						</Combobox.List>
-					</Combobox.Popup>
-				</Combobox.Positioner>
-			</Combobox.Portal>
+			<PhoneFieldCountryLabelsContext.Provider value={labels ?? EMPTY_LABELS}>
+				{children ?? <DefaultCountryAnatomy />}
+			</PhoneFieldCountryLabelsContext.Provider>
 		</Combobox.Root>
 	);
 }
 
-/** Country picker isolated from number-input updates. */
+/**
+ * Country picker state. Without children it renders a complete, unstyled
+ * picker; compose the `Country*` parts to customize any piece of it.
+ */
 export const Country = React.memo(CountryComponent);
+
+/** Button that opens the picker. Defaults to the selected flag, dial code, and an icon. */
+export function CountryTrigger({
+	children,
+	...props
+}: PhoneField.CountryTriggerProps) {
+	const { selectedCountry } = usePhoneFieldCountryContext(
+		"PhoneField.CountryTrigger",
+	);
+	// An id usually means a <label htmlFor> names the trigger; keep that label.
+	const hasLabel =
+		props["aria-label"] !== undefined ||
+		props["aria-labelledby"] !== undefined ||
+		props.id !== undefined;
+	return (
+		<Combobox.Trigger
+			aria-label={
+				hasLabel
+					? undefined
+					: `${selectedCountry.name} (${selectedCountry.dialCode})`
+			}
+			{...props}
+			data-slot="phone-field-country-trigger"
+		>
+			{children ?? (
+				<>
+					<CountryValue />
+					<CountryIcon />
+				</>
+			)}
+		</Combobox.Trigger>
+	);
+}
+
+/** Selected country text. Pass a function child to render it yourself. */
+export function CountryValue({ children }: PhoneField.CountryValueProps) {
+	return (
+		<Combobox.Value>
+			{(country: PhoneField.Country | null) => {
+				if (!country) return null;
+				if (typeof children === "function") return children(country);
+				return children ?? `${country.flag ?? ""} ${country.dialCode}`.trim();
+			}}
+		</Combobox.Value>
+	);
+}
+
+/** Decorative trigger icon. Defaults to an up/down chevron. */
+export function CountryIcon({
+	children,
+	...props
+}: PhoneField.CountryIconProps) {
+	return (
+		<Combobox.Icon {...props} data-slot="phone-field-country-icon">
+			{children ?? <ChevronUpDownIcon />}
+		</Combobox.Icon>
+	);
+}
+
+/** Portals the popup to `document.body`. */
+export function CountryPortal(props: PhoneField.CountryPortalProps) {
+	return <Combobox.Portal {...props} />;
+}
+
+/** Positions the popup. Defaults to `side="bottom"`, `align="start"`, `sideOffset={4}`. */
+export function CountryPositioner(props: PhoneField.CountryPositionerProps) {
+	return (
+		<Combobox.Positioner
+			side="bottom"
+			align="start"
+			sideOffset={4}
+			{...props}
+			data-slot="phone-field-country-positioner"
+		/>
+	);
+}
+
+/** Popup container. */
+export function CountryPopup(props: PhoneField.CountryPopupProps) {
+	return <Combobox.Popup {...props} data-slot="phone-field-country-popup" />;
+}
+
+/** Search box that filters by name, ISO2 code, or dial code. */
+export function CountrySearch({
+	placeholder: placeholderProp,
+	...props
+}: PhoneField.CountrySearchProps) {
+	const labels = React.use(PhoneFieldCountryLabelsContext);
+	const placeholder = placeholderProp ?? labels.search ?? "Search country";
+	return (
+		<Combobox.Input
+			placeholder={placeholder}
+			aria-label={props["aria-labelledby"] ? undefined : placeholder}
+			{...props}
+			data-slot="phone-field-country-search"
+		/>
+	);
+}
+
+/** Shown when the search has no matches. */
+export function CountryEmpty({
+	children,
+	...props
+}: PhoneField.CountryEmptyProps) {
+	const labels = React.use(PhoneFieldCountryLabelsContext);
+	return (
+		<Combobox.Empty {...props} data-slot="phone-field-country-empty">
+			{children ?? labels.empty ?? "No countries found"}
+		</Combobox.Empty>
+	);
+}
+
+/**
+ * Filtered country list. Pass a function child to render each country; keys
+ * are handled for you. With `preferredCountries`, pinned countries render in
+ * a separate `data-slot="phone-field-country-group"` with `data-preferred`.
+ */
+export function CountryList({
+	children,
+	...props
+}: PhoneField.CountryListProps) {
+	const { groups } = usePhoneFieldCountryContext("PhoneField.CountryList");
+	const renderCountry = (country: PhoneField.Country) => (
+		<React.Fragment key={country.iso2}>
+			{children ? children(country) : <CountryItem country={country} />}
+		</React.Fragment>
+	);
+
+	return (
+		<Combobox.List {...props} data-slot="phone-field-country-list">
+			{groups
+				? (group: { id: "preferred" | "all"; items: PhoneField.Country[] }) => (
+						<Combobox.Group
+							key={group.id}
+							items={group.items}
+							data-slot="phone-field-country-group"
+							data-preferred={group.id === "preferred" ? "" : undefined}
+						>
+							<Combobox.Collection>{renderCountry}</Combobox.Collection>
+						</Combobox.Group>
+					)
+				: renderCountry}
+		</Combobox.List>
+	);
+}
+
+/** One selectable country. Defaults to flag, name, and dial code. */
+export function CountryItem({
+	country,
+	children,
+	...props
+}: PhoneField.CountryItemProps) {
+	return (
+		<Combobox.Item
+			{...props}
+			value={country}
+			data-slot="phone-field-country-item"
+			data-country={country.iso2}
+		>
+			{children ??
+				`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`}
+		</Combobox.Item>
+	);
+}
+
+/** Rendered inside an item only while it is selected. Defaults to a check mark. */
+export function CountryItemIndicator({
+	children,
+	...props
+}: PhoneField.CountryItemIndicatorProps) {
+	return (
+		<Combobox.ItemIndicator
+			{...props}
+			data-slot="phone-field-country-item-indicator"
+		>
+			{children ?? <CheckIcon />}
+		</Combobox.ItemIndicator>
+	);
+}

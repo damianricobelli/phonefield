@@ -29,7 +29,7 @@ describe.each([
 	it("does not dim the field when only the trailing action is disabled", () => {
 		render(<Example />);
 		const save = screen.getByRole("button", { name: "Save" });
-		const inputGroup = save.closest('[data-slot="input-group"]');
+		const inputGroup = save.closest('[data-slot="phone-field-group"]');
 
 		expect(inputGroup?.className).toContain(
 			"has-[[data-input-group-control]:disabled]:opacity-50",

@@ -28,7 +28,7 @@ afterEach(() => {
 
 describe("recipe catalog", () => {
 	it("groups the consolidated recipe collection by product intent", () => {
-		expect(recipes).toHaveLength(13);
+		expect(recipes).toHaveLength(14);
 		expect(recipeCategories).toEqual([
 			"Basics",
 			"Forms",

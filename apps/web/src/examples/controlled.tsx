@@ -8,7 +8,13 @@ export function CheckoutPhone() {
 	});
 
 	return (
-		<PhoneField.Root value={phone} onValueChange={setPhone}>
+		<PhoneField.Root
+			value={phone}
+			onValueChange={(next, { reason }) => {
+				setPhone(next);
+				if (reason === "paste") console.log("Pasted", next.e164);
+			}}
+		>
 			<PhoneField.Country />
 			<PhoneField.Input aria-label="Phone number" />
 		</PhoneField.Root>

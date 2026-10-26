@@ -54,62 +54,60 @@ export function PhoneInputTanStackForm() {
 		>
 			<form.Field
 				name="phone"
-				children={(field) => {
-					const invalid =
-						Boolean(field.state.value.nationalNumber) &&
-						!field.state.meta.isValid;
-
-					return (
-						<Field data-invalid={invalid || undefined}>
-							<FieldLabel htmlFor={field.name}>Phone number</FieldLabel>
-							<PhoneField.Root
-								countries={["US"]}
-								value={field.state.value}
-								onValueChange={field.handleChange}
-								className="w-full"
-							>
-								<InputGroup className="h-10 bg-background shadow-sm">
-									<PhoneField.Input
-										render={<InputGroupInput />}
-										id={field.name}
-										onBlur={field.handleBlur}
-										aria-invalid={invalid || undefined}
-										placeholder="(202) 555-0123"
-										className="h-full px-3"
-									/>
-									<InputGroupAddon align="inline-start" className="pr-2">
-										<span aria-hidden>🇺🇸</span> +1
-									</InputGroupAddon>
-									<InputGroupAddon align="inline-end">
-										<form.Subscribe
-											selector={(state) => [
-												state.canSubmit,
-												state.isSubmitting,
-											]}
-											children={([canSubmit, isSubmitting]) => (
-												<InputGroupButton
-													type="submit"
-													variant="default"
-													size="sm"
-													disabled={!canSubmit || isSubmitting}
-												>
-													Save
-												</InputGroupButton>
-											)}
-										/>
-									</InputGroupAddon>
-								</InputGroup>
-							</PhoneField.Root>
-							{invalid ? (
-								<FieldError errors={field.state.meta.errors} />
-							) : (
-								<FieldDescription className="truncate font-mono text-xs">
-									{submitted ?? "TanStack Form + Zod"}
-								</FieldDescription>
-							)}
-						</Field>
-					);
-				}}
+				children={(field) => (
+					<PhoneField.Root
+						countries={["US"]}
+						value={field.state.value}
+						onValueChange={field.handleChange}
+						invalid={!field.state.meta.isValid}
+						render={<Field />}
+					>
+						<PhoneField.Label
+							render={<FieldLabel />}
+							className="data-invalid:text-destructive"
+						>
+							Phone number
+						</PhoneField.Label>
+						<PhoneField.Group
+							render={<InputGroup />}
+							className="h-10 bg-background shadow-sm"
+						>
+							<InputGroupAddon align="inline-start" className="pr-2">
+								<span aria-hidden>🇺🇸</span> +1
+							</InputGroupAddon>
+							<PhoneField.Input
+								render={<InputGroupInput />}
+								onBlur={field.handleBlur}
+								placeholder="(202) 555-0123"
+								className="h-full px-3"
+							/>
+							<InputGroupAddon align="inline-end">
+								<form.Subscribe
+									selector={(state) => [state.canSubmit, state.isSubmitting]}
+									children={([canSubmit, isSubmitting]) => (
+										<InputGroupButton
+											type="submit"
+											variant="default"
+											size="sm"
+											disabled={!canSubmit || isSubmitting}
+										>
+											Save
+										</InputGroupButton>
+									)}
+								/>
+							</InputGroupAddon>
+						</PhoneField.Group>
+						<PhoneField.Error render={<FieldError />}>
+							{field.state.meta.errors[0]?.message}
+						</PhoneField.Error>
+						<PhoneField.Description
+							render={<FieldDescription />}
+							className="truncate font-mono text-xs"
+						>
+							{submitted ?? "TanStack Form + Zod"}
+						</PhoneField.Description>
+					</PhoneField.Root>
+				)}
 			/>
 		</form>
 	);

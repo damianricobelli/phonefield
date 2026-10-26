@@ -9,35 +9,37 @@ import {
 
 export function PhoneInputFixedCountry() {
 	return (
-		<Field className="w-full max-w-md">
+		<PhoneField.Root
+			countries={["US"]}
+			name="phone"
+			render={<Field />}
+			className="w-full max-w-md"
+		>
 			<div className="flex items-center justify-between gap-3">
-				<FieldLabel htmlFor="fixed-country-phone">US phone number</FieldLabel>
+				<PhoneField.Label render={<FieldLabel />}>
+					US phone number
+				</PhoneField.Label>
 				<span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
 					<LockIcon className="size-3" /> Fixed region
 				</span>
 			</div>
-			<PhoneField.Root
-				defaultCountry="US"
-				countries={["US"]}
-				name="phone"
-				className="w-full"
+			<PhoneField.Group
+				render={<InputGroup />}
+				className="h-10 bg-background shadow-sm"
 			>
-				<InputGroup className="h-10 bg-background shadow-sm">
-					<PhoneField.Input
-						render={<InputGroupInput />}
-						id="fixed-country-phone"
-						placeholder="(202) 555-0123"
-						className="h-full px-3"
-					/>
-					<InputGroupAddon align="inline-start" className="pr-2">
-						<span aria-hidden>🇺🇸</span>
-						<span>+1</span>
-					</InputGroupAddon>
-				</InputGroup>
-			</PhoneField.Root>
-			<FieldDescription className="text-xs">
+				<InputGroupAddon align="inline-start" className="pr-2">
+					<span aria-hidden>🇺🇸</span>
+					<span>+1</span>
+				</InputGroupAddon>
+				<PhoneField.Input
+					render={<InputGroupInput />}
+					placeholder="(202) 555-0123"
+					className="h-full px-3"
+				/>
+			</PhoneField.Group>
+			<PhoneField.Description render={<FieldDescription />} className="text-xs">
 				No country picker when the market is already known.
-			</FieldDescription>
-		</Field>
+			</PhoneField.Description>
+		</PhoneField.Root>
 	);
 }
