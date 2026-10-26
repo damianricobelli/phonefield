@@ -84,11 +84,6 @@ function CountryComponent({
 		setCountry,
 	} = usePhoneFieldCountryContext();
 
-	const selectedInList =
-		availableCountries.find((country) =>
-			isSameCountry(country, selectedCountry),
-		) ?? availableCountries[0];
-
 	return (
 		<Combobox.Root
 			autoHighlight
@@ -97,7 +92,8 @@ function CountryComponent({
 			disabled={disabled || props.disabled}
 			readOnly={readOnly || props.readOnly}
 			items={groups ?? availableCountries}
-			value={selectedInList}
+			// Root always resolves the selection from the available countries.
+			value={selectedCountry}
 			itemToStringLabel={defaultCountrySearchText}
 			itemToStringValue={toIso2}
 			isItemEqualToValue={isSameCountry}
@@ -204,7 +200,7 @@ export function CountrySearch({
 	placeholder: placeholderProp,
 	...props
 }: PhoneField.CountrySearchProps) {
-	const labels = React.useContext(PhoneFieldCountryLabelsContext);
+	const labels = React.use(PhoneFieldCountryLabelsContext);
 	const placeholder = placeholderProp ?? labels.search ?? "Search country";
 	return (
 		<Combobox.Input
@@ -221,7 +217,7 @@ export function CountryEmpty({
 	children,
 	...props
 }: PhoneField.CountryEmptyProps) {
-	const labels = React.useContext(PhoneFieldCountryLabelsContext);
+	const labels = React.use(PhoneFieldCountryLabelsContext);
 	return (
 		<Combobox.Empty {...props} data-slot="phone-field-country-empty">
 			{children ?? labels.empty ?? "No countries found"}

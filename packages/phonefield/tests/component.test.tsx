@@ -67,6 +67,27 @@ function ResetToCountryButton() {
 	);
 }
 
+const seenActions = new Set<unknown>();
+function ActionsProbe() {
+	const { setCountry, setNumber } = usePhoneField();
+	seenActions.add(setCountry);
+	seenActions.add(setNumber);
+	return null;
+}
+
+function ControlledWithInlineCallback() {
+	const [value, setValue] = React.useState<PhoneField.InputValue>({
+		countryIso2: "US",
+		nationalNumber: "",
+	});
+	return (
+		<PhoneField.Root value={value} onValueChange={(next) => setValue(next)}>
+			<PhoneField.Input aria-label="Phone number" />
+			<ActionsProbe />
+		</PhoneField.Root>
+	);
+}
+
 function ValidityMessage() {
 	const { value, state } = usePhoneField();
 	return (
@@ -1226,6 +1247,31 @@ describe("PhoneField", () => {
 		);
 		fireEvent.click(screen.getByRole("button", { name: "Use Argentina" }));
 		expect(screen.getByRole("status").textContent).toBe("AR valid");
+	});
+
+	it.each([
+		[
+			"uncontrolled",
+			() => (
+				<PhoneField.Root defaultCountry="US">
+					<PhoneField.Input aria-label="Phone number" />
+					<ActionsProbe />
+				</PhoneField.Root>
+			),
+		],
+		[
+			"controlled with an inline callback",
+			() => <ControlledWithInlineCallback />,
+		],
+	])("keeps usePhoneField actions stable while typing (%s)", (_mode, Field) => {
+		seenActions.clear();
+		render(<Field />);
+		const input = screen.getByRole("textbox", { name: "Phone number" });
+		for (const next of ["2", "20", "202", "2025"]) {
+			fireEvent.change(input, { target: { value: next } });
+		}
+		// One setCountry and one setNumber across every render.
+		expect(seenActions.size).toBe(2);
 	});
 
 	it("explains misplaced parts", () => {

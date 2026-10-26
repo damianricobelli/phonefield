@@ -127,6 +127,25 @@ export function Root(props: PhoneField.RootProps) {
 		() => toCountryGroups(availableCountries, preferredCountries),
 		[availableCountries, preferredCountries],
 	);
+	// O(1) lookups for the hot paths (every keystroke resolves a country).
+	const countryIndex = React.useMemo(
+		() => new Map(availableCountries.map((country) => [country.iso2, country])),
+		[availableCountries],
+	);
+	const getCountry = React.useCallback(
+		(iso2: string) => countryIndex.get(iso2 as PhoneField.CountryCode),
+		[countryIndex],
+	);
+	const fallbackCountry = React.useMemo(
+		() => resolveCountry(availableCountries),
+		[availableCountries],
+	);
+	const findCountry = React.useCallback(
+		(iso2: string | undefined) =>
+			(iso2 ? countryIndex.get(iso2 as PhoneField.CountryCode) : undefined) ??
+			fallbackCountry,
+		[countryIndex, fallbackCountry],
+	);
 
 	const [internalValue, setInternalValue] =
 		React.useState<PhoneField.InputValue>(
@@ -141,8 +160,8 @@ export function Root(props: PhoneField.RootProps) {
 
 	const currentValue = value ?? internalValue;
 	const selectedCountry = React.useMemo(
-		() => resolveCountry(availableCountries, currentValue.countryIso2),
-		[availableCountries, currentValue.countryIso2],
+		() => findCountry(currentValue.countryIso2),
+		[currentValue.countryIso2, findCountry],
 	);
 	const normalizedValue = React.useMemo(
 		() =>
@@ -200,16 +219,22 @@ export function Root(props: PhoneField.RootProps) {
 	const [errorId, setErrorId] = React.useState<string>();
 	const controlId = customControlId ?? `${baseId}-input`;
 
+	// Read the latest callback through a ref so actions keep their identity
+	// even when the parent passes an inline onValueChange.
+	const onValueChangeRef = React.useRef(onValueChange);
+	React.useLayoutEffect(() => {
+		onValueChangeRef.current = onValueChange;
+	});
 	const applyValue = React.useCallback(
 		(nextValue: PhoneField.Value, reason: PhoneFieldChangeReason) => {
 			if (!isControlled) {
 				setInternalValue(nextValue);
 				currentValueRef.current = nextValue;
 			}
-			onValueChange?.(nextValue, { reason });
+			onValueChangeRef.current?.(nextValue, { reason });
 			return nextValue;
 		},
-		[isControlled, onValueChange],
+		[isControlled],
 	);
 
 	const commitValue = React.useCallback(
@@ -235,7 +260,7 @@ export function Root(props: PhoneField.RootProps) {
 		(number: string) => {
 			if (!limitMaxLength) return true;
 			const current = currentValueRef.current;
-			const country = resolveCountry(availableCountries, current.countryIso2);
+			const country = findCountry(current.countryIso2);
 			if (!isTooLong(country, number)) return true;
 			// Never trap the user: edits that do not add digits stay allowed even
 			// when the current number is already too long (e.g. after a country switch).
@@ -243,7 +268,7 @@ export function Root(props: PhoneField.RootProps) {
 				onlyDigits(number).length <= onlyDigits(current.nationalNumber).length
 			);
 		},
-		[availableCountries, limitMaxLength],
+		[findCountry, limitMaxLength],
 	);
 
 	const setCountry = React.useCallback(
@@ -257,23 +282,18 @@ export function Root(props: PhoneField.RootProps) {
 			if (isGrowingEdit(editKind) && !accepts(number)) return false;
 			// Read the latest committed country, not the last render's, so
 			// back-to-back calls (setCountry then setNumber) compose.
-			const currentCountry = resolveCountry(
-				availableCountries,
-				currentValueRef.current.countryIso2,
-			);
+			const currentCountry = findCountry(currentValueRef.current.countryIso2);
 			const internationalCountry = parseInternationalInput(number)?.country;
-			const nextCountry = internationalCountry
-				? (availableCountries.find(
-						(country) => country.iso2 === internationalCountry,
-					) ?? currentCountry)
-				: currentCountry;
+			const nextCountry =
+				(internationalCountry && getCountry(internationalCountry)) ||
+				currentCountry;
 			const nextValue = commitValue(nextCountry, number, editKind);
 			// Keep back-to-back uncontrolled events synchronous. Controlled values
 			// are synchronized only after the parent accepts the update.
 			if (!isControlled) currentValueRef.current = nextValue;
 			return true;
 		},
-		[accepts, availableCountries, commitValue, isControlled],
+		[accepts, commitValue, findCountry, getCountry, isControlled],
 	);
 	const rememberSelection = React.useCallback(
 		(selection: PhoneFieldInputSelection) => {
@@ -293,10 +313,7 @@ export function Root(props: PhoneField.RootProps) {
 			);
 			if (!target) return undefined;
 
-			const targetCountry = resolveCountry(
-				availableCountries,
-				target.value.countryIso2,
-			);
+			const targetCountry = findCountry(target.value.countryIso2);
 			const nextValue = buildValue(
 				targetCountry,
 				target.value.nationalNumber,
@@ -306,7 +323,7 @@ export function Root(props: PhoneField.RootProps) {
 			applyValue(nextValue, direction);
 			return target;
 		},
-		[applyValue, availableCountries, formatOnType],
+		[applyValue, findCountry, formatOnType],
 	);
 	const undo = React.useCallback(
 		() => restoreHistory("undo"),
@@ -360,10 +377,12 @@ export function Root(props: PhoneField.RootProps) {
 			disabled,
 			readOnly,
 			setCountry,
+			getCountry,
 		}),
 		[
 			availableCountries,
 			disabled,
+			getCountry,
 			groups,
 			locale,
 			readOnly,
@@ -411,10 +430,7 @@ export function Root(props: PhoneField.RootProps) {
 	const resetField = React.useCallback(() => {
 		setTouched(false);
 		if (isControlled) return;
-		const country = resolveCountry(
-			availableCountries,
-			initialValue.countryIso2,
-		);
+		const country = findCountry(initialValue.countryIso2);
 		const resetValue = buildValue(
 			country,
 			initialValue.nationalNumber,
@@ -423,7 +439,7 @@ export function Root(props: PhoneField.RootProps) {
 		setInternalValue(resetValue);
 		currentValueRef.current = resetValue;
 		historyRef.current = new PhoneFieldHistory(toInputValue(resetValue));
-	}, [availableCountries, formatOnType, initialValue, isControlled]);
+	}, [findCountry, formatOnType, initialValue, isControlled]);
 	React.useEffect(() => {
 		const owner = form
 			? rootRef.current?.ownerDocument.getElementById(form)

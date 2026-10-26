@@ -26,6 +26,8 @@ export type PhoneFieldCountryContextValue = {
 	disabled: boolean;
 	readOnly: boolean;
 	setCountry: (country: PhoneFieldCountry) => void;
+	/** O(1) lookup in the available countries. */
+	getCountry: (iso2: string) => PhoneFieldCountry | undefined;
 };
 
 export type PhoneFieldInputContextValue = {
@@ -63,7 +65,7 @@ export const PhoneFieldInputContext =
 	React.createContext<PhoneFieldInputContextValue | null>(null);
 
 export function usePhoneFieldCountryContext(part = "PhoneField.Country") {
-	const context = React.useContext(PhoneFieldCountryContext);
+	const context = React.use(PhoneFieldCountryContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}
@@ -71,7 +73,7 @@ export function usePhoneFieldCountryContext(part = "PhoneField.Country") {
 }
 
 export function usePhoneFieldInputContext(part = "PhoneField.Input") {
-	const context = React.useContext(PhoneFieldInputContext);
+	const context = React.use(PhoneFieldInputContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}
@@ -97,8 +99,24 @@ export type UsePhoneFieldReturnValue = {
 export function usePhoneField(): UsePhoneFieldReturnValue {
 	const countryContext = usePhoneFieldCountryContext("usePhoneField()");
 	const inputContext = usePhoneFieldInputContext("usePhoneField()");
-	const { availableCountries, selectedCountry, setCountry } = countryContext;
+	const { availableCountries, selectedCountry, setCountry, getCountry } =
+		countryContext;
 	const { setNumber, state, value } = inputContext;
+
+	// Actions keep their identity while the user types, so they are safe in
+	// effect dependencies and memoized children.
+	const actions = React.useMemo(
+		() => ({
+			setCountry: (iso2: string) => {
+				const next = getCountry(iso2);
+				if (next) setCountry(next);
+			},
+			setNumber: (number: string) => {
+				setNumber(number, "replace");
+			},
+		}),
+		[getCountry, setCountry, setNumber],
+	);
 
 	return React.useMemo(
 		() => ({
@@ -106,16 +124,8 @@ export function usePhoneField(): UsePhoneFieldReturnValue {
 			state,
 			country: selectedCountry,
 			countries: availableCountries,
-			setCountry: (iso2: string) => {
-				const next = availableCountries.find(
-					(country) => country.iso2 === iso2,
-				);
-				if (next) setCountry(next);
-			},
-			setNumber: (number: string) => {
-				setNumber(number, "replace");
-			},
+			...actions,
 		}),
-		[availableCountries, selectedCountry, setCountry, setNumber, state, value],
+		[actions, availableCountries, selectedCountry, state, value],
 	);
 }

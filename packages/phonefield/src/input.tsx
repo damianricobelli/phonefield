@@ -12,6 +12,9 @@ import type {
 } from "./history.js";
 import { mergeRefs } from "./merge-refs.js";
 
+/** Keys that move the caret end the current undo transaction. */
+const CARET_MOVE_KEYS = new Set(["ArrowLeft", "ArrowRight", "Home", "End"]);
+
 function removeCharAt(value: string, index: number) {
 	return value.slice(0, index) + value.slice(index + 1);
 }
@@ -265,9 +268,7 @@ export function Input({
 						keyboardInputType,
 						selection,
 					);
-				} else if (
-					["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)
-				) {
+				} else if (CARET_MOVE_KEYS.has(event.key)) {
 					breakHistoryGroup();
 				}
 
