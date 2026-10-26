@@ -15,12 +15,12 @@ export const Route = createRootRoute({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "PhoneField — React phone input primitive",
+				title: "PhoneField — Composable React phone input",
 			},
 			{
 				name: "description",
 				content:
-					"An accessible, composable React phone input primitive built with Base UI and libphonenumber-js.",
+					"Accessible, composable React phone input primitives built on Base UI and libphonenumber-js. Zero config, fully stylable, with field state built in.",
 			},
 			{
 				property: "og:image",

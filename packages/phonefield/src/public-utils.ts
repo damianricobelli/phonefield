@@ -1,5 +1,6 @@
-import type { PhoneNumber } from "libphonenumber-js";
+import type { PhoneNumber } from "libphonenumber-js/min/es6";
 import type { PhoneField } from "./component.js";
+import { getExampleNumber as getExamplePhoneNumber } from "./examples.js";
 import {
 	buildValue as buildPhoneFieldValue,
 	getCountriesMap,
@@ -55,3 +56,14 @@ export function getCountries(lang?: PhoneField.Lang): PhoneField.CountryMap {
 
 /** Default English country metadata. */
 export const countries: PhoneField.CountryMap = getDefaultCountriesMap();
+
+/**
+ * Example mobile number for a country, formatted nationally by default.
+ * Pair it with `PhoneField.Input`'s function placeholder.
+ */
+export function getExampleNumber(
+	country: PhoneField.CountryCode,
+	format: "national" | "international" = "national",
+): string | undefined {
+	return getExamplePhoneNumber(country, format);
+}

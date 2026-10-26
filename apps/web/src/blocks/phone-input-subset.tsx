@@ -1,66 +1,93 @@
-import { ChevronDownIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { PhoneField } from "phonefield";
+import { getExampleNumber } from "phonefield/utils";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupInput,
-} from "@/components/ui/input-group";
+import { InputGroup, InputGroupInput } from "@/components/ui/input-group";
 
-const LATAM_COUNTRIES = ["AR", "BR", "CL", "CO", "MX", "US"] as const;
-
-const countryClassNames = {
-	trigger:
-		"group/phone-country-trigger flex h-full w-fit shrink-0 items-center gap-2 border-r border-input px-3 text-sm outline-none transition-colors duration-150 hover:bg-accent focus-visible:bg-accent data-popup-open:bg-accent",
-	icon: "text-muted-foreground transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] group-data-popup-open/phone-country-trigger:rotate-180 motion-reduce:transition-none",
-	positioner: "isolate z-50",
-	popup:
-		"group/phone-country w-72 max-w-[var(--available-width)] origin-[var(--transform-origin)] overflow-hidden rounded-xl border bg-popover shadow-xl transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] data-ending-style:[transform:scale(0.97)] data-ending-style:opacity-0 data-starting-style:[transform:scale(0.97)] data-starting-style:opacity-0 motion-reduce:transform-none motion-reduce:transition-none",
-	searchInputContainer: "border-b p-2",
-	searchInput:
-		"h-9 w-full rounded-lg bg-muted px-3 text-sm outline-none focus:ring-2 focus:ring-ring",
-	list: "max-h-64 overflow-y-auto p-1",
-	item: "flex cursor-default items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-accent data-selected:bg-accent",
-	empty:
-		"hidden justify-center px-3 py-6 text-sm text-muted-foreground group-data-empty/phone-country:flex",
-} satisfies PhoneField.CountryClassNames;
+const LATAM_COUNTRIES = [
+	"AR",
+	"BO",
+	"BR",
+	"CL",
+	"CO",
+	"CR",
+	"DO",
+	"EC",
+	"GT",
+	"HN",
+	"MX",
+	"NI",
+	"PA",
+	"PE",
+	"PY",
+	"SV",
+	"UY",
+] as const;
+const PREFERRED_COUNTRIES = ["AR", "BR", "MX"] as const;
 
 export function PhoneInputSubset() {
 	return (
-		<Field className="w-full max-w-md">
-			<FieldLabel htmlFor="latam-phone">Teléfono de contacto</FieldLabel>
-			<PhoneField.Root
-				countries={LATAM_COUNTRIES}
-				defaultCountry="AR"
-				lang="es-AR"
-				name="phone"
-				className="w-full"
+		<PhoneField.Root
+			countries={LATAM_COUNTRIES}
+			preferredCountries={PREFERRED_COUNTRIES}
+			defaultCountry="AR"
+			lang="es-AR"
+			name="phone"
+			render={<Field />}
+			className="w-full max-w-md"
+		>
+			<PhoneField.Label render={<FieldLabel />}>
+				Teléfono de contacto
+			</PhoneField.Label>
+			<PhoneField.Group
+				render={<InputGroup />}
+				className="h-10 overflow-hidden bg-background shadow-sm"
 			>
-				<InputGroup className="h-10 overflow-hidden bg-background shadow-sm">
-					<PhoneField.Input
-						render={<InputGroupInput />}
-						id="latam-phone"
-						placeholder="11 4321-1234"
-						className="h-full px-3"
-					/>
-					<InputGroupAddon
-						align="inline-start"
-						className="h-full cursor-default p-0"
-					>
-						<PhoneField.Country
-							inputPlaceholder="Buscar país"
-							noResultsText="Sin resultados"
-							classNames={countryClassNames}
-							icon={<ChevronDownIcon className="size-4" />}
-							slotProps={{ trigger: { "aria-label": "País" } }}
-							renderCountryValue={(country) => (
-								<>
-									<span aria-hidden>{country.flag}</span>
-									<span>{country.dialCode}</span>
-								</>
-							)}
-							renderCountryItem={(country) => (
-								<>
+				<CountrySelect />
+				<PhoneField.Input
+					render={<InputGroupInput />}
+					placeholder={(country) => getExampleNumber(country.iso2)}
+					className="h-full px-3"
+				/>
+			</PhoneField.Group>
+			<PhoneField.Description render={<FieldDescription />} className="text-xs">
+				Mercados acotados, destacados arriba y nombres en español.
+			</PhoneField.Description>
+		</PhoneField.Root>
+	);
+}
+
+function CountrySelect() {
+	return (
+		<PhoneField.Country
+			labels={{ search: "Buscar país", empty: "Sin resultados" }}
+		>
+			<PhoneField.CountryTrigger className="group/trigger flex h-full shrink-0 items-center gap-2 border-input border-r px-3 text-sm outline-none transition-colors duration-150 hover:bg-accent focus-visible:bg-accent data-popup-open:bg-accent">
+				<PhoneField.CountryValue>
+					{(country) => (
+						<>
+							<span aria-hidden>{country.flag}</span>
+							<span>{country.dialCode}</span>
+						</>
+					)}
+				</PhoneField.CountryValue>
+				<PhoneField.CountryIcon className="text-muted-foreground transition-transform duration-150 ease-out group-data-popup-open/trigger:rotate-180 motion-reduce:transition-none">
+					<ChevronDownIcon className="size-4" />
+				</PhoneField.CountryIcon>
+			</PhoneField.CountryTrigger>
+			<PhoneField.CountryPortal>
+				<PhoneField.CountryPositioner className="isolate z-50" sideOffset={6}>
+					<PhoneField.CountryPopup className="flex max-h-[min(22rem,var(--available-height))] w-72 max-w-(--available-width) origin-(--transform-origin) flex-col overflow-hidden rounded-xl bg-popover text-popover-foreground shadow-xl ring-1 ring-foreground/10 transition-[transform,opacity] duration-150 ease-out data-ending-style:scale-[0.97] data-ending-style:opacity-0 data-starting-style:scale-[0.97] data-starting-style:opacity-0 motion-reduce:transition-none">
+						<div className="border-b p-1.5">
+							<PhoneField.CountrySearch className="h-8 w-full rounded-md bg-muted/60 px-2.5 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/50" />
+						</div>
+						<PhoneField.CountryEmpty className="px-3 py-6 text-center text-sm text-muted-foreground empty:hidden" />
+						<PhoneField.CountryList className="min-h-0 flex-1 scroll-py-1 overflow-y-auto overscroll-contain p-1 data-empty:p-0 [&_[data-preferred]]:mb-1 [&_[data-preferred]]:border-b [&_[data-preferred]]:pb-1">
+							{(country) => (
+								<PhoneField.CountryItem
+									country={country}
+									className="flex cursor-default items-center gap-2 rounded-md px-2.5 py-1.5 text-sm outline-none select-none data-highlighted:bg-accent data-highlighted:text-accent-foreground"
+								>
 									<span aria-hidden>{country.flag}</span>
 									<span className="min-w-0 flex-1 truncate">
 										{country.name}
@@ -68,15 +95,15 @@ export function PhoneInputSubset() {
 									<span className="text-muted-foreground">
 										{country.dialCode}
 									</span>
-								</>
+									<PhoneField.CountryItemIndicator>
+										<CheckIcon className="size-4" />
+									</PhoneField.CountryItemIndicator>
+								</PhoneField.CountryItem>
 							)}
-						/>
-					</InputGroupAddon>
-				</InputGroup>
-			</PhoneField.Root>
-			<FieldDescription className="text-xs">
-				Lista acotada y nombres localizados en español.
-			</FieldDescription>
-		</Field>
+						</PhoneField.CountryList>
+					</PhoneField.CountryPopup>
+				</PhoneField.CountryPositioner>
+			</PhoneField.CountryPortal>
+		</PhoneField.Country>
 	);
 }

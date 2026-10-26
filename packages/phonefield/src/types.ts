@@ -1,4 +1,4 @@
-import type { CountryCode } from "libphonenumber-js/min";
+import type { CountryCode } from "libphonenumber-js/min/es6";
 
 /**
  * Country descriptor used by the country picker: ISO2 code, display name, dial code, and optional flag emoji.
@@ -46,3 +46,43 @@ export type PhoneFieldInputValue = Pick<
 
 /** Minimal, untrusted payload serialized into forms. Derived fields are rebuilt when read. */
 export type PhoneFieldFormValue = PhoneFieldInputValue;
+
+/** Why `onValueChange` fired. */
+export type PhoneFieldChangeReason =
+	| "input"
+	| "paste"
+	| "country"
+	| "undo"
+	| "redo";
+
+/** Second argument of `onValueChange`. */
+export type PhoneFieldChangeDetails = {
+	reason: PhoneFieldChangeReason;
+};
+
+/**
+ * Field state shared by every part. Each boolean is mirrored as a `data-*`
+ * attribute on Root (for example `data-valid`, `data-touched`).
+ */
+export type PhoneFieldState = {
+	/** Selected ISO2 country. Mirrored as `data-country="US"`. */
+	country: CountryCode;
+	/** The number is complete and valid for the selected country. */
+	valid: boolean;
+	/**
+	 * After the field is touched (blur or form submit): the number is incomplete
+	 * or invalid, or it is empty and `required`. Also true when `invalid` is set.
+	 */
+	invalid: boolean;
+	/** The national number contains at least one digit. */
+	filled: boolean;
+	/** The value changed since mount. */
+	dirty: boolean;
+	/** Focus has left the field at least once, or its form was submitted. */
+	touched: boolean;
+	/** Focus is inside the field, including the country popup. */
+	focused: boolean;
+	disabled: boolean;
+	readOnly: boolean;
+	required: boolean;
+};

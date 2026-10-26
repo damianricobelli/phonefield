@@ -1,48 +1,54 @@
 # PhoneField
 
-Composable React phone-field primitive built with Base UI and `libphonenumber-js`.
+Composable, accessible React phone input built on Base UI and `libphonenumber-js`.
 
-- Three public components: `Root`, `Country`, and `Input`.
-- Controlled or uncontrolled state.
-- Localized country metadata and canonical E.164 output.
-- FormData support on client and server.
-- Unstyled by default, with one customization seam per concern.
+- Zero-config `Root`, `Country`, and `Input`, or compose every country-picker part.
+- Unstyled: `className` on each part, field state as data attributes.
+- Built-in `Label`, `Description`, and `Error`, wired for accessibility.
+- Controlled or uncontrolled, with canonical E.164 output.
+- FormData submission and server-compatible utilities.
 
 [Documentation and playground](https://phonefield.vercel.app) · [Package guide](./packages/phonefield/README.md) · [Migration guide](./packages/phonefield/MIGRATION.md)
-
-The v1 line supports React 19, Base UI 1.6+, and Node.js 22+.
 
 ## Install
 
 ```bash
-pnpm add phonefield
+pnpm add phonefield @base-ui/react
 ```
 
-## Minimal usage
+Requires React 19 and `@base-ui/react` 1.9 or newer.
+
+## Usage
 
 ```tsx
 import { PhoneField } from "phonefield";
 
 export function PhoneNumber() {
   return (
-    <PhoneField.Root defaultCountry="US">
-      <PhoneField.Country />
-      <PhoneField.Input aria-label="Phone number" />
+    <PhoneField.Root name="phone" defaultCountry="US" required>
+      <PhoneField.Label>Phone</PhoneField.Label>
+      <PhoneField.Group className="flex rounded-lg border data-invalid:border-red-500">
+        <PhoneField.Country />
+        <PhoneField.Input />
+      </PhoneField.Group>
+      <PhoneField.Error />
     </PhoneField.Root>
   );
 }
 ```
 
-The interface has one authority for each concern:
+- `Root` owns the value, field state, and form serialization (submit reveals errors, reset restores the value).
+- `Group` is the visual shell; `Label`, `Description`, and `Error` are linked to the input.
+- `Country` is a searchable picker; pass `Country*` parts as children to customize it.
+- `Input` is the telephone input; it formats, handles paste, and limits length.
+- `usePhoneField()` drives Root from your own parts.
+- `phonefield/utils` parses and validates on client and server.
 
-- `Root` owns the phone value and form serialization.
-- `Country` owns selection and popup customization.
-- `Input` owns native input attributes, events, and styling.
-- `phonefield/utils` is the server-compatible parsing and metadata seam.
-
-The [package guide](./packages/phonefield/README.md) contains controlled usage, FormData, utilities, and customization. The documentation site is the canonical API reference and includes typechecked examples.
+The [package guide](./packages/phonefield/README.md) covers composition, field state, forms, and utilities. The documentation site has the full API reference and typechecked examples.
 
 ## Development
+
+Requires Node.js 22.18 or newer.
 
 ```bash
 pnpm install

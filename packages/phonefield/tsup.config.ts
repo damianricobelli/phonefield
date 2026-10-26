@@ -10,6 +10,5 @@ export default defineConfig({
 	treeshake: true,
 	splitting: true,
 	tsconfig: "tsconfig.json",
-	onSuccess:
-		"node scripts/finalize-package.mjs && tsc -p tsconfig.build.json",
+	onSuccess: "node scripts/finalize-package.mjs && tsc -p tsconfig.build.json",
 });

@@ -13,12 +13,15 @@ import {
 	getCountriesMap,
 	getDefaultCountriesMap,
 	isPhoneFieldValue,
+	isTooLong,
+	isValidForCountry,
 	isValidPhoneField,
 	normalizeLang,
 	onlyDigits,
 	parsePhoneField,
 	resolveCountry,
 	toAvailableCountries,
+	toCountryGroups,
 } from "../src/utils";
 
 const US: PhoneFieldCountry = {
@@ -427,5 +430,81 @@ describe("public utility namespace", () => {
 		expect(PhoneFieldUtils.countries.get("US")).toEqual(
 			getDefaultCountriesMap().get("US"),
 		);
+	});
+
+	it("formats example numbers for placeholders", () => {
+		expect(PhoneFieldUtils.getExampleNumber("US")).toBe("(201) 555-0123");
+		expect(PhoneFieldUtils.getExampleNumber("GB", "international")).toBe(
+			"+44 7400 123456",
+		);
+	});
+});
+
+describe("territories that share a numbering plan", () => {
+	const countries = getCountriesMap("en");
+	const cases = [
+		["AX", "041 2345678"],
+		["IM", "07924 123456"],
+		["CX", "0412 345 678"],
+		["VA", "312 345 6789"],
+		["BL", "0690 00 12 34"],
+		["SJ", "41 23 45 67"],
+		["EH", "06 50 12 34 56"],
+	] as const;
+
+	it.each(cases)(
+		"validates %s numbers for the territory itself",
+		(iso2, number) => {
+			const country = countries.get(iso2);
+			if (!country) throw new Error(`${iso2} metadata missing`);
+			const value = buildValue(country, number, true);
+			expect(value.isValid).toBe(true);
+			expect(isValidPhoneField(value)).toBe(true);
+		},
+	);
+
+	it("still rejects a number from another region of a shared plan", () => {
+		const canada = countries.get("CA");
+		const unitedStates = countries.get("US");
+		if (!canada || !unitedStates) throw new Error("NANPA metadata missing");
+		expect(buildValue(canada, "2025550123", true).isValid).toBe(false);
+		expect(buildValue(unitedStates, "4165550199", true).isValid).toBe(false);
+		expect(isValidForCountry("CA", "4165550199")).toBe(true);
+		expect(isValidForCountry("GB", "7797712345")).toBe(false);
+		expect(isValidForCountry("JE", "7797712345")).toBe(true);
+	});
+});
+
+describe("toCountryGroups", () => {
+	const map = getCountriesMap("en");
+	const available = toAvailableCountries(map, ["AR", "BR", "US"]);
+
+	it("returns null when nothing is pinned", () => {
+		expect(toCountryGroups(available)).toBeNull();
+		expect(toCountryGroups(available, ["FR"])).toBeNull();
+	});
+
+	it("pins available countries once, in the given order", () => {
+		const groups = toCountryGroups(available, ["US", "FR", "US", "AR"]);
+		expect(groups?.map((group) => group.items.map((c) => c.iso2))).toEqual([
+			["US", "AR"],
+			["BR"],
+		]);
+	});
+});
+
+describe("isTooLong", () => {
+	const us = getCountriesMap("en").get("US");
+	if (!us) throw new Error("US metadata missing");
+
+	it("detects national numbers beyond the country's longest length", () => {
+		expect(isTooLong(us, "(202) 555-0123")).toBe(false);
+		expect(isTooLong(us, "20255501234")).toBe(true);
+		expect(isTooLong(us, "")).toBe(false);
+	});
+
+	it("checks international input against its own country", () => {
+		expect(isTooLong(us, "+44 7400 123456")).toBe(false);
+		expect(isTooLong(us, "+44 7400 1234567890")).toBe(true);
 	});
 });

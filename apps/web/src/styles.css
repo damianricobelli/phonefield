@@ -111,6 +111,17 @@ html {
   transform: scale(0.97);
 }
 
+.hero-caption {
+  animation: hero-caption-in 220ms var(--ease-out-ui);
+}
+
+@keyframes hero-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
 .code-scrollbar {
   scrollbar-color: rgb(71 85 105) transparent;
   scrollbar-width: thin;
@@ -127,6 +138,10 @@ html {
 
   .ui-pressable:active {
     transform: none;
+  }
+
+  .hero-caption {
+    animation: none;
   }
 }
 
@@ -296,4 +311,76 @@ code {
   html {
     @apply font-sans;
   }
+}
+
+/*
+ * Landing "Zero config" demo. PhoneField ships unstyled and Tailwind's
+ * preflight strips native borders, so restore a browser-like look for parts
+ * rendered without any class. Styled parts are unaffected.
+ */
+.zero-config [data-slot="phone-field"] {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.zero-config [data-slot="phone-field-country-trigger"],
+.zero-config [data-slot="phone-field-input"] {
+  height: 2.25rem;
+  border: 1px solid oklch(0.82 0.01 260);
+  border-radius: 0.375rem;
+  background: white;
+  padding-inline: 0.625rem;
+}
+
+.zero-config [data-slot="phone-field-country-trigger"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zero-config [data-slot="phone-field-input"] {
+  min-width: 0;
+  flex: 1;
+}
+
+[data-slot="phone-field-country-positioner"]:not([class]) {
+  z-index: 50;
+}
+
+[data-slot="phone-field-country-popup"]:not([class]) {
+  width: 17rem;
+  border: 1px solid oklch(0.82 0.01 260);
+  border-radius: 0.5rem;
+  background: white;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+}
+
+[data-slot="phone-field-country-search"]:not([class]) {
+  width: 100%;
+  margin-bottom: 0.25rem;
+  border: 1px solid oklch(0.82 0.01 260);
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+}
+
+[data-slot="phone-field-country-list"]:not([class]) {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+[data-slot="phone-field-country-item"]:not([class]) {
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  cursor: default;
+}
+
+[data-slot="phone-field-country-item"]:not([class])[data-highlighted] {
+  background: oklch(0.96 0.005 260);
+}
+
+[data-slot="phone-field-country-empty"]:not([class]):not(:empty) {
+  padding: 0.75rem 0.5rem;
+  color: oklch(0.55 0.02 260);
 }

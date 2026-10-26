@@ -60,6 +60,11 @@ const PhoneInputSubset = React.lazy(() =>
 		default: module.PhoneInputSubset,
 	})),
 );
+const PhoneInputNativeSelect = React.lazy(() =>
+	import("@/blocks/phone-input-native-select").then((module) => ({
+		default: module.PhoneInputNativeSelect,
+	})),
+);
 const PhoneInputDrawer = React.lazy(() =>
 	import("@/blocks/phone-input-drawer").then((module) => ({
 		default: module.PhoneInputDrawer,
@@ -167,7 +172,7 @@ export const recipes = [
 		title: "Validated field",
 		shortTitle: "Validation",
 		description:
-			"Real-time required and invalid states with accessible error messaging.",
+			"Required and invalid states read from the field itself, with accessible error messaging.",
 		category: "Forms",
 		labels: ["field", "validation"],
 		component: PhoneInputValidation,
@@ -176,10 +181,10 @@ export const recipes = [
 				(module) => module.default,
 			),
 		useWhen:
-			"Use it in controlled forms that own validation without a form library.",
+			"Use it when the field owns validation and no form library is involved.",
 		requires: ["field", "input-group"],
 		accessibility:
-			"Errors are connected with aria-describedby and exposed through aria-invalid.",
+			"The message is linked with aria-describedby, and aria-invalid follows the field state automatically.",
 	},
 	{
 		id: "form-data",
@@ -306,7 +311,7 @@ export const recipes = [
 		title: "Localized country subset",
 		shortTitle: "Localized subset",
 		description:
-			"Limit supported markets and localize country names, search, and sorting.",
+			"Limit supported markets, pin the key ones, and localize country names, search, and sorting.",
 		category: "Mobile & localization",
 		labels: ["i18n", "subset"],
 		component: PhoneInputSubset,
@@ -319,6 +324,25 @@ export const recipes = [
 		requires: ["field", "input-group"],
 		accessibility:
 			"Localized names remain searchable and visible beside their dialing codes.",
+	},
+	{
+		id: "native-select",
+		title: "Native country select",
+		shortTitle: "Native select",
+		description:
+			"Drive the field from a plain <select> with usePhoneField, no popup required.",
+		category: "Mobile & localization",
+		labels: ["native", "usePhoneField"],
+		component: PhoneInputNativeSelect,
+		loadCode: () =>
+			import("@/blocks/phone-input-native-select.tsx?raw").then(
+				(module) => module.default,
+			),
+		useWhen:
+			"Use it when the platform picker beats a custom popup, such as in mobile web or embedded webviews.",
+		requires: ["field", "input-group"],
+		accessibility:
+			"A real select keeps native keyboard, screen reader, and touch behavior for the country.",
 	},
 	{
 		id: "drawer",
@@ -337,7 +361,7 @@ export const recipes = [
 			"Use it on mobile-first forms where a popover would feel cramped or hard to scan.",
 		requires: ["button", "drawer", "field", "input", "input-group"],
 		accessibility:
-			"The trigger names its purpose and the modal drawer keeps search and options reachable.",
+			"The trigger names its purpose and the current country, and the modal drawer keeps search and options reachable.",
 	},
 ] as const satisfies readonly Recipe[];
 

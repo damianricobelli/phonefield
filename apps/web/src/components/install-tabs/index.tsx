@@ -3,6 +3,7 @@
 import { Tabs } from "@base-ui/react/tabs";
 import { Check, Copy } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const MANAGERS = [
@@ -109,10 +110,12 @@ export function InstallTabs({
 							<code className="min-w-0 flex-1 overflow-x-auto whitespace-nowrap px-2 font-mono text-sm text-slate-50">
 								{resolvedCommands[manager.value]}
 							</code>
-							<button
+							<Button
 								type="button"
+								variant="outline"
+								size="sm"
 								onClick={() => copyCommand(manager.value)}
-								className="ui-pressable inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/10 px-2.5 text-xs font-medium text-slate-200 transition-colors duration-150 hover:bg-white/15 hover:text-white focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-sky-400"
+								className="ui-pressable shrink-0 border-white/10 bg-white/10 text-slate-200 shadow-none hover:bg-white/15 hover:text-white"
 								aria-label={`Copy ${manager.label} install command`}
 							>
 								{isCopied ? (
@@ -121,7 +124,7 @@ export function InstallTabs({
 									<Copy className="size-3.5" aria-hidden="true" />
 								)}
 								{isCopied ? "Copied" : "Copy"}
-							</button>
+							</Button>
 						</div>
 					</Tabs.Panel>
 				);

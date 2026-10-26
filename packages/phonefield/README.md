@@ -1,178 +1,143 @@
 # phonefield
 
-A composable, accessible React phone-field primitive for design systems.
+Composable, accessible React phone input built on Base UI and `libphonenumber-js`. Unstyled, formats as you type, and submits through FormData.
 
-[Full documentation and playground](https://phonefield.vercel.app) · [Migration guide](./MIGRATION.md)
+[Documentation and playground](https://phonefield.vercel.app) · [Migration guide](./MIGRATION.md)
 
 ## Install
 
 ```bash
-pnpm add phonefield
+pnpm add phonefield @base-ui/react
 ```
 
-Requires React 19, React DOM 19, Base UI 1.6 or newer, and Node.js 22 or newer.
+Peer dependencies: `@base-ui/react >=1.9 <2`, `react >=19 <20`, `react-dom >=19 <20`.
 
 ## Quick start
 
 ```tsx
 import { PhoneField } from "phonefield";
 
-<PhoneField.Root defaultCountry="US" lang="en">
+<PhoneField.Root defaultCountry="US">
   <PhoneField.Country />
   <PhoneField.Input aria-label="Phone number" />
 </PhoneField.Root>;
 ```
 
-The compound interface intentionally has one authority for each concern:
+`<PhoneField.Country />` renders a complete, searchable country picker. `onValueChange(value, { reason })` emits a `PhoneField.Value` with `countryIso2`, `countryDialCode`, `nationalNumber`, `e164`, and `isValid`. Pass `value` for controlled mode.
 
-- `Root` owns `value`, `defaultValue`, `onValueChange`, and form `name`.
-- `Country` owns country selection and popup customization.
-- `Input` owns native input attributes, events, and styling.
+## Labels and errors
 
-## Controlled
+Root is a plain wrapper. `Group` is the visual shell for Country and Input; `Label`, `Description`, and `Error` are wired to the input for you (`htmlFor`, `aria-describedby`). `Error` renders only while the field is invalid.
 
 ```tsx
-const [phone, setPhone] = useState<PhoneField.InputValue>({
-  countryIso2: "US",
-  nationalNumber: "",
-});
-
-<PhoneField.Root value={phone} onValueChange={setPhone}>
-  <PhoneField.Country />
-  <PhoneField.Input aria-label="Phone number" />
+<PhoneField.Root name="phone" required>
+  <PhoneField.Label>Phone</PhoneField.Label>
+  <PhoneField.Group>
+    <PhoneField.Country />
+    <PhoneField.Input />
+  </PhoneField.Group>
+  <PhoneField.Description>Used for sign-in codes.</PhoneField.Description>
+  <PhoneField.Error />
 </PhoneField.Root>;
 ```
 
-`onValueChange` emits a canonical `PhoneField.Value` with `countryDialCode`, `e164`, and `isValid`.
+## Composition
 
-## Undo and redo
-
-PhoneField keeps its own bounded, native-style edit history because formatting
-a controlled input replaces the browser's native text edits. While the phone
-input is focused, the usual platform shortcuts restore both the national
-number and its country:
-
-- Undo: `Cmd+Z` on macOS or `Ctrl+Z` on Windows and Linux.
-- Redo: `Cmd+Shift+Z`, `Ctrl+Shift+Z`, or `Ctrl+Y`.
-
-History is grouped by editing transaction rather than by character. Typing
-`12345` and undoing clears the complete typing run. If the user then removes
-`45`, undo restores `12345` with `45` selected, matching native input feedback.
-Moving the caret or changing edit type starts another transaction; paste, cut,
-drop, and country changes are independent steps.
-
-The last 100 transactions are retained. Replacing a controlled `value`
-externally starts a new history, which prevents undo from crossing a form reset
-or server update.
-
-## International paste
-
-When input begins with `+`, PhoneField parses it as an international number. If
-the detected country is available, Root selects it automatically and Input keeps
-only its nationally formatted number. For example, pasting
-`+44 20 7946 0018` selects the United Kingdom and displays `020 7946 0018`.
-The `+` prefix is accepted from paste, but direct keyboard entry is blocked to
-avoid a partially international value that cannot be edited predictably.
-
-When `countries` excludes the detected country, PhoneField preserves the pasted
-text and emits an invalid value with `e164: null` instead of reinterpreting those
-digits as a number from the currently selected country. The preserved `+` can
-still be removed normally with Backspace.
-
-Validity also includes the country selection. If a valid Canadian `+1` number is
-shown while the user manually selects the United States, `e164` and parsing
-metadata still describe the number accurately, but `isValid` becomes `false`
-until the selected country matches.
-
-## FormData
+Pass children to `Country` to customize any part. Each part wraps one Base UI Combobox part and accepts `className`, `style`, `render`, and that part's props.
 
 ```tsx
-import { fromFormData } from "phonefield/utils";
+import { getExampleNumber } from "phonefield/utils";
 
-<PhoneField.Root name="phone">
-  <PhoneField.Country />
-  <PhoneField.Input aria-label="Phone number" />
+<PhoneField.Root defaultCountry="US" preferredCountries={["US", "CA"]}>
+  <PhoneField.Label>Phone</PhoneField.Label>
+  <PhoneField.Country>
+    <PhoneField.CountryTrigger className="trigger">
+      <PhoneField.CountryValue>{(c) => `${c.flag} ${c.dialCode}`}</PhoneField.CountryValue>
+      <PhoneField.CountryIcon />
+    </PhoneField.CountryTrigger>
+    <PhoneField.CountryPortal>
+      <PhoneField.CountryPositioner sideOffset={8}>
+        <PhoneField.CountryPopup className="popup">
+          <PhoneField.CountrySearch placeholder="Search" />
+          <PhoneField.CountryEmpty>No results</PhoneField.CountryEmpty>
+          <PhoneField.CountryList>
+            {(country) => (
+              <PhoneField.CountryItem country={country} className="item">
+                {country.flag} {country.name}
+                <PhoneField.CountryItemIndicator />
+              </PhoneField.CountryItem>
+            )}
+          </PhoneField.CountryList>
+        </PhoneField.CountryPopup>
+      </PhoneField.CountryPositioner>
+    </PhoneField.CountryPortal>
+  </PhoneField.Country>
+  <PhoneField.Input placeholder={(country) => getExampleNumber(country.iso2)} />
 </PhoneField.Root>;
-
-const phone = fromFormData(formData, "phone");
 ```
 
-## Utilities
+To translate only the picker copy, skip composition: `<PhoneField.Country labels={{ search: "Buscar país", empty: "Sin resultados" }} />`.
+
+The popup is portaled, so style its parts directly. Every part also has a stable `data-slot` (`phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, `phone-field-country-item`, …) for global CSS.
+
+## Field state
+
+Root, Group, Label, Description, and Error mirror the field state as data attributes: `data-country`, `data-valid`, `data-invalid`, `data-filled`, `data-dirty`, `data-touched`, `data-focused`, `data-disabled`, `data-readonly`, `data-required`. Style the shell on `Group`:
+
+```tsx
+<PhoneField.Root name="phone" required invalid={!!serverError}>
+  <PhoneField.Group className="flex rounded-lg border data-focused:ring-2 data-invalid:border-red-500">
+    <PhoneField.Country />
+    <PhoneField.Input aria-label="Phone number" />
+  </PhoneField.Group>
+  <PhoneField.Error>{serverError}</PhoneField.Error>
+</PhoneField.Root>;
+```
+
+After blur or form submit, the field is invalid when the number is incomplete or invalid, or required and empty. Input gets `aria-invalid` automatically. `invalid` adds an external error (server, form library); automatic validation still applies when it is `false`. A form `reset` restores an uncontrolled field's initial value.
+
+## Custom parts
+
+`usePhoneField()` reads and drives the nearest Root: `{ value, state, country, countries, setCountry, setNumber }`.
+
+```tsx
+import { usePhoneField } from "phonefield";
+
+function NativeCountrySelect() {
+  const { country, countries, setCountry } = usePhoneField();
+  return (
+    <select
+      aria-label="Country"
+      value={country.iso2}
+      onChange={(e) => setCountry(e.target.value)}
+    >
+      {countries.map((c) => (
+        <option key={c.iso2} value={c.iso2}>{c.name}</option>
+      ))}
+    </select>
+  );
+}
+```
+
+## Forms and utilities
+
+With `name`, Root submits one FormData entry. Rebuild and validate it on the server:
 
 ```ts
-import {
-  buildValue,
-  countries,
-  fromFormData,
-  getCountries,
-  isValid,
-  parse,
-  toFormValue,
-} from "phonefield/utils";
+import { fromFormData } from "phonefield/utils";
+
+const phone = fromFormData(formData, "phone"); // PhoneField.Value | null
 ```
 
-All utility exports work on client and server. Namespace-style usage remains available through `import * as PhoneFieldUtils from "phonefield/utils"`.
+`phonefield/utils` runs on client and server: `parse`, `isValid`, `buildValue`, `fromFormData`, `toFormValue`, `getCountries`, `countries`, and `getExampleNumber`.
 
-## Customization
+## Behavior
 
-- `classNames` styles country-picker parts.
-- `positioning` controls popup geometry.
-- renderers customize country content.
-- `slotProps` forwards advanced behavioral and ARIA props without duplicating styling or positioning.
+- Pasting `+44 20 7946 0018` selects the United Kingdom and shows `020 7946 0018`. Countries excluded by `countries` are kept as invalid text.
+- Digits beyond the longest possible number for the country are blocked. Opt out with `limitMaxLength={false}`.
+- `Cmd/Ctrl+Z` and `Cmd/Ctrl+Shift+Z` (or `Ctrl+Y`) undo and redo number and country changes as native-style transactions.
+- `isValid` is `false` when the number belongs to a different country than the selected one.
+- Country names come from `Intl.DisplayNames`, which can differ between Node and browsers for a few regions. Server-rendering every name (a native `<select>`) can cause hydration warnings.
+- With `render={<YourComponent />}`, PhoneField's `data-slot` replaces the component's own.
 
-Define `classNames` once in your design-system wrapper instead of repeating it at every call site:
-
-```tsx
-import { inputClassName } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { PhoneField } from "phonefield";
-
-const countryClassNames = {
-  trigger:
-    "group/phone-country-trigger flex h-full w-fit items-center gap-2 border-r border-input px-3",
-  icon: "group-data-popup-open/phone-country-trigger:rotate-180",
-  popup: "w-72 origin-(--transform-origin) rounded-lg bg-popover shadow-2xl",
-  item: "rounded-lg px-3 py-2 data-highlighted:bg-accent",
-} satisfies PhoneField.CountryClassNames;
-
-<PhoneField.Root
-  className={cn(
-    "flex h-10 min-w-0 overflow-hidden rounded-lg border border-input bg-background",
-    "focus-within:ring-2 focus-within:ring-ring",
-    "has-data-popup-open:ring-2 has-data-popup-open:ring-ring",
-    "has-aria-invalid:border-destructive has-aria-invalid:ring-2",
-  )}
->
-  <PhoneField.Country
-    classNames={countryClassNames}
-    slotProps={{ trigger: { "aria-label": "Country" } }}
-  />
-  <PhoneField.Input
-    aria-label="Phone number"
-    className={cn(
-      inputClassName,
-      "h-full w-auto min-w-0 flex-1 rounded-none border-0 focus-visible:ring-0",
-    )}
-  />
-</PhoneField.Root>;
-```
-
-This looks like one field, while remaining two accessible controls: a country selector and a telephone input. Put the shared border, focus ring, invalid state, and sizing on `Root`; remove the duplicated border and ring from the inline controls.
-
-Give the telephone input a native `<label>` (or its own `aria-label`) and give the country trigger an independent accessible name through `slotProps.trigger`. Do not wrap the complete compound component in one Base UI `Field.Root`: a field represents one form control, while `PhoneField` contains two interactive controls.
-
-For Tailwind, `Root.className` plus `classNames` is the recommended combination. Use `cn` to merge shared design-system tokens, and named `group` variants only for state relationships inside a slot. A group on `PhoneField.Root` cannot reach the country popup because Base UI renders it in a portal, so `CountryClassNames` remains the explicit styling seam for popup parts.
-
-For vanilla CSS and CSS Modules, every rendered part also exposes a stable, namespaced `data-slot`, including `phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, and `phone-field-country-item`. Country popup selectors must be global because the popup is portaled.
-
-See the documentation site for the complete API reference and a typechecked production preset.
-
-## Version support
-
-| Dependency | Supported |
-| --- | --- |
-| React / React DOM | `>=19 <20` |
-| Base UI | `>=1.6 <2` |
-| Node.js | `>=22` |
-
-The supported range is deliberately narrow and tested in CI on Node.js 22 and 24. See the [migration guide](./MIGRATION.md) when upgrading from 0.x.
+See the [documentation](https://phonefield.vercel.app) for the full API reference.

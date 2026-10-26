@@ -15,6 +15,9 @@ const utilitiesDeclarations = readFileSync(
 const utilitiesModule = await import(
 	pathToFileURL(resolve(dist, "utils.js")).href
 );
+const clientModule = await import(
+	pathToFileURL(resolve(dist, "index.js")).href
+);
 const publicDeclarations = ["index.d.ts", "component.d.ts", "types.d.ts"]
 	.map((file) => readFileSync(resolve(dist, file), "utf8"))
 	.join("\n");
@@ -31,11 +34,22 @@ assert.deepEqual(
 		"countries",
 		"fromFormData",
 		"getCountries",
+		"getExampleNumber",
 		"isValid",
 		"parse",
 		"toFormValue",
 	],
 	"phonefield/utils must publish exactly the documented named helpers",
+);
+assert.deepEqual(
+	Object.keys(clientModule).sort(),
+	["PhoneField", "usePhoneField"],
+	"phonefield must publish exactly PhoneField and usePhoneField",
+);
+assert.doesNotMatch(
+	clientEntry,
+	/examples\.mobile|"KR":\["/,
+	"dist/index.js must not bundle example-number metadata",
 );
 assert.doesNotMatch(
 	utilitiesEntry,
@@ -54,7 +68,7 @@ assert.doesNotMatch(
 );
 assert.match(
 	utilitiesDeclarations,
-	/\b(?:buildValue|countries|fromFormData|getCountries|isValid|parse|toFormValue)\b/,
+	/\b(?:buildValue|countries|fromFormData|getCountries|getExampleNumber|isValid|parse|toFormValue)\b/,
 	"phonefield/utils must expose only the documented named helpers",
 );
 

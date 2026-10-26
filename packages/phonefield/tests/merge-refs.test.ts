@@ -2,33 +2,29 @@ import { describe, expect, it, vi } from "vitest";
 import { mergeRefs } from "../src/merge-refs";
 
 describe("mergeRefs", () => {
-	it("uses ref(null) teardown for React 18", () => {
+	it("returns a cleanup that runs callback-ref cleanups and clears object refs", () => {
 		const cleanupRef = vi.fn();
-		const ref = vi.fn((_value: HTMLInputElement | null) => cleanupRef);
-		const mergedRef = mergeRefs("18.3.1", ref);
+		const callbackRef = vi.fn((_value: HTMLInputElement | null) => cleanupRef);
+		const objectRef = { current: null as HTMLInputElement | null };
+		const mergedRef = mergeRefs(callbackRef, objectRef);
 		const input = {} as HTMLInputElement;
 
-		const returnedCleanup = mergedRef(input);
-		expect(returnedCleanup).toBeUndefined();
+		const cleanup = mergedRef(input);
+		expect(objectRef.current).toBe(input);
+		expect(cleanup).toBeTypeOf("function");
+		if (typeof cleanup === "function") cleanup();
 
-		mergedRef(null);
 		expect(cleanupRef).toHaveBeenCalledTimes(1);
-		expect(ref).toHaveBeenCalledTimes(1);
+		expect(callbackRef).toHaveBeenCalledTimes(1);
+		expect(objectRef.current).toBeNull();
 	});
 
-	it("returns ref cleanup for React 19", () => {
-		const cleanupRef = vi.fn();
-		const ref = vi.fn((_value: HTMLInputElement | null) => cleanupRef);
-		const mergedRef = mergeRefs("19.2.7", ref);
-		const input = {} as HTMLInputElement;
-
-		const returnedCleanup = mergedRef(input);
-		expect(returnedCleanup).toBeTypeOf("function");
-		if (typeof returnedCleanup === "function") {
-			returnedCleanup();
-		}
-
-		expect(cleanupRef).toHaveBeenCalledTimes(1);
-		expect(ref).toHaveBeenCalledTimes(1);
+	it("falls back to calling callback refs with null", () => {
+		const callbackRef = vi.fn();
+		const cleanup = mergeRefs<HTMLInputElement>(callbackRef)(
+			{} as HTMLInputElement,
+		);
+		if (typeof cleanup === "function") cleanup();
+		expect(callbackRef).toHaveBeenLastCalledWith(null);
 	});
 });

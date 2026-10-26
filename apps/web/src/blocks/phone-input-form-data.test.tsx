@@ -12,7 +12,7 @@ describe("PhoneInputFormData", () => {
 		const addon = submit.closest('[data-slot="input-group-addon"]');
 
 		expect(addon?.getAttribute("data-align")).toBe("inline-end");
-		expect(addon?.closest('[data-slot="input-group"]')).toBeTruthy();
+		expect(addon?.closest('[data-slot="phone-field-group"]')).toBeTruthy();
 		expect(addon?.className).not.toContain("p-0");
 		expect(submit.className).not.toContain("h-full");
 		expect(submit.className).not.toContain("rounded-none");

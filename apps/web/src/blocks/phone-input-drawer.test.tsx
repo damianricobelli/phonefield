@@ -8,7 +8,9 @@ describe("PhoneInputDrawer", () => {
 	it("removes the trigger's inset border inside the InputGroup", () => {
 		render(<PhoneInputDrawer />);
 
-		const trigger = screen.getByRole("button", { name: "Choose country" });
+		const trigger = screen.getByRole("button", {
+			name: "Country: United States",
+		});
 		expect(trigger.className).toContain("border-0");
 		expect(trigger.className).toContain("border-r");
 	});
