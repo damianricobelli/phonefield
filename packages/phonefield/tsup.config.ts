@@ -1,7 +1,13 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-	entry: { index: "src/index.ts", utils: "src/public-utils.ts" },
+	entry: {
+		index: "src/index.ts",
+		"base-ui": "src/base-ui/index.ts",
+		radix: "src/radix/index.ts",
+		"react-aria": "src/react-aria/index.ts",
+		utils: "src/public-utils.ts",
+	},
 	format: ["esm"],
 	dts: false,
 	sourcemap: true,

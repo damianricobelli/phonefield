@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const dist = resolve(scriptDirectory, "../dist");
-const clientEntry = readFileSync(resolve(dist, "index.js"), "utf8");
+const clientEntries = ["index", "base-ui", "radix", "react-aria"];
 const utilitiesEntry = readFileSync(resolve(dist, "utils.js"), "utf8");
 const utilitiesDeclarations = readFileSync(
 	resolve(dist, "public-utils.d.ts"),
@@ -15,18 +15,75 @@ const utilitiesDeclarations = readFileSync(
 const utilitiesModule = await import(
 	pathToFileURL(resolve(dist, "utils.js")).href
 );
-const clientModule = await import(
-	pathToFileURL(resolve(dist, "index.js")).href
-);
-const publicDeclarations = ["index.d.ts", "component.d.ts", "types.d.ts"]
+const publicDeclarations = [
+	"index.d.ts",
+	"base-ui/component.d.ts",
+	"radix/component.d.ts",
+	"react-aria/component.d.ts",
+	"types.d.ts",
+]
 	.map((file) => readFileSync(resolve(dist, file), "utf8"))
 	.join("\n");
 
-assert.match(
-	clientEntry,
-	/^"use client";/,
-	"dist/index.js must preserve the React client boundary",
-);
+for (const entry of clientEntries) {
+	const source = readFileSync(resolve(dist, `${entry}.js`), "utf8");
+	assert.match(
+		source,
+		/^"use client";/,
+		`dist/${entry}.js must preserve the React client boundary`,
+	);
+	const clientModule = await import(
+		pathToFileURL(resolve(dist, `${entry}.js`)).href
+	);
+	assert.deepEqual(
+		Object.keys(clientModule).sort(),
+		["PhoneField", "usePhoneField"],
+		`phonefield/${entry} must publish exactly PhoneField and usePhoneField`,
+	);
+	assert.doesNotMatch(
+		source,
+		/examples\.mobile|"KR":\["/,
+		`dist/${entry}.js must not bundle example-number metadata`,
+	);
+}
+/** Bare module specifiers reachable from a dist entry through its chunks. */
+function externalImports(file, seen = new Set()) {
+	if (seen.has(file)) return new Set();
+	seen.add(file);
+	const source = readFileSync(resolve(dist, file), "utf8");
+	const specifiers = new Set();
+	for (const [, specifier] of source.matchAll(
+		/(?:from|import)\s*["']([^"']+)["']/g,
+	)) {
+		if (specifier.startsWith("./")) {
+			for (const nested of externalImports(specifier.slice(2), seen)) {
+				specifiers.add(nested);
+			}
+		} else {
+			specifiers.add(specifier);
+		}
+	}
+	return specifiers;
+}
+const adapterImports = {
+	"base-ui": /@base-ui\/react/,
+	radix: /radix-ui/,
+	"react-aria": /react-aria-components/,
+};
+for (const [entry, pattern] of Object.entries(adapterImports)) {
+	const imports = [...externalImports(`${entry}.js`)];
+	for (const [other, otherPattern] of Object.entries(adapterImports)) {
+		if (other === entry) continue;
+		assert.ok(
+			!imports.some((specifier) => otherPattern.test(specifier)),
+			`phonefield/${entry} must not import ${other}: ${imports.join(", ")}`,
+		);
+	}
+	assert.ok(
+		imports.some((specifier) => pattern.test(specifier)),
+		`phonefield/${entry} must import its own primitives`,
+	);
+}
 assert.deepEqual(
 	Object.keys(utilitiesModule).sort(),
 	[
@@ -40,16 +97,6 @@ assert.deepEqual(
 		"toFormValue",
 	],
 	"phonefield/utils must publish exactly the documented named helpers",
-);
-assert.deepEqual(
-	Object.keys(clientModule).sort(),
-	["PhoneField", "usePhoneField"],
-	"phonefield must publish exactly PhoneField and usePhoneField",
-);
-assert.doesNotMatch(
-	clientEntry,
-	/examples\.mobile|"KR":\["/,
-	"dist/index.js must not bundle example-number metadata",
 );
 assert.doesNotMatch(
 	utilitiesEntry,
@@ -76,22 +123,32 @@ for (const file of [
 	"index.js",
 	"index.js.map",
 	"index.d.ts",
+	"base-ui.js",
+	"base-ui/index.d.ts",
+	"radix.js",
+	"radix/index.d.ts",
+	"react-aria.js",
+	"react-aria/index.d.ts",
 	"utils.js",
 	"utils.js.map",
 	"public-utils.d.ts",
-	"component.d.ts",
 	"types.d.ts",
 ]) {
 	assert.ok(existsSync(resolve(dist, file)), `dist/${file} is missing`);
 }
 
-const typecheck = spawnSync(
-	"tsc",
-	["-p", resolve(scriptDirectory, "tsconfig.verify.json")],
-	{ stdio: "inherit", shell: process.platform === "win32" },
-);
-assert.equal(
-	typecheck.status,
-	0,
-	"published declarations must support NodeNext",
-);
+// React Aria's own declarations use ES2022 library types (Intl.Segmenter).
+for (const config of [
+	"tsconfig.verify.json",
+	"tsconfig.verify.react-aria.json",
+]) {
+	const typecheck = spawnSync("tsc", ["-p", resolve(scriptDirectory, config)], {
+		stdio: "inherit",
+		shell: process.platform === "win32",
+	});
+	assert.equal(
+		typecheck.status,
+		0,
+		`published declarations must support NodeNext (${config})`,
+	);
+}

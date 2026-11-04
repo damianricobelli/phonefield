@@ -1,21 +1,14 @@
-"use client";
-
-import { useRender } from "@base-ui/react/use-render";
 import React from "react";
-import type { PhoneField } from "./component.js";
-import {
-	PhoneFieldCountryContext,
-	type PhoneFieldCountryContextValue,
-	PhoneFieldInputContext,
-	type PhoneFieldInputContextValue,
-} from "./context.js";
-import {
-	type PhoneFieldEditKind,
-	PhoneFieldHistory,
-	type PhoneFieldInputSelection,
-	toInputValue,
-} from "./history.js";
-import type { PhoneFieldChangeReason } from "./types.js";
+import type {
+	PhoneFieldChangeDetails,
+	PhoneFieldChangeReason,
+	PhoneFieldCountry,
+	PhoneFieldCountryCode,
+	PhoneFieldInputValue,
+	PhoneFieldLang,
+	PhoneFieldState,
+	PhoneFieldValue,
+} from "../types.js";
 import {
 	buildValue,
 	getCountriesMap,
@@ -27,9 +20,64 @@ import {
 	toAvailableCountries,
 	toCountryGroups,
 	toFormValue,
-} from "./utils.js";
+} from "../utils.js";
+import {
+	PhoneFieldCountryContext,
+	type PhoneFieldCountryContextValue,
+	PhoneFieldInputContext,
+	type PhoneFieldInputContextValue,
+	PhoneFieldStateContext,
+	type PhoneFieldStateContextValue,
+} from "./context.js";
+import {
+	type PhoneFieldEditKind,
+	PhoneFieldHistory,
+	type PhoneFieldInputSelection,
+	toInputValue,
+} from "./history.js";
+import { mergeRefs } from "./merge-refs.js";
 
 declare const process: { env: { NODE_ENV?: string } } | undefined;
+
+/** Root props shared by every adapter. Each adapter adds its own rendering props. */
+export type PhoneFieldRootOptions = {
+	value?: PhoneFieldInputValue | PhoneFieldValue;
+	defaultValue?: PhoneFieldInputValue | PhoneFieldValue;
+	onValueChange?: (
+		value: PhoneFieldValue,
+		details: PhoneFieldChangeDetails,
+	) => void;
+	/** Initial country when no value is provided. Defaults to `"US"` or the first available country. */
+	defaultCountry?: PhoneFieldCountryCode;
+	/** Restricts the list and international-paste detection to these countries, in this order. */
+	countries?: readonly PhoneFieldCountryCode[];
+	/** Pinned to the top of the list, in this order. */
+	preferredCountries?: readonly PhoneFieldCountryCode[];
+	/** Locale for country names, sorting, and search. */
+	lang?: PhoneFieldLang;
+	/** Serializes `{ countryIso2, nationalNumber }` into one FormData entry. */
+	name?: string;
+	/** Associates the serialized value with a form outside Root. */
+	form?: string;
+	/** Formats the number as the user types. @default true */
+	formatOnType?: boolean;
+	/** Blocks digits beyond the longest possible number for the country. @default true */
+	limitMaxLength?: boolean;
+	disabled?: boolean;
+	readOnly?: boolean;
+	required?: boolean;
+	/**
+	 * Marks the field invalid, e.g. for a server or form-library error. Automatic
+	 * validation still applies when `false`.
+	 */
+	invalid?: boolean;
+};
+
+/** Props every adapter forwards to the rendered root element. */
+type RootFocusHandlers = {
+	onFocus?: React.FocusEventHandler<HTMLElement>;
+	onBlur?: React.FocusEventHandler<HTMLElement>;
+};
 
 function isProductionEnvironment() {
 	return (
@@ -85,11 +133,29 @@ function isGrowingEdit(editKind: PhoneFieldEditKind) {
 	);
 }
 
+export type PhoneFieldRootReturnValue = {
+	state: PhoneFieldState;
+	rootRef: React.RefObject<HTMLDivElement | null>;
+	/** `rootRef` merged with the forwarded ref, for adapters that render the element. */
+	mergedRootRef: React.RefCallback<HTMLDivElement>;
+	/** Hidden input that serializes the value when `name` is set. */
+	hiddenInput: React.ReactNode;
+	focusHandlers: {
+		onFocus: React.FocusEventHandler<HTMLElement>;
+		onBlur: React.FocusEventHandler<HTMLElement>;
+	};
+	/** Wraps the rendered root in the field's context providers. */
+	provide: (element: React.ReactNode) => React.ReactNode;
+};
+
 /**
- * Owns the phone value, field state, history, and form serialization.
- * Renders a `<div>` by default; use `render` to compose your own field shell.
+ * Owns the phone value, field state, history, and form serialization. Every
+ * adapter renders its own root element around the returned `provide` wrapper.
  */
-export function Root(props: PhoneField.RootProps) {
+export function usePhoneFieldRoot(
+	options: PhoneFieldRootOptions & RootFocusHandlers,
+	forwardedRef?: React.Ref<HTMLDivElement>,
+): PhoneFieldRootReturnValue {
 	const {
 		value,
 		defaultValue,
@@ -106,14 +172,9 @@ export function Root(props: PhoneField.RootProps) {
 		readOnly = false,
 		required = false,
 		invalid,
-		render,
-		className,
-		style,
-		children,
 		onFocus,
 		onBlur,
-		...elementProps
-	} = props;
+	} = options;
 
 	const countries = useStableList(countriesProp);
 	const preferredCountries = useStableList(preferredCountriesProp);
@@ -133,7 +194,7 @@ export function Root(props: PhoneField.RootProps) {
 		[availableCountries],
 	);
 	const getCountry = React.useCallback(
-		(iso2: string) => countryIndex.get(iso2 as PhoneField.CountryCode),
+		(iso2: string) => countryIndex.get(iso2 as PhoneFieldCountryCode),
 		[countryIndex],
 	);
 	const fallbackCountry = React.useMemo(
@@ -142,13 +203,13 @@ export function Root(props: PhoneField.RootProps) {
 	);
 	const findCountry = React.useCallback(
 		(iso2: string | undefined) =>
-			(iso2 ? countryIndex.get(iso2 as PhoneField.CountryCode) : undefined) ??
+			(iso2 ? countryIndex.get(iso2 as PhoneFieldCountryCode) : undefined) ??
 			fallbackCountry,
 		[countryIndex, fallbackCountry],
 	);
 
 	const [internalValue, setInternalValue] =
-		React.useState<PhoneField.InputValue>(
+		React.useState<PhoneFieldInputValue>(
 			() =>
 				defaultValue ??
 				buildValue(
@@ -193,7 +254,7 @@ export function Root(props: PhoneField.RootProps) {
 	const blurTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 	React.useEffect(() => () => clearTimeout(blurTimeoutRef.current), []);
 	const handleFocus = React.useCallback(
-		(event: React.FocusEvent<HTMLDivElement>) => {
+		(event: React.FocusEvent<HTMLElement>) => {
 			onFocus?.(event);
 			clearTimeout(blurTimeoutRef.current);
 			setFocused(true);
@@ -201,7 +262,7 @@ export function Root(props: PhoneField.RootProps) {
 		[onFocus],
 	);
 	const handleBlur = React.useCallback(
-		(event: React.FocusEvent<HTMLDivElement>) => {
+		(event: React.FocusEvent<HTMLElement>) => {
 			onBlur?.(event);
 			clearTimeout(blurTimeoutRef.current);
 			blurTimeoutRef.current = setTimeout(() => {
@@ -226,7 +287,7 @@ export function Root(props: PhoneField.RootProps) {
 		onValueChangeRef.current = onValueChange;
 	});
 	const applyValue = React.useCallback(
-		(nextValue: PhoneField.Value, reason: PhoneFieldChangeReason) => {
+		(nextValue: PhoneFieldValue, reason: PhoneFieldChangeReason) => {
 			if (!isControlled) {
 				setInternalValue(nextValue);
 				currentValueRef.current = nextValue;
@@ -239,7 +300,7 @@ export function Root(props: PhoneField.RootProps) {
 
 	const commitValue = React.useCallback(
 		(
-			nextCountry: PhoneField.Country,
+			nextCountry: PhoneFieldCountry,
 			nextNumber: string,
 			editKind: PhoneFieldEditKind,
 		) => {
@@ -272,7 +333,7 @@ export function Root(props: PhoneField.RootProps) {
 	);
 
 	const setCountry = React.useCallback(
-		(country: PhoneField.Country) => {
+		(country: PhoneFieldCountry) => {
 			commitValue(country, currentValueRef.current.nationalNumber, "country");
 		},
 		[commitValue],
@@ -338,7 +399,7 @@ export function Root(props: PhoneField.RootProps) {
 	const dirty =
 		initialValue.countryIso2 !== normalizedValue.countryIso2 ||
 		initialValue.nationalNumber !== normalizedValue.nationalNumber;
-	const state = React.useMemo<PhoneField.State>(
+	const state = React.useMemo<PhoneFieldState>(
 		() => ({
 			country: normalizedValue.countryIso2,
 			valid: normalizedValue.isValid,
@@ -390,9 +451,8 @@ export function Root(props: PhoneField.RootProps) {
 			setCountry,
 		],
 	);
-	const inputContextValue = React.useMemo<PhoneFieldInputContextValue>(
+	const stateContextValue = React.useMemo<PhoneFieldStateContextValue>(
 		() => ({
-			value: normalizedValue,
 			state,
 			controlId,
 			setControlId,
@@ -401,6 +461,12 @@ export function Root(props: PhoneField.RootProps) {
 			errorId,
 			setErrorId,
 			markTouched,
+		}),
+		[controlId, descriptionId, errorId, markTouched, state],
+	);
+	const inputContextValue = React.useMemo<PhoneFieldInputContextValue>(
+		() => ({
+			value: normalizedValue,
 			setNumber,
 			accepts,
 			rememberSelection,
@@ -411,22 +477,22 @@ export function Root(props: PhoneField.RootProps) {
 		[
 			accepts,
 			breakHistoryGroup,
-			controlId,
-			descriptionId,
-			errorId,
-			markTouched,
 			normalizedValue,
 			redo,
 			rememberSelection,
 			setNumber,
-			state,
 			undo,
 		],
 	);
 
 	// Behave like a native form control: submitting reveals errors on an
 	// untouched field, and resetting restores the initial value.
-	const rootRef = React.useRef<HTMLElement>(null);
+	const rootRef = React.useRef<HTMLDivElement>(null);
+	const mergedRootRef = React.useCallback(
+		(element: HTMLDivElement | null) =>
+			mergeRefs<HTMLDivElement>(forwardedRef, rootRef)(element),
+		[forwardedRef],
+	);
 	const resetField = React.useCallback(() => {
 		setTouched(false);
 		if (isControlled) return;
@@ -454,45 +520,81 @@ export function Root(props: PhoneField.RootProps) {
 		};
 	}, [form, markTouched, resetField]);
 
-	const ownProps: React.ComponentProps<"div"> & { "data-slot": string } = {
-		className: typeof className === "function" ? className(state) : className,
-		style: typeof style === "function" ? style(state) : style,
-		"data-slot": "phone-field",
-		children: (
-			<>
-				{children}
-				{name ? (
-					<input
-						type="hidden"
-						name={name}
-						form={form}
-						disabled={disabled}
-						value={JSON.stringify(toFormValue(normalizedValue))}
-						data-slot="phone-field-hidden-input"
-					/>
-				) : null}
-			</>
-		),
-	};
+	const hiddenInput = name ? (
+		<input
+			type="hidden"
+			name={name}
+			form={form}
+			disabled={disabled}
+			value={JSON.stringify(toFormValue(normalizedValue))}
+			data-slot="phone-field-hidden-input"
+		/>
+	) : null;
 
-	const element = useRender({
-		defaultTagName: "div",
-		render,
-		ref: rootRef,
-		state,
-		props: {
-			...elementProps,
-			...ownProps,
-			onFocus: handleFocus,
-			onBlur: handleBlur,
-		},
-	});
-
-	return (
-		<PhoneFieldCountryContext.Provider value={countryContextValue}>
-			<PhoneFieldInputContext.Provider value={inputContextValue}>
-				{element}
-			</PhoneFieldInputContext.Provider>
-		</PhoneFieldCountryContext.Provider>
+	const provide = (element: React.ReactNode) => (
+		<PhoneFieldCountryContext value={countryContextValue}>
+			<PhoneFieldStateContext value={stateContextValue}>
+				<PhoneFieldInputContext value={inputContextValue}>
+					{element}
+				</PhoneFieldInputContext>
+			</PhoneFieldStateContext>
+		</PhoneFieldCountryContext>
 	);
+
+	return {
+		state,
+		rootRef,
+		mergedRootRef,
+		hiddenInput,
+		focusHandlers: { onFocus: handleFocus, onBlur: handleBlur },
+		provide,
+	};
+}
+
+/** Splits the shared Root options from the props an adapter renders. */
+export function splitRootProps<
+	T extends PhoneFieldRootOptions & RootFocusHandlers,
+>(props: T) {
+	const {
+		value,
+		defaultValue,
+		onValueChange,
+		defaultCountry,
+		countries,
+		preferredCountries,
+		lang,
+		name,
+		form,
+		formatOnType,
+		limitMaxLength,
+		disabled,
+		readOnly,
+		required,
+		invalid,
+		onFocus,
+		onBlur,
+		...elementProps
+	} = props;
+	return {
+		options: {
+			value,
+			defaultValue,
+			onValueChange,
+			defaultCountry,
+			countries,
+			preferredCountries,
+			lang,
+			name,
+			form,
+			formatOnType,
+			limitMaxLength,
+			disabled,
+			readOnly,
+			required,
+			invalid,
+			onFocus,
+			onBlur,
+		},
+		elementProps,
+	};
 }

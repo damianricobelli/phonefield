@@ -3,7 +3,7 @@ import { HomePage } from "@/components/home-page";
 import { pageSeo, softwareJsonLd } from "@/lib/seo";
 
 const seo = pageSeo({
-	title: "PhoneField — Composable React phone input for Base UI",
+	title: "PhoneField — React phone input for Base UI, Radix, and React Aria",
 	description:
 		"Accessible React phone number input with country picker, as-you-type formatting, validation, and E.164 output. Zero config, styled with className.",
 	path: "/",

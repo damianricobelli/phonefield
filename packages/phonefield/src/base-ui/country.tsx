@@ -1,52 +1,25 @@
 import { Combobox } from "@base-ui/react/combobox";
 import React from "react";
-import type { PhoneField } from "./component.js";
 import {
 	PhoneFieldCountryLabelsContext,
 	usePhoneFieldCountryContext,
-} from "./context.js";
-import { defaultCountrySearchText } from "./utils.js";
-
-function ChevronUpDownIcon(props: React.ComponentProps<"svg">) {
-	return (
-		<svg
-			width="8"
-			height="12"
-			viewBox="0 0 8 12"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			aria-hidden="true"
-			{...props}
-		>
-			<path d="M0.5 4.5L4 1.5L7.5 4.5" />
-			<path d="M0.5 7.5L4 10.5L7.5 7.5" />
-		</svg>
-	);
-}
-
-function CheckIcon(props: React.ComponentProps<"svg">) {
-	return (
-		<svg
-			width="10"
-			height="10"
-			viewBox="0 0 10 10"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.5"
-			aria-hidden="true"
-			{...props}
-		>
-			<path d="M1 5.5L3.75 8L9 2" />
-		</svg>
-	);
-}
+} from "../core/context.js";
+import {
+	CheckIcon,
+	ChevronUpDownIcon,
+	EMPTY_LABELS,
+	getCountryItemText,
+	getCountryTriggerLabel,
+	getCountryValueText,
+	hasExplicitLabel,
+	useCountryLabels,
+} from "../core/country.js";
+import { defaultCountrySearchText } from "../utils.js";
+import type { PhoneField } from "./component.js";
 
 function toIso2(country: PhoneField.Country) {
 	return country.iso2;
 }
-
-const EMPTY_LABELS = {};
 
 function isSameCountry(a: PhoneField.Country, b: PhoneField.Country) {
 	return a.iso2 === b.iso2;
@@ -101,9 +74,9 @@ function CountryComponent({
 				if (next) setCountry(next);
 			}}
 		>
-			<PhoneFieldCountryLabelsContext.Provider value={labels ?? EMPTY_LABELS}>
+			<PhoneFieldCountryLabelsContext value={labels ?? EMPTY_LABELS}>
 				{children ?? <DefaultCountryAnatomy />}
-			</PhoneFieldCountryLabelsContext.Provider>
+			</PhoneFieldCountryLabelsContext>
 		</Combobox.Root>
 	);
 }
@@ -122,17 +95,12 @@ export function CountryTrigger({
 	const { selectedCountry } = usePhoneFieldCountryContext(
 		"PhoneField.CountryTrigger",
 	);
-	// An id usually means a <label htmlFor> names the trigger; keep that label.
-	const hasLabel =
-		props["aria-label"] !== undefined ||
-		props["aria-labelledby"] !== undefined ||
-		props.id !== undefined;
 	return (
 		<Combobox.Trigger
 			aria-label={
-				hasLabel
+				hasExplicitLabel(props)
 					? undefined
-					: `${selectedCountry.name} (${selectedCountry.dialCode})`
+					: getCountryTriggerLabel(selectedCountry)
 			}
 			{...props}
 			data-slot="phone-field-country-trigger"
@@ -154,7 +122,7 @@ export function CountryValue({ children }: PhoneField.CountryValueProps) {
 			{(country: PhoneField.Country | null) => {
 				if (!country) return null;
 				if (typeof children === "function") return children(country);
-				return children ?? `${country.flag ?? ""} ${country.dialCode}`.trim();
+				return children ?? getCountryValueText(country);
 			}}
 		</Combobox.Value>
 	);
@@ -200,8 +168,8 @@ export function CountrySearch({
 	placeholder: placeholderProp,
 	...props
 }: PhoneField.CountrySearchProps) {
-	const labels = React.use(PhoneFieldCountryLabelsContext);
-	const placeholder = placeholderProp ?? labels.search ?? "Search country";
+	const labels = useCountryLabels();
+	const placeholder = placeholderProp ?? labels.search;
 	return (
 		<Combobox.Input
 			placeholder={placeholder}
@@ -217,10 +185,10 @@ export function CountryEmpty({
 	children,
 	...props
 }: PhoneField.CountryEmptyProps) {
-	const labels = React.use(PhoneFieldCountryLabelsContext);
+	const labels = useCountryLabels();
 	return (
 		<Combobox.Empty {...props} data-slot="phone-field-country-empty">
-			{children ?? labels.empty ?? "No countries found"}
+			{children ?? labels.empty}
 		</Combobox.Empty>
 	);
 }
@@ -272,8 +240,7 @@ export function CountryItem({
 			data-slot="phone-field-country-item"
 			data-country={country.iso2}
 		>
-			{children ??
-				`${country.flag ? `${country.flag} ` : ""}${country.name} (${country.dialCode})`}
+			{children ?? getCountryItemText(country)}
 		</Combobox.Item>
 	);
 }

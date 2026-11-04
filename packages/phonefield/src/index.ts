@@ -1,2 +1,5 @@
-export { PhoneField } from "./component.js";
-export { type UsePhoneFieldReturnValue, usePhoneField } from "./context.js";
+export {
+	PhoneField,
+	type UsePhoneFieldReturnValue,
+	usePhoneField,
+} from "./base-ui/index.js";

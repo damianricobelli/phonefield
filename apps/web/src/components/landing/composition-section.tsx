@@ -81,8 +81,9 @@ export function CompositionSection() {
 					From zero config to entirely yours.
 				</h2>
 				<p className="mt-3 text-base leading-7 text-slate-600">
-					Every part is a Base UI part: it takes <code>className</code>,{" "}
-					<code>render</code>, and its state as data attributes. One API, any
+					Every part wraps a part of your primitives library (Base UI, Radix UI,
+					or React Aria): it takes <code>className</code>, that library's
+					composition props, and its state as data attributes. One API, any
 					design.
 				</p>
 			</div>

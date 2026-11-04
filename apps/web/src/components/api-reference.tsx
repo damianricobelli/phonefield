@@ -180,7 +180,10 @@ export function ComponentApiReference() {
 						(static or a function of the part's Base UI state),{" "}
 						<code>render</code>, and the props of the Base UI part it wraps.
 						Parts below Portal render outside Root, so style them directly
-						rather than through Root selectors.
+						rather than through Root selectors. This reference covers the Base
+						UI entry; <code>phonefield/radix</code> and{" "}
+						<code>phonefield/react-aria</code> share Root, Input, and the field
+						parts, and map the Country parts as shown in Getting started.
 					</>
 				}
 			>

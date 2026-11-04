@@ -10,6 +10,7 @@ import {
 } from "@/components/documentation-shell";
 import { InstallTabs } from "@/components/install-tabs";
 import { MigrationComparison } from "@/components/migration-comparison";
+import { PrimitivesSection } from "@/components/primitives-section";
 import { migrationChecklist, migrationComparisons } from "@/lib/migration";
 import {
 	anatomySnippet,
@@ -94,7 +95,11 @@ export function DocSection() {
 			>
 				<ol className="grid overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 sm:grid-cols-3">
 					{[
-						["01", "Install", "Add the package and Base UI."],
+						[
+							"01",
+							"Install",
+							"Add the package and Base UI, Radix UI, or React Aria.",
+						],
 						["02", "Compose", "Render Root, Country, and Input."],
 						["03", "Integrate", "Read Value or submit through FormData."],
 					].map(([number, label, detail]) => (
@@ -119,14 +124,23 @@ export function DocSection() {
 						Install with your preferred manager. Copy the command with one
 						click.
 					</p>
-					<InstallTabs className="min-w-0 max-w-3xl" packageName="phonefield" />
+					<InstallTabs
+						className="min-w-0 max-w-3xl"
+						packageName="phonefield @base-ui/react"
+					/>
 					<p className="mt-4 max-w-3xl text-sm text-slate-600">
-						Peer dependencies: <code>@base-ui/react &gt;=1.9 &lt;2</code>,{" "}
-						<code>react &gt;=19 &lt;20</code>, and{" "}
-						<code>react-dom &gt;=19 &lt;20</code>. Building the package requires
+						Peer dependencies: <code>react &gt;=19 &lt;20</code>,{" "}
+						<code>react-dom &gt;=19 &lt;20</code>, and one primitives library:{" "}
+						<code>@base-ui/react &gt;=1.9 &lt;2</code> for{" "}
+						<code>phonefield</code>, <code>radix-ui &gt;=1.4 &lt;2</code> for{" "}
+						<code>phonefield/radix</code>, or{" "}
+						<code>react-aria-components &gt;=1.22 &lt;2</code> for{" "}
+						<code>phonefield/react-aria</code>. Building the package requires
 						Node.js 22.18 or newer.
 					</p>
 				</article>
+
+				<PrimitivesSection />
 
 				<DocBlock
 					title="Quick start"

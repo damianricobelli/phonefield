@@ -1,16 +1,20 @@
 # phonefield
 
-Composable, accessible React phone input built on Base UI and `libphonenumber-js`. Unstyled, formats as you type, and submits through FormData.
+Composable, accessible React phone input for Base UI, Radix UI, or React Aria, built on `libphonenumber-js`. Unstyled, formats as you type, and submits through FormData.
 
 [Documentation and playground](https://phonefield.vercel.app) · [Migration guide](./MIGRATION.md)
 
 ## Install
 
-```bash
-pnpm add phonefield @base-ui/react
-```
+Install PhoneField with the primitives library your design system uses:
 
-Peer dependencies: `@base-ui/react >=1.9 <2`, `react >=19 <20`, `react-dom >=19 <20`.
+| Library | Install | Import |
+| --- | --- | --- |
+| Base UI | `pnpm add phonefield @base-ui/react` | `phonefield` (or `phonefield/base-ui`) |
+| Radix UI | `pnpm add phonefield radix-ui` | `phonefield/radix` |
+| React Aria | `pnpm add phonefield react-aria-components` | `phonefield/react-aria` |
+
+Peer dependencies: `react >=19 <20`, `react-dom >=19 <20`, and one of `@base-ui/react >=1.9 <2`, `radix-ui >=1.4 <2`, or `react-aria-components >=1.22 <2`. Each entry imports only its own library.
 
 ## Quick start
 
@@ -24,6 +28,61 @@ import { PhoneField } from "phonefield";
 ```
 
 `<PhoneField.Country />` renders a complete, searchable country picker. `onValueChange(value, { reason })` emits a `PhoneField.Value` with `countryIso2`, `countryDialCode`, `nationalNumber`, `e164`, and `isValid`. Pass `value` for controlled mode.
+
+## Choose your primitives
+
+Every entry exports the same `PhoneField` and `usePhoneField`. Root, Input, Label, Group, Description, Error, the value, formatting, validation, undo, FormData, field state, and `data-slot` names are shared and behave the same. The Country parts wrap each library's own components and follow its composition model:
+
+| | `phonefield` (Base UI) | `phonefield/radix` | `phonefield/react-aria` |
+| --- | --- | --- | --- |
+| Country | `Combobox.Root` | `Popover.Root` | `Select` |
+| Trigger | `Combobox.Trigger` | `Popover.Trigger` | `Button` |
+| Popup | `CountryPortal` › `CountryPositioner` › `CountryPopup` | `CountryPortal` › `CountryContent` | `CountryPopover` (`Popover` + `Autocomplete`) |
+| Search | `Combobox.Input` | input with `aria-activedescendant` | `SearchField` › `CountrySearchInput` |
+| List / item | `Combobox.List` / `Combobox.Item` | `listbox` / `option` | `ListBox` / `ListBoxItem` |
+| Empty | `CountryEmpty` | `CountryEmpty` | `CountryList renderEmptyState` |
+| Indicator | `Combobox.ItemIndicator` | shown when selected | `SelectionIndicator` |
+| Compose with | `render` | `asChild` | `render` and render props |
+| Highlighted item | `data-highlighted` | `data-highlighted` | `data-focused` |
+
+```tsx
+import { PhoneField } from "phonefield/radix";
+
+<PhoneField.Root defaultCountry="US">
+  <PhoneField.Country>
+    <PhoneField.CountryTrigger className="trigger" />
+    <PhoneField.CountryPortal>
+      <PhoneField.CountryContent sideOffset={8} className="popup">
+        <PhoneField.CountrySearch />
+        <PhoneField.CountryEmpty />
+        <PhoneField.CountryList />
+      </PhoneField.CountryContent>
+    </PhoneField.CountryPortal>
+  </PhoneField.Country>
+  <PhoneField.Input aria-label="Phone number" />
+</PhoneField.Root>;
+```
+
+```tsx
+import { PhoneField } from "phonefield/react-aria";
+
+<PhoneField.Root defaultCountry="US">
+  <PhoneField.Group className={({ isFocusWithin }) => (isFocusWithin ? "ring" : "")}>
+    <PhoneField.Country>
+      <PhoneField.CountryTrigger className="trigger" />
+      <PhoneField.CountryPopover offset={8} className="popup">
+        <PhoneField.CountrySearch />
+        <PhoneField.CountryList renderEmptyState={() => <PhoneField.CountryEmpty />} />
+      </PhoneField.CountryPopover>
+    </PhoneField.Country>
+    <PhoneField.Input aria-label="Phone number" />
+  </PhoneField.Group>
+</PhoneField.Root>;
+```
+
+Library conventions carry through: Radix `Country` takes Popover props (`open`, `onOpenChange`, `modal`), React Aria `Country` takes Select props (`isOpen`, `onOpenChange`) and `CountryItem` takes `isDisabled`. In React Aria, Escape first clears a non-empty search, as `SearchField` does, then closes the popup.
+
+The examples below use the Base UI entry.
 
 ## Labels and errors
 
@@ -43,7 +102,7 @@ Root is a plain wrapper. `Group` is the visual shell for Country and Input; `Lab
 
 ## Composition
 
-Pass children to `Country` to customize any part. Each part wraps one Base UI Combobox part and accepts `className`, `style`, `render`, and that part's props.
+Pass children to `Country` to customize any part. With Base UI, each part wraps one Combobox part and accepts `className`, `style`, `render`, and that part's props.
 
 ```tsx
 import { getExampleNumber } from "phonefield/utils";

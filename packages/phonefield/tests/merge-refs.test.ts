@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { mergeRefs } from "../src/merge-refs";
+import { mergeRefs } from "../src/core/merge-refs";
 
 describe("mergeRefs", () => {
 	it("returns a cleanup that runs callback-ref cleanups and clears object refs", () => {

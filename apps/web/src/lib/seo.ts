@@ -97,7 +97,7 @@ export const softwareJsonLd = {
 			"@id": `${SITE_URL}/#software`,
 			name: SITE_NAME,
 			description:
-				"Accessible, composable React phone input primitives built on Base UI and libphonenumber-js.",
+				"Accessible, composable React phone input primitives for Base UI, Radix UI, and React Aria, built on libphonenumber-js.",
 			url: absoluteUrl("/"),
 			codeRepository: REPOSITORY_URL,
 			programmingLanguage: ["TypeScript", "React"],

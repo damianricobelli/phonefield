@@ -4,7 +4,21 @@ import type { Combobox } from "@base-ui/react/combobox";
 import type { Input as BaseInput } from "@base-ui/react/input";
 import type { useRender } from "@base-ui/react/use-render";
 import type React from "react";
-import type { PhoneFieldCountryLabels } from "./context.js";
+import type { PhoneFieldCountryLabels } from "../core/context.js";
+import type { PhoneFieldRootOptions } from "../core/root.js";
+import type {
+	PhoneFieldChangeDetails,
+	PhoneFieldChangeReason,
+	PhoneFieldCountry,
+	PhoneFieldCountryCode,
+	PhoneFieldCountryMap,
+	PhoneFieldFormValue,
+	PhoneFieldInputValue,
+	PhoneFieldLang,
+	PhoneFieldParseOptions,
+	PhoneFieldState,
+	PhoneFieldValue,
+} from "../types.js";
 import {
 	Country,
 	CountryEmpty,
@@ -22,19 +36,6 @@ import {
 import { Description, ErrorMessage, Group, Label } from "./field.js";
 import { Input } from "./input.js";
 import { Root } from "./root.js";
-import type {
-	PhoneFieldChangeDetails,
-	PhoneFieldChangeReason,
-	PhoneFieldCountry,
-	PhoneFieldCountryCode,
-	PhoneFieldCountryMap,
-	PhoneFieldFormValue,
-	PhoneFieldInputValue,
-	PhoneFieldLang,
-	PhoneFieldParseOptions,
-	PhoneFieldState,
-	PhoneFieldValue,
-} from "./types.js";
 
 export const PhoneField = {
 	Root,
@@ -93,37 +94,11 @@ export namespace PhoneField {
 	export type RootProps = Omit<
 		useRender.ComponentProps<"div", State>,
 		"className" | "style" | "defaultValue" | "onChange"
-	> & {
-		value?: InputValue | Value;
-		defaultValue?: InputValue | Value;
-		onValueChange?: (value: Value, details: ChangeDetails) => void;
-		/** Initial country when no value is provided. Defaults to `"US"` or the first available country. */
-		defaultCountry?: CountryCode;
-		/** Restricts the list and international-paste detection to these countries, in this order. */
-		countries?: readonly CountryCode[];
-		/** Pinned to the top of the list, in this order. */
-		preferredCountries?: readonly CountryCode[];
-		/** Locale for country names, sorting, and search. */
-		lang?: Lang;
-		/** Serializes `{ countryIso2, nationalNumber }` into one FormData entry. */
-		name?: string;
-		/** Associates the serialized value with a form outside Root. */
-		form?: string;
-		/** Formats the number as the user types. @default true */
-		formatOnType?: boolean;
-		/** Blocks digits beyond the longest possible number for the country. @default true */
-		limitMaxLength?: boolean;
-		disabled?: boolean;
-		readOnly?: boolean;
-		required?: boolean;
-		/**
-		 * Marks the field invalid, e.g. for a server or form-library error. Automatic
-		 * validation still applies when `false`.
-		 */
-		invalid?: boolean;
-		className?: ClassName<State>;
-		style?: Style<State>;
-	};
+	> &
+		PhoneFieldRootOptions & {
+			className?: ClassName<State>;
+			style?: Style<State>;
+		};
 
 	/** Props for `PhoneField.Input`. The value is owned by `PhoneField.Root`. */
 	export type InputProps = Omit<

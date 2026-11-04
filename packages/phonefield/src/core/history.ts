@@ -1,4 +1,4 @@
-import type { PhoneFieldInputValue, PhoneFieldValue } from "./types.js";
+import type { PhoneFieldInputValue, PhoneFieldValue } from "../types.js";
 
 const HISTORY_LIMIT = 100;
 

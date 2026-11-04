@@ -1,15 +1,15 @@
 import React from "react";
 import type {
-	PhoneFieldEditKind,
-	PhoneFieldHistorySnapshot,
-	PhoneFieldInputSelection,
-} from "./history.js";
-import type {
 	PhoneFieldCountry,
 	PhoneFieldCountryCode,
 	PhoneFieldState,
 	PhoneFieldValue,
-} from "./types.js";
+} from "../types.js";
+import type {
+	PhoneFieldEditKind,
+	PhoneFieldHistorySnapshot,
+	PhoneFieldInputSelection,
+} from "./history.js";
 
 export type PhoneFieldCountryGroup = {
 	readonly id: "preferred" | "all";
@@ -30,8 +30,11 @@ export type PhoneFieldCountryContextValue = {
 	getCountry: (iso2: string) => PhoneFieldCountry | undefined;
 };
 
-export type PhoneFieldInputContextValue = {
-	value: PhoneFieldValue;
+/**
+ * Field state and the ids that link Label, Description, and Error to the
+ * input. Stable while the user types, unless a state flag changes.
+ */
+export type PhoneFieldStateContextValue = {
 	state: PhoneFieldState;
 	/** id of the phone input, used by Label. */
 	controlId: string;
@@ -41,6 +44,11 @@ export type PhoneFieldInputContextValue = {
 	errorId: string | undefined;
 	setErrorId: (id: string | undefined) => void;
 	markTouched: () => void;
+};
+
+/** The value and editing actions. Changes on every keystroke; only Input reads it. */
+export type PhoneFieldInputContextValue = {
+	value: PhoneFieldValue;
 	setNumber: (number: string, editKind?: PhoneFieldEditKind) => boolean;
 	accepts: (number: string) => boolean;
 	rememberSelection: (selection: PhoneFieldInputSelection) => void;
@@ -61,11 +69,21 @@ export const PhoneFieldCountryLabelsContext =
 
 export const PhoneFieldCountryContext =
 	React.createContext<PhoneFieldCountryContextValue | null>(null);
+export const PhoneFieldStateContext =
+	React.createContext<PhoneFieldStateContextValue | null>(null);
 export const PhoneFieldInputContext =
 	React.createContext<PhoneFieldInputContextValue | null>(null);
 
 export function usePhoneFieldCountryContext(part = "PhoneField.Country") {
 	const context = React.use(PhoneFieldCountryContext);
+	if (!context) {
+		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
+	}
+	return context;
+}
+
+export function usePhoneFieldStateContext(part: string) {
+	const context = React.use(PhoneFieldStateContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}
@@ -98,10 +116,10 @@ export type UsePhoneFieldReturnValue = {
  */
 export function usePhoneField(): UsePhoneFieldReturnValue {
 	const countryContext = usePhoneFieldCountryContext("usePhoneField()");
-	const inputContext = usePhoneFieldInputContext("usePhoneField()");
+	const { state } = usePhoneFieldStateContext("usePhoneField()");
+	const { setNumber, value } = usePhoneFieldInputContext("usePhoneField()");
 	const { availableCountries, selectedCountry, setCountry, getCountry } =
 		countryContext;
-	const { setNumber, state, value } = inputContext;
 
 	// Actions keep their identity while the user types, so they are safe in
 	// effect dependencies and memoized children.

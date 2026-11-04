@@ -1,6 +1,6 @@
 import type { PhoneNumber } from "libphonenumber-js/min/es6";
-import type { PhoneField } from "./component.js";
 import { getExampleNumber as getExamplePhoneNumber } from "./examples.js";
+import type { PhoneField } from "./shared-types.js";
 import {
 	buildValue as buildPhoneFieldValue,
 	getCountriesMap,

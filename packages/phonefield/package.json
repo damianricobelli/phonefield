@@ -5,12 +5,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "Composable, accessible React phone input primitives built on Base UI and libphonenumber-js.",
+  "description": "Composable, accessible React phone input primitives for Base UI, Radix UI, and React Aria, built on libphonenumber-js.",
   "keywords": [
     "react",
     "phone-input",
     "phone-number",
     "base-ui",
+    "radix-ui",
+    "react-aria",
     "libphonenumber"
   ],
   "author": "damianricobelli",
@@ -38,6 +40,21 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./base-ui": {
+      "types": "./dist/base-ui/index.d.ts",
+      "import": "./dist/base-ui.js",
+      "default": "./dist/base-ui.js"
+    },
+    "./radix": {
+      "types": "./dist/radix/index.d.ts",
+      "import": "./dist/radix.js",
+      "default": "./dist/radix.js"
+    },
+    "./react-aria": {
+      "types": "./dist/react-aria/index.d.ts",
+      "import": "./dist/react-aria.js",
+      "default": "./dist/react-aria.js"
+    },
     "./utils": {
       "types": "./dist/public-utils.d.ts",
       "import": "./dist/utils.js",
@@ -56,8 +73,21 @@
   },
   "peerDependencies": {
     "@base-ui/react": ">=1.9.0 <2",
+    "radix-ui": ">=1.4.0 <2",
     "react": ">=19 <20",
+    "react-aria-components": ">=1.22.0 <2",
     "react-dom": ">=19 <20"
+  },
+  "peerDependenciesMeta": {
+    "@base-ui/react": {
+      "optional": true
+    },
+    "radix-ui": {
+      "optional": true
+    },
+    "react-aria-components": {
+      "optional": true
+    }
   },
   "dependencies": {
     "libphonenumber-js": "^1.13.15"
@@ -69,6 +99,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "jsdom": "^30.1.3",
+    "radix-ui": "^1.8.1",
+    "react-aria-components": "^1.22.1",
     "tsup": "^9.0.0",
     "typescript": "catalog:",
     "vite": "^8.3.5",

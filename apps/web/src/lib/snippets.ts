@@ -6,6 +6,9 @@ import customPickerSnippet from "@/examples/custom-picker.tsx?raw";
 import fieldStateSnippet from "@/examples/field-state.tsx?raw";
 import formDataSnippet from "@/examples/form-data.tsx?raw";
 import i18nSnippet from "@/examples/i18n.tsx?raw";
+import baseUiPrimitivesSnippet from "@/examples/primitives/base-ui.tsx?raw";
+import radixPrimitivesSnippet from "@/examples/primitives/radix.tsx?raw";
+import reactAriaPrimitivesSnippet from "@/examples/primitives/react-aria.tsx?raw";
 import stylingCountrySelectSnippet from "@/examples/production-preset.tsx?raw";
 import quickStartSnippet from "@/examples/quick-start.tsx?raw";
 import subsetSnippet from "@/examples/subset.tsx?raw";
@@ -14,6 +17,7 @@ import validitySnippet from "@/examples/validity.tsx?raw";
 
 export {
 	anatomySnippet,
+	baseUiPrimitivesSnippet,
 	compositionSnippet,
 	controlledSnippet,
 	countrySlotsCssSnippet,
@@ -23,6 +27,8 @@ export {
 	formDataSnippet,
 	i18nSnippet,
 	quickStartSnippet,
+	radixPrimitivesSnippet,
+	reactAriaPrimitivesSnippet,
 	stylingCountrySelectSnippet,
 	subsetSnippet,
 	validitySnippet,

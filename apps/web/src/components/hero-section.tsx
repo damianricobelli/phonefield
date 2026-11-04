@@ -213,9 +213,10 @@ export function HeroSection() {
 					</h1>
 
 					<p className="mt-6 max-w-xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">
-						Accessible Base UI primitives with canonical libphonenumber output.
-						Works with zero config, composes down to every part, and styles with
-						plain <code className="text-[0.9em]">className</code>.
+						Accessible primitives for Base UI, Radix UI, or React Aria, with
+						canonical libphonenumber output. Works with zero config, composes
+						down to every part, and styles with plain{" "}
+						<code className="text-[0.9em]">className</code>.
 					</p>
 
 					<div className="mt-8 flex flex-wrap items-center gap-3">

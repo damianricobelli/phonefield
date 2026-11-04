@@ -1,0 +1,7 @@
+{
+	"extends": "./tsconfig.verify.json",
+	"compilerOptions": {
+		"lib": ["ES2022", "DOM", "DOM.Iterable"]
+	},
+	"files": ["../dist/react-aria/index.d.ts"]
+}

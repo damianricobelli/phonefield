@@ -40,8 +40,8 @@ export function PageFooter() {
 					</nav>
 				</div>
 				<p className="mt-4 text-center text-xs text-slate-500 sm:text-left">
-					React phone input primitive for design systems. Built with Base UI and
-					libphonenumber.
+					React phone input primitive for design systems. Built for Base UI,
+					Radix UI, and React Aria, with libphonenumber.
 				</p>
 			</div>
 		</footer>
