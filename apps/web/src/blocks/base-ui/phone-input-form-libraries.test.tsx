@@ -6,8 +6,8 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { PhoneInputReactHookForm } from "@/blocks/phone-input-react-hook-form";
-import { PhoneInputTanStackForm } from "@/blocks/phone-input-tanstack-form";
+import { PhoneInputReactHookForm } from "@/blocks/base-ui/phone-input-react-hook-form";
+import { PhoneInputTanStackForm } from "@/blocks/base-ui/phone-input-tanstack-form";
 
 afterEach(cleanup);
 

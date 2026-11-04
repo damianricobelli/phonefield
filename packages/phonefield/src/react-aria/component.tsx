@@ -19,6 +19,7 @@ import type {
 	SelectValueProps,
 } from "react-aria-components/Select";
 import type { SelectionIndicatorProps } from "react-aria-components/SelectionIndicator";
+import type { TextProps } from "react-aria-components/Text";
 import type { PhoneFieldCountryLabels } from "../core/context.js";
 import type { PhoneFieldRootOptions } from "../core/root.js";
 import type {
@@ -182,12 +183,14 @@ export namespace PhoneField {
 		React.ComponentProps<"p">,
 		"className" | "style"
 	> &
-		StateRenderProps<State>;
+		StateRenderProps<State> &
+		Pick<TextProps, "render">;
 	export type ErrorProps = Omit<
 		React.ComponentProps<"p">,
 		"className" | "style" | "children"
 	> &
-		StateRenderProps<State> & {
+		StateRenderProps<State> &
+		Pick<TextProps, "render"> & {
 			/** Message, or a function of the field state. Defaults to a generic English message. */
 			children?: React.ReactNode | ((state: State) => React.ReactNode);
 		};

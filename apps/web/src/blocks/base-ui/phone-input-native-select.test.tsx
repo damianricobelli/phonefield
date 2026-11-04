@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { PhoneInputNativeSelect } from "@/blocks/phone-input-native-select";
+import { PhoneInputNativeSelect } from "@/blocks/base-ui/phone-input-native-select";
 
 afterEach(cleanup);
 

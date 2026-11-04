@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { PhoneInputSeparated } from "@/blocks/phone-input-separated";
+import { PhoneInputSeparated } from "@/blocks/base-ui/phone-input-separated";
 
 afterEach(cleanup);
 

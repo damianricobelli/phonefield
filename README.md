@@ -15,8 +15,8 @@ Composable, accessible React phone input for Base UI, Radix UI, or React Aria, b
 
 ```bash
 pnpm add phonefield @base-ui/react          # import from "phonefield"
-pnpm add phonefield radix-ui                # import from "phonefield/radix"
 pnpm add phonefield react-aria-components   # import from "phonefield/react-aria"
+pnpm add phonefield radix-ui                # import from "phonefield/radix"
 ```
 
 Requires React 19 and one primitives library: `@base-ui/react` 1.9+, `radix-ui` 1.4+, or `react-aria-components` 1.22+. Every entry shares the same value, formatting, validation, and field state; only the country picker parts follow each library's composition model.

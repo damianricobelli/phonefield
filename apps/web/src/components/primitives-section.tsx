@@ -23,16 +23,6 @@ const PRIMITIVES = [
 		code: baseUiPrimitivesSnippet,
 	},
 	{
-		value: "radix",
-		label: "Radix UI",
-		packages: "phonefield radix-ui",
-		entry: "phonefield/radix",
-		summary:
-			"Country is a Radix Popover with a searchable listbox, the pattern shadcn/ui uses for comboboxes. Compose with asChild; the popup is CountryContent, and items expose data-highlighted and data-state.",
-		Demo: RadixPhone,
-		code: radixPrimitivesSnippet,
-	},
-	{
 		value: "react-aria",
 		label: "React Aria",
 		packages: "phonefield react-aria-components",
@@ -41,6 +31,16 @@ const PRIMITIVES = [
 			"Country is a React Aria Select with an Autocomplete, SearchField, and ListBox inside its Popover. Parts take React Aria props and render props; items expose data-focused and data-selected.",
 		Demo: ReactAriaPhone,
 		code: reactAriaPrimitivesSnippet,
+	},
+	{
+		value: "radix",
+		label: "Radix UI",
+		packages: "phonefield radix-ui",
+		entry: "phonefield/radix",
+		summary:
+			"Country is a Radix Popover with a searchable listbox, the pattern shadcn/ui uses for comboboxes. Compose with asChild; the popup is CountryContent, and items expose data-highlighted and data-state.",
+		Demo: RadixPhone,
+		code: radixPrimitivesSnippet,
 	},
 ] as const;
 
@@ -61,7 +61,7 @@ export function PrimitivesSection() {
 			</div>
 			<Tabs defaultValue="base-ui" className="min-w-0 gap-0">
 				<div className="px-5 pb-4 sm:px-7">
-					<TabsList>
+					<TabsList variant="line">
 						{PRIMITIVES.map((primitive) => (
 							<TabsTrigger key={primitive.value} value={primitive.value}>
 								{primitive.label}

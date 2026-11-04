@@ -6,7 +6,7 @@ import {
 	waitFor,
 } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { PhoneInputValidation } from "@/blocks/phone-input-validation";
+import { PhoneInputValidation } from "@/blocks/base-ui/phone-input-validation";
 
 afterEach(cleanup);
 

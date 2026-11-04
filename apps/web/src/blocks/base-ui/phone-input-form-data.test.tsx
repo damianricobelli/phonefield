@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { PhoneInputFormData } from "@/blocks/phone-input-form-data";
+import { PhoneInputFormData } from "@/blocks/base-ui/phone-input-form-data";
 
 afterEach(cleanup);
 

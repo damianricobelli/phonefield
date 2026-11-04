@@ -130,6 +130,13 @@ export function CountryValue({
 	);
 	return (
 		<SelectValue<PhoneFieldCountry>
+			// SelectValue wraps the value in a <span>. Unless you style it, let its
+			// content sit directly in the trigger's layout, like the other adapters.
+			style={
+				props.className === undefined && props.style === undefined
+					? DISPLAY_CONTENTS
+					: undefined
+			}
 			{...props}
 			data-slot="phone-field-country-value"
 		>
@@ -222,6 +229,21 @@ export function CountryEmpty({
 	);
 }
 
+const NO_ITEMS: readonly PhoneFieldCountry[] = [];
+
+function subscribeToNothing() {
+	return () => {};
+}
+
+/** False on the server and during hydration, true afterwards. */
+function useIsHydrated() {
+	return React.useSyncExternalStore(
+		subscribeToNothing,
+		() => true,
+		() => false,
+	);
+}
+
 function renderDefaultEmptyState() {
 	return <CountryEmpty />;
 }
@@ -236,9 +258,13 @@ export function CountryList({
 	renderEmptyState = renderDefaultEmptyState,
 	...props
 }: PhoneField.CountryListProps) {
-	const { availableCountries, groups } = usePhoneFieldCountryContext(
-		"PhoneField.CountryList",
-	);
+	const context = usePhoneFieldCountryContext("PhoneField.CountryList");
+	// Select mirrors its items into a hidden native <select> for autofill.
+	// Country names come from Intl.DisplayNames and differ between Node and
+	// browsers, so add the items only after hydration to keep SSR stable.
+	const hydrated = useIsHydrated();
+	const availableCountries = hydrated ? context.availableCountries : NO_ITEMS;
+	const groups = hydrated ? context.groups : null;
 	const renderCountry = (country: PhoneFieldCountry) =>
 		children ? children(country) : <CountryItem country={country} />;
 

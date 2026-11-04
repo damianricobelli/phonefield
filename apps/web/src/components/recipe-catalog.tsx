@@ -1,74 +1,16 @@
 import * as React from "react";
+import { type Primitive, primitives } from "@/lib/primitives";
 
-const PhoneInputInline = React.lazy(() =>
-	import("@/blocks/phone-input-inline").then((module) => ({
-		default: module.PhoneInputInline,
-	})),
-);
-const PhoneInputSeparated = React.lazy(() =>
-	import("@/blocks/phone-input-separated").then((module) => ({
-		default: module.PhoneInputSeparated,
-	})),
-);
-const PhoneInputFixedCountry = React.lazy(() =>
-	import("@/blocks/phone-input-fixed-country").then((module) => ({
-		default: module.PhoneInputFixedCountry,
-	})),
-);
-const PhoneInputExtension = React.lazy(() =>
-	import("@/blocks/phone-input-extension").then((module) => ({
-		default: module.PhoneInputExtension,
-	})),
-);
-const PhoneInputValidation = React.lazy(() =>
-	import("@/blocks/phone-input-validation").then((module) => ({
-		default: module.PhoneInputValidation,
-	})),
-);
-const PhoneInputFormData = React.lazy(() =>
-	import("@/blocks/phone-input-form-data").then((module) => ({
-		default: module.PhoneInputFormData,
-	})),
-);
-const PhoneInputReactHookForm = React.lazy(() =>
-	import("@/blocks/phone-input-react-hook-form").then((module) => ({
-		default: module.PhoneInputReactHookForm,
-	})),
-);
-const PhoneInputTanStackForm = React.lazy(() =>
-	import("@/blocks/phone-input-tanstack-form").then((module) => ({
-		default: module.PhoneInputTanStackForm,
-	})),
-);
-const PhoneInputStates = React.lazy(() =>
-	import("@/blocks/phone-input-states").then((module) => ({
-		default: module.PhoneInputStates,
-	})),
-);
-const PhoneInputOtp = React.lazy(() =>
-	import("@/blocks/phone-input-otp").then((module) => ({
-		default: module.PhoneInputOtp,
-	})),
-);
-const PhoneInputPaste = React.lazy(() =>
-	import("@/blocks/phone-input-paste").then((module) => ({
-		default: module.PhoneInputPaste,
-	})),
-);
-const PhoneInputSubset = React.lazy(() =>
-	import("@/blocks/phone-input-subset").then((module) => ({
-		default: module.PhoneInputSubset,
-	})),
-);
-const PhoneInputNativeSelect = React.lazy(() =>
-	import("@/blocks/phone-input-native-select").then((module) => ({
-		default: module.PhoneInputNativeSelect,
-	})),
-);
-const PhoneInputDrawer = React.lazy(() =>
-	import("@/blocks/phone-input-drawer").then((module) => ({
-		default: module.PhoneInputDrawer,
-	})),
+type BlockModule = Record<string, React.ComponentType>;
+
+// Every recipe ships one file per adapter: src/blocks/<primitive>/<block>.tsx.
+const blockModules = import.meta.glob<BlockModule>([
+	"../blocks/*/*.tsx",
+	"!../blocks/**/*.test.tsx",
+]);
+const blockSources = import.meta.glob<string>(
+	["../blocks/*/*.tsx", "!../blocks/**/*.test.tsx"],
+	{ query: "?raw", import: "default" },
 );
 
 export type RecipeCategory =
@@ -84,8 +26,10 @@ export type Recipe = {
 	description: string;
 	category: RecipeCategory;
 	labels: readonly string[];
-	component: React.LazyExoticComponent<React.ComponentType>;
-	loadCode: () => Promise<string>;
+	/** File name in `src/blocks/<primitive>/`, one per adapter. */
+	block: string;
+	/** Component exported by every variant of the block. */
+	exportName: string;
 	useWhen: string;
 	requires: readonly string[];
 	accessibility: string;
@@ -100,11 +44,8 @@ export const recipes = [
 			"One visual field with separate accessible country and phone controls.",
 		category: "Basics",
 		labels: ["default", "shadcn"],
-		component: PhoneInputInline,
-		loadCode: () =>
-			import("@/blocks/phone-input-inline.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-inline",
+		exportName: "PhoneInputInline",
 		useWhen:
 			"Use this as the default for profiles, contact forms, and account settings.",
 		requires: ["field", "input-group"],
@@ -119,11 +60,8 @@ export const recipes = [
 			"Country and phone retain their own visual boundaries for dense forms.",
 		category: "Basics",
 		labels: ["checkout", "responsive"],
-		component: PhoneInputSeparated,
-		loadCode: () =>
-			import("@/blocks/phone-input-separated.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-separated",
+		exportName: "PhoneInputSeparated",
 		useWhen:
 			"Use it when labels and column alignment matter more than compactness.",
 		requires: ["field", "input"],
@@ -137,11 +75,8 @@ export const recipes = [
 			"Remove the picker when the product already knows the supported market.",
 		category: "Basics",
 		labels: ["single market", "simple"],
-		component: PhoneInputFixedCountry,
-		loadCode: () =>
-			import("@/blocks/phone-input-fixed-country.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-fixed-country",
+		exportName: "PhoneInputFixedCountry",
 		useWhen:
 			"Use it for market-specific products or tenant-level country policies.",
 		requires: ["field", "input-group"],
@@ -156,11 +91,8 @@ export const recipes = [
 			"Collect an office extension without mixing it into the canonical phone value.",
 		category: "Basics",
 		labels: ["business", "extension"],
-		component: PhoneInputExtension,
-		loadCode: () =>
-			import("@/blocks/phone-input-extension.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-extension",
+		exportName: "PhoneInputExtension",
 		useWhen:
 			"Use it for business contacts, support desks, and PBX-backed phone records.",
 		requires: ["field", "input-group"],
@@ -175,11 +107,8 @@ export const recipes = [
 			"Required and invalid states read from the field itself, with accessible error messaging.",
 		category: "Forms",
 		labels: ["field", "validation"],
-		component: PhoneInputValidation,
-		loadCode: () =>
-			import("@/blocks/phone-input-validation.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-validation",
+		exportName: "PhoneInputValidation",
 		useWhen:
 			"Use it when the field owns validation and no form library is involved.",
 		requires: ["field", "input-group"],
@@ -194,11 +123,8 @@ export const recipes = [
 			"Submit minimal source values and rebuild trusted derived data at the boundary.",
 		category: "Forms",
 		labels: ["server action", "native"],
-		component: PhoneInputFormData,
-		loadCode: () =>
-			import("@/blocks/phone-input-form-data.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-form-data",
+		exportName: "PhoneInputFormData",
 		useWhen:
 			"Use it for native forms, server actions, or progressively enhanced submissions.",
 		requires: ["field", "input-group"],
@@ -213,11 +139,8 @@ export const recipes = [
 			"Controller-based integration with Standard Schema validation on every change.",
 		category: "Forms",
 		labels: ["rhf", "zod"],
-		component: PhoneInputReactHookForm,
-		loadCode: () =>
-			import("@/blocks/phone-input-react-hook-form.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-react-hook-form",
+		exportName: "PhoneInputReactHookForm",
 		useWhen:
 			"Use it when React Hook Form owns the complete form state and submission lifecycle.",
 		requires: [
@@ -238,11 +161,8 @@ export const recipes = [
 			"Type-safe field composition using TanStack Form's Standard Schema support.",
 		category: "Forms",
 		labels: ["tanstack", "zod"],
-		component: PhoneInputTanStackForm,
-		loadCode: () =>
-			import("@/blocks/phone-input-tanstack-form.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-tanstack-form",
+		exportName: "PhoneInputTanStackForm",
 		useWhen:
 			"Use it for deeply typed or highly reactive forms built around TanStack's ecosystem.",
 		requires: ["@tanstack/react-form", "zod", "field", "input-group"],
@@ -257,11 +177,8 @@ export const recipes = [
 			"Production states that preserve visual structure and communicate availability.",
 		category: "Forms",
 		labels: ["states", "a11y"],
-		component: PhoneInputStates,
-		loadCode: () =>
-			import("@/blocks/phone-input-states.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-states",
+		exportName: "PhoneInputStates",
 		useWhen:
 			"Use these patterns for permissions, persisted values, and async mutations.",
 		requires: ["field", "input-group"],
@@ -276,11 +193,8 @@ export const recipes = [
 			"A complete phone-to-OTP interaction with editable and verified states.",
 		category: "Product flows",
 		labels: ["otp", "multi-step"],
-		component: PhoneInputOtp,
-		loadCode: () =>
-			import("@/blocks/phone-input-otp.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-otp",
+		exportName: "PhoneInputOtp",
 		useWhen:
 			"Use it for sign-in, onboarding, account recovery, and phone verification.",
 		requires: ["button", "card", "field", "input-group", "input-otp"],
@@ -295,11 +209,8 @@ export const recipes = [
 			"Pasting an international number updates country and normalized output.",
 		category: "Product flows",
 		labels: ["paste", "e.164"],
-		component: PhoneInputPaste,
-		loadCode: () =>
-			import("@/blocks/phone-input-paste.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-paste",
+		exportName: "PhoneInputPaste",
 		useWhen:
 			"Use it when users frequently paste numbers from contacts, CRMs, or messages.",
 		requires: ["field", "input-group"],
@@ -314,11 +225,8 @@ export const recipes = [
 			"Limit supported markets, pin the key ones, and localize country names, search, and sorting.",
 		category: "Mobile & localization",
 		labels: ["i18n", "subset"],
-		component: PhoneInputSubset,
-		loadCode: () =>
-			import("@/blocks/phone-input-subset.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-subset",
+		exportName: "PhoneInputSubset",
 		useWhen:
 			"Use it when product availability is restricted to a known set of countries.",
 		requires: ["field", "input-group"],
@@ -333,11 +241,8 @@ export const recipes = [
 			"Drive the field from a plain <select> with usePhoneField, no popup required.",
 		category: "Mobile & localization",
 		labels: ["native", "usePhoneField"],
-		component: PhoneInputNativeSelect,
-		loadCode: () =>
-			import("@/blocks/phone-input-native-select.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-native-select",
+		exportName: "PhoneInputNativeSelect",
 		useWhen:
 			"Use it when the platform picker beats a custom popup, such as in mobile web or embedded webviews.",
 		requires: ["field", "input-group"],
@@ -352,11 +257,8 @@ export const recipes = [
 			"A thumb-friendly country picker designed for mobile product flows.",
 		category: "Mobile & localization",
 		labels: ["drawer", "mobile"],
-		component: PhoneInputDrawer,
-		loadCode: () =>
-			import("@/blocks/phone-input-drawer.tsx?raw").then(
-				(module) => module.default,
-			),
+		block: "phone-input-drawer",
+		exportName: "PhoneInputDrawer",
 		useWhen:
 			"Use it on mobile-first forms where a popover would feel cramped or hard to scan.",
 		requires: ["button", "drawer", "field", "input", "input-group"],
@@ -384,4 +286,46 @@ export function findRecipe(id: RecipeId) {
 	const recipe = recipes.find((item) => item.id === id);
 	if (!recipe) throw new Error(`Unknown recipe: ${id}`);
 	return recipe;
+}
+
+export type RecipeVariant = {
+	component: React.LazyExoticComponent<React.ComponentType>;
+	loadCode: () => Promise<string>;
+};
+
+function createVariant(recipe: Recipe, primitive: Primitive): RecipeVariant {
+	const path = `../blocks/${primitive}/${recipe.block}.tsx`;
+	const loadModule = blockModules[path];
+	const loadSource = blockSources[path];
+	if (!loadModule || !loadSource) {
+		throw new Error(`Missing ${primitive} variant for recipe ${recipe.id}`);
+	}
+	return {
+		component: React.lazy(() =>
+			loadModule().then((module) => {
+				const component = module[recipe.exportName];
+				if (!component) {
+					throw new Error(`${path} does not export ${recipe.exportName}`);
+				}
+				return { default: component };
+			}),
+		),
+		loadCode: loadSource,
+	};
+}
+
+// Created once per recipe and adapter, so lazy components keep their identity.
+const recipeVariants = new Map<string, Map<Primitive, RecipeVariant>>(
+	recipes.map((recipe) => [
+		recipe.id,
+		new Map(
+			primitives.map(({ value }) => [value, createVariant(recipe, value)]),
+		),
+	]),
+);
+
+export function getRecipeVariant(recipe: Recipe, primitive: Primitive) {
+	const variant = recipeVariants.get(recipe.id)?.get(primitive);
+	if (!variant) throw new Error(`Unknown recipe: ${recipe.id}`);
+	return variant;
 }

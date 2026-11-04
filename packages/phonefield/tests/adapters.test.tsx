@@ -665,6 +665,18 @@ describe("adapter-specific composition", () => {
 		expect(wrapper()?.className).toBe("flex");
 	});
 
+	it("react-aria: lays out the value's content directly in the trigger", () => {
+		const { container } = render(
+			<ReactAria.PhoneField.Root>
+				<ReactAria.PhoneField.Country />
+			</ReactAria.PhoneField.Root>,
+		);
+		const value = container.querySelector<HTMLElement>(
+			'[data-slot="phone-field-country-value"]',
+		);
+		expect(value?.style.display).toBe("contents");
+	});
+
 	it("react-aria: passes field state to render props", () => {
 		const { container } = render(
 			<ReactAria.PhoneField.Root
@@ -685,5 +697,20 @@ describe("adapter-specific composition", () => {
 		expect(
 			container.querySelector('[data-slot="phone-field-group"]')?.className,
 		).toBe("group on empty");
+	});
+});
+
+describe("server rendering", () => {
+	it("react-aria: leaves country names out of the server HTML", async () => {
+		const { renderToString } = await import("react-dom/server");
+		const html = renderToString(
+			<ReactAria.PhoneField.Root defaultCountry="AR">
+				<ReactAria.PhoneField.Country />
+				<ReactAria.PhoneField.Input aria-label="Phone number" />
+			</ReactAria.PhoneField.Root>,
+		);
+		// Intl.DisplayNames output differs between Node and browsers.
+		expect(html).not.toContain("Falkland");
+		expect(html).not.toContain('<option value="US"');
 	});
 });

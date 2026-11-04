@@ -11,10 +11,10 @@ Install PhoneField with the primitives library your design system uses:
 | Library | Install | Import |
 | --- | --- | --- |
 | Base UI | `pnpm add phonefield @base-ui/react` | `phonefield` (or `phonefield/base-ui`) |
-| Radix UI | `pnpm add phonefield radix-ui` | `phonefield/radix` |
 | React Aria | `pnpm add phonefield react-aria-components` | `phonefield/react-aria` |
+| Radix UI | `pnpm add phonefield radix-ui` | `phonefield/radix` |
 
-Peer dependencies: `react >=19 <20`, `react-dom >=19 <20`, and one of `@base-ui/react >=1.9 <2`, `radix-ui >=1.4 <2`, or `react-aria-components >=1.22 <2`. Each entry imports only its own library.
+Peer dependencies: `react >=19 <20`, `react-dom >=19 <20`, and one of `@base-ui/react >=1.9 <2`, `react-aria-components >=1.22 <2`, or `radix-ui >=1.4 <2`. Each entry imports only its own library.
 
 ## Quick start
 
@@ -33,17 +33,17 @@ import { PhoneField } from "phonefield";
 
 Every entry exports the same `PhoneField` and `usePhoneField`. Root, Input, Label, Group, Description, Error, the value, formatting, validation, undo, FormData, field state, and `data-slot` names are shared and behave the same. The Country parts wrap each library's own components and follow its composition model:
 
-| | `phonefield` (Base UI) | `phonefield/radix` | `phonefield/react-aria` |
+| | `phonefield` (Base UI) | `phonefield/react-aria` | `phonefield/radix` |
 | --- | --- | --- | --- |
-| Country | `Combobox.Root` | `Popover.Root` | `Select` |
-| Trigger | `Combobox.Trigger` | `Popover.Trigger` | `Button` |
-| Popup | `CountryPortal` › `CountryPositioner` › `CountryPopup` | `CountryPortal` › `CountryContent` | `CountryPopover` (`Popover` + `Autocomplete`) |
-| Search | `Combobox.Input` | input with `aria-activedescendant` | `SearchField` › `CountrySearchInput` |
-| List / item | `Combobox.List` / `Combobox.Item` | `listbox` / `option` | `ListBox` / `ListBoxItem` |
-| Empty | `CountryEmpty` | `CountryEmpty` | `CountryList renderEmptyState` |
-| Indicator | `Combobox.ItemIndicator` | shown when selected | `SelectionIndicator` |
-| Compose with | `render` | `asChild` | `render` and render props |
-| Highlighted item | `data-highlighted` | `data-highlighted` | `data-focused` |
+| Country | `Combobox.Root` | `Select` | `Popover.Root` |
+| Trigger | `Combobox.Trigger` | `Button` | `Popover.Trigger` |
+| Popup | `CountryPortal` › `CountryPositioner` › `CountryPopup` | `CountryPopover` (`Popover` + `Autocomplete`) | `CountryPortal` › `CountryContent` |
+| Search | `Combobox.Input` | `SearchField` › `CountrySearchInput` | input with `aria-activedescendant` |
+| List / item | `Combobox.List` / `Combobox.Item` | `ListBox` / `ListBoxItem` | `listbox` / `option` |
+| Empty | `CountryEmpty` | `CountryList renderEmptyState` | `CountryEmpty` |
+| Indicator | `Combobox.ItemIndicator` | `SelectionIndicator` | shown when selected |
+| Compose with | `render` | `render` and render props | `asChild` |
+| Highlighted item | `data-highlighted` | `data-focused` | `data-highlighted` |
 
 ```tsx
 import { PhoneField } from "phonefield/radix";

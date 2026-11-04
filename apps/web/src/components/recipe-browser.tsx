@@ -1,9 +1,17 @@
 import * as React from "react";
 import { BlockCard } from "@/components/block-card";
-import type { Recipe } from "@/components/recipe-catalog";
+import { getRecipeVariant, type Recipe } from "@/components/recipe-catalog";
+import { getPrimitive, type Primitive } from "@/lib/primitives";
 
-export function RecipeBrowser({ recipe }: { recipe: Recipe }) {
-	const Preview = recipe.component;
+export function RecipeBrowser({
+	recipe,
+	primitive,
+}: {
+	recipe: Recipe;
+	primitive: Primitive;
+}) {
+	const { component: Preview, loadCode } = getRecipeVariant(recipe, primitive);
+	const requires = [getPrimitive(primitive).packageName, ...recipe.requires];
 
 	return (
 		<div
@@ -12,11 +20,12 @@ export function RecipeBrowser({ recipe }: { recipe: Recipe }) {
 			className="scroll-mt-24 space-y-4"
 		>
 			<BlockCard
-				key={recipe.id}
+				// A new adapter means new source; reset the loaded code with it.
+				key={`${recipe.id}-${primitive}`}
 				title={recipe.title}
 				description={recipe.description}
 				labels={recipe.labels}
-				code={recipe.loadCode}
+				code={loadCode}
 			>
 				<React.Suspense
 					fallback={
@@ -43,7 +52,7 @@ export function RecipeBrowser({ recipe }: { recipe: Recipe }) {
 						Requires
 					</p>
 					<p className="mt-2 font-mono text-xs leading-6 text-slate-700">
-						{recipe.requires.join(" · ")}
+						{requires.join(" · ")}
 					</p>
 				</div>
 				<div className="bg-white p-4">
