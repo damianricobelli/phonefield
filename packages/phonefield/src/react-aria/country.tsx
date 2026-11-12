@@ -52,12 +52,23 @@ function CountryComponent({
 	children,
 	labels,
 	isDisabled,
+	focusInputOnSelect = true,
+	onOpenChange,
 	...props
 }: PhoneField.CountryProps) {
-	const { selectedCountry, disabled, readOnly, setCountry, getCountry } =
-		usePhoneFieldCountryContext();
+	const {
+		selectedCountry,
+		disabled,
+		readOnly,
+		setCountry,
+		getCountry,
+		focusInput,
+	} = usePhoneFieldCountryContext();
 	const hasLabel =
 		props["aria-label"] !== undefined || props["aria-labelledby"] !== undefined;
+	const focusInputOnCloseRef = React.useRef(false);
+	const frameRef = React.useRef(0);
+	React.useEffect(() => () => cancelAnimationFrame(frameRef.current), []);
 
 	return (
 		<Select<PhoneFieldCountry>
@@ -78,7 +89,23 @@ function CountryComponent({
 			value={selectedCountry.iso2}
 			onChange={(key: Key | null) => {
 				const next = key == null ? undefined : getCountry(String(key));
-				if (next && !readOnly) setCountry(next);
+				if (!next || readOnly) return;
+				setCountry(next);
+				// Typeahead on the closed trigger also selects; the next open resets this.
+				focusInputOnCloseRef.current = focusInputOnSelect;
+			}}
+			onOpenChange={(isOpen) => {
+				onOpenChange?.(isOpen);
+				const picked = !isOpen && focusInputOnCloseRef.current;
+				focusInputOnCloseRef.current = false;
+				if (!picked) return;
+				// React Aria restores focus to the trigger once the popover unmounts,
+				// unless focus has already moved elsewhere. Move it on the next frame,
+				// after the close commits and focus containment has been released.
+				cancelAnimationFrame(frameRef.current);
+				frameRef.current = requestAnimationFrame(() => {
+					focusInput();
+				});
 			}}
 			data-readonly={readOnly || undefined}
 		>

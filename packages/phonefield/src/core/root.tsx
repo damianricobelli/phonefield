@@ -359,6 +359,23 @@ export function usePhoneFieldRoot(
 		[findCountry, limitMaxLength],
 	);
 
+	const inputRef = React.useRef<HTMLInputElement>(null);
+	const focusInput = React.useCallback(() => {
+		const input = inputRef.current;
+		if (!input?.isConnected || input.disabled) return false;
+		input.focus();
+		// getRootNode() also covers an input rendered inside a shadow root.
+		const root = input.getRootNode() as Document | ShadowRoot;
+		if (root.activeElement !== input) return false;
+		// Continue typing after the digits already entered. `selectionStart` is
+		// null for input types without a caret, such as `type="number"`.
+		if (input.selectionStart !== null) {
+			const end = input.value.length;
+			input.setSelectionRange(end, end);
+		}
+		return true;
+	}, []);
+
 	const setCountry = React.useCallback(
 		(country: PhoneFieldCountry) => {
 			commitValue(country, currentValueRef.current.nationalNumber, "country");
@@ -468,10 +485,12 @@ export function usePhoneFieldRoot(
 			readOnly,
 			setCountry,
 			getCountry,
+			focusInput,
 		}),
 		[
 			availableCountries,
 			disabled,
+			focusInput,
 			getCountry,
 			groups,
 			locale,
@@ -496,6 +515,7 @@ export function usePhoneFieldRoot(
 	const inputContextValue = React.useMemo<PhoneFieldInputContextValue>(
 		() => ({
 			value: normalizedValue,
+			inputRef,
 			setNumber,
 			accepts,
 			rememberSelection,

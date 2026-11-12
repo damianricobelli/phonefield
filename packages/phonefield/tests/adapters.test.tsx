@@ -149,6 +149,19 @@ function UseArgentina() {
 	);
 }
 
+function FocusInputButton({
+	onResult,
+}: {
+	onResult: (focused: boolean) => void;
+}) {
+	const { focusInput } = usePhoneField();
+	return (
+		<button type="button" onClick={() => onResult(focusInput())}>
+			Focus
+		</button>
+	);
+}
+
 /** Like shadcn/ui's InputGroupInput: its own slot, then the caller's props. */
 function DesignSystemInput(props: React.ComponentProps<"input">) {
 	return <input data-slot="design-system-input" {...props} />;
@@ -306,6 +319,91 @@ describe.each(adapters)("$name adapter", (adapter) => {
 		expect(onValueChange).toHaveBeenLastCalledWith(
 			expect.objectContaining({ countryIso2: "UY" }),
 			{ reason: "country" },
+		);
+	});
+
+	it("moves focus to the input after picking a country, caret at the end", async () => {
+		const onBlur = vi.fn();
+		render(
+			<PhoneField.Root
+				countries={["US", "AR"]}
+				defaultCountry="US"
+				onBlur={onBlur}
+			>
+				<PhoneField.Country />
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+		const input = screen.getByRole("textbox", {
+			name: "Phone number",
+		}) as HTMLInputElement;
+		fireEvent.change(input, { target: { value: "2025550123" } });
+		input.setSelectionRange(0, 0);
+
+		await openPicker("United States (+1)");
+		fireEvent.click(screen.getByRole("option", { name: /Argentina/ }));
+		await flush();
+
+		await vi.waitFor(() => expect(document.activeElement).toBe(input));
+		expect(input.selectionStart).toBe(input.value.length);
+		expect(input.selectionEnd).toBe(input.value.length);
+		await flush();
+		expect(onBlur).not.toHaveBeenCalled();
+	});
+
+	it("moves focus to the input after picking with Enter", async () => {
+		render(
+			<PhoneField.Root countries={["US", "AR", "UY"]} defaultCountry="US">
+				<PhoneField.Country />
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+		const search = await openPicker("United States (+1)");
+		fireEvent.change(search, { target: { value: "urug" } });
+		await flush();
+		fireEvent.keyDown(search, { key: "Enter" });
+		await flush();
+
+		await vi.waitFor(() =>
+			expect(document.activeElement).toBe(
+				screen.getByRole("textbox", { name: "Phone number" }),
+			),
+		);
+	});
+
+	it("keeps focus on the trigger after picking when focusInputOnSelect is false", async () => {
+		render(
+			<PhoneField.Root countries={["US", "AR"]} defaultCountry="US">
+				<PhoneField.Country focusInputOnSelect={false} />
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+		await openPicker("United States (+1)");
+		fireEvent.click(screen.getByRole("option", { name: /Argentina/ }));
+		await flush();
+
+		await vi.waitFor(() =>
+			expect(document.activeElement).toBe(
+				screen.getByRole(triggerRole, { name: "Argentina (+54)" }),
+			),
+		);
+	});
+
+	it("returns focus to the trigger after picking when the input is disabled", async () => {
+		render(
+			<PhoneField.Root countries={["US", "AR"]} defaultCountry="US">
+				<PhoneField.Country />
+				<PhoneField.Input aria-label="Phone number" disabled />
+			</PhoneField.Root>,
+		);
+		await openPicker("United States (+1)");
+		fireEvent.click(screen.getByRole("option", { name: /Argentina/ }));
+		await flush();
+
+		await vi.waitFor(() =>
+			expect(document.activeElement).toBe(
+				screen.getByRole(triggerRole, { name: "Argentina (+54)" }),
+			),
 		);
 	});
 
@@ -549,6 +647,19 @@ describe.each(adapters)("$name adapter", (adapter) => {
 		await flush();
 		expect(onValueChange.mock.lastCall?.[0]?.countryIso2).toBe("UY");
 		expect(screen.queryByRole("listbox")).toBeNull();
+		// Typing on the trigger is not a pick from the list: focus stays put,
+		// and a later Escape still returns it to the trigger.
+		expect(document.activeElement).toBe(
+			screen.getByRole(triggerRole, { name: "Uruguay (+598)" }),
+		);
+		const reopened = await openPicker("Uruguay (+598)");
+		fireEvent.keyDown(reopened, { key: "Escape" });
+		await flush();
+		await vi.waitFor(() =>
+			expect(document.activeElement).toBe(
+				screen.getByRole(triggerRole, { name: "Uruguay (+598)" }),
+			),
+		);
 	});
 
 	it("keeps the selection when the field is read-only", async () => {
@@ -679,6 +790,36 @@ describe.each(adapters)("$name adapter", (adapter) => {
 			expect.objectContaining({ countryIso2: "US" }),
 			{ reason: "undo" },
 		);
+	});
+
+	it("lets usePhoneField focus the input from a custom part", () => {
+		const results: boolean[] = [];
+		const onFocusResult = (focused: boolean) => results.push(focused);
+		const { rerender } = render(
+			<PhoneField.Root
+				defaultValue={{ countryIso2: "US", nationalNumber: "2025550123" }}
+			>
+				<FocusInputButton onResult={onFocusResult} />
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+		const input = screen.getByRole("textbox", {
+			name: "Phone number",
+		}) as HTMLInputElement;
+		fireEvent.click(screen.getByRole("button", { name: "Focus" }));
+		expect(document.activeElement).toBe(input);
+		expect(input.selectionStart).toBe(input.value.length);
+
+		act(() => input.blur());
+		rerender(
+			<PhoneField.Root disabled>
+				<FocusInputButton onResult={onFocusResult} />
+				<PhoneField.Input aria-label="Phone number" />
+			</PhoneField.Root>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Focus" }));
+		expect(document.activeElement).not.toBe(input);
+		expect(results).toEqual([true, false]);
 	});
 
 	it("lets usePhoneField drive the field from a custom part", () => {

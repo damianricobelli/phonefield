@@ -383,6 +383,13 @@ export const countryProperties = [
 			"Default text for CountrySearch and CountryEmpty, in the zero-config picker or composed parts. Props on the parts win.",
 	},
 	{
+		name: "focusInputOnSelect",
+		type: "boolean",
+		defaultValue: "true",
+		description:
+			"After a country is picked from the list, focus moves to the phone input with the caret at the end. Closing without picking returns focus to the trigger.",
+	},
+	{
 		name: "...comboboxProps",
 		type: "Combobox.Root.Props",
 		defaultValue: "-",
@@ -430,7 +437,8 @@ export const countryParts = [
 		name: "CountryPopup",
 		wraps: "Combobox.Popup",
 		slot: "phone-field-country-popup",
-		defaults: "Popup container.",
+		defaults:
+			"Popup container. On close, focuses the input after a pick, else the trigger. Pass finalFocus to override.",
 	},
 	{
 		name: "CountrySearch",
@@ -548,6 +556,13 @@ export const hookProperties = [
 		defaultValue: "-",
 		description:
 			"Replaces the number as if typed. A + prefix selects the detected country.",
+	},
+	{
+		name: "focusInput",
+		type: "() => boolean",
+		defaultValue: "-",
+		description:
+			"Focuses the phone input with the caret at the end, e.g. after a custom picker closes. Returns false when no enabled input is mounted.",
 	},
 ] satisfies readonly ApiProperty<keyof UsePhoneFieldReturnValue>[];
 export type HookDocumentationIsComplete = Assert<

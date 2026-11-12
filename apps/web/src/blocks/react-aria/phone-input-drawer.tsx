@@ -48,10 +48,16 @@ export function PhoneInputDrawer() {
 }
 
 // Any picker can drive the field: usePhoneField() exposes the
-// available countries, the selected one, and a setter.
+// available countries, the selected one, a setter, and focusInput().
 function CountryDrawer() {
-	const { country: selected, countries, setCountry } = usePhoneField();
+	const {
+		country: selected,
+		countries,
+		setCountry,
+		focusInput,
+	} = usePhoneField();
 	const [open, setOpen] = React.useState(false);
+	const pickedRef = React.useRef(false);
 	const [query, setQuery] = React.useState("");
 	const normalizedQuery = query.trim().toLocaleLowerCase();
 	const results = normalizedQuery
@@ -78,7 +84,15 @@ function CountryDrawer() {
 				<span>{selected.dialCode}</span>
 				<ChevronDownIcon className="size-4 text-muted-foreground" />
 			</DrawerTrigger>
-			<DrawerContent className="mx-auto max-w-2xl">
+			<DrawerContent
+				className="mx-auto max-w-2xl"
+				// After a pick, continue in the number field; otherwise the trigger.
+				finalFocus={() => {
+					const picked = pickedRef.current;
+					pickedRef.current = false;
+					return !(picked && focusInput());
+				}}
+			>
 				<DrawerHeader className="border-b px-5 pb-4 text-left">
 					<DrawerTitle>Choose your country</DrawerTitle>
 					<DrawerDescription>
@@ -110,6 +124,7 @@ function CountryDrawer() {
 								size="lg"
 								onClick={() => {
 									setCountry(country.iso2);
+									pickedRef.current = true;
 									setOpen(false);
 									setQuery("");
 								}}

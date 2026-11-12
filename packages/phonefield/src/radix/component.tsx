@@ -120,6 +120,13 @@ export namespace PhoneField {
 		disabled?: boolean;
 		/** The picker opens, but the selection cannot change. */
 		readOnly?: boolean;
+		/**
+		 * Moves focus to the phone input after a country is picked from the
+		 * list, so the user can type the number. Closing without picking
+		 * returns focus to the trigger.
+		 * @default true
+		 */
+		focusInputOnSelect?: boolean;
 	};
 
 	/** Default copy used by the country picker parts. */

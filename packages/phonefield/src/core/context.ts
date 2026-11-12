@@ -28,6 +28,11 @@ export type PhoneFieldCountryContextValue = {
 	setCountry: (country: PhoneFieldCountry) => void;
 	/** O(1) lookup in the available countries. */
 	getCountry: (iso2: string) => PhoneFieldCountry | undefined;
+	/**
+	 * Focuses the phone input with the caret at the end. Returns `false` when
+	 * no enabled input is mounted or focus did not move.
+	 */
+	focusInput: () => boolean;
 };
 
 /**
@@ -49,6 +54,8 @@ export type PhoneFieldStateContextValue = {
 /** The value and editing actions. Changes on every keystroke; only Input reads it. */
 export type PhoneFieldInputContextValue = {
 	value: PhoneFieldValue;
+	/** Holds the rendered `<input>` so Root can focus it. */
+	inputRef: React.RefObject<HTMLInputElement | null>;
 	setNumber: (number: string, editKind?: PhoneFieldEditKind) => boolean;
 	accepts: (number: string) => boolean;
 	rememberSelection: (selection: PhoneFieldInputSelection) => void;
@@ -108,6 +115,11 @@ export type UsePhoneFieldReturnValue = {
 	setCountry: (country: PhoneFieldCountryCode | (string & {})) => void;
 	/** Replace the number as if the user typed it. National or `+` international text. */
 	setNumber: (number: string) => void;
+	/**
+	 * Focus the phone input with the caret at the end, e.g. after a custom
+	 * picker closes. Returns `false` when no enabled input is mounted.
+	 */
+	focusInput: () => boolean;
 };
 
 /**
@@ -118,8 +130,13 @@ export function usePhoneField(): UsePhoneFieldReturnValue {
 	const countryContext = usePhoneFieldCountryContext("usePhoneField()");
 	const { state } = usePhoneFieldStateContext("usePhoneField()");
 	const { setNumber, value } = usePhoneFieldInputContext("usePhoneField()");
-	const { availableCountries, selectedCountry, setCountry, getCountry } =
-		countryContext;
+	const {
+		availableCountries,
+		selectedCountry,
+		setCountry,
+		getCountry,
+		focusInput,
+	} = countryContext;
 
 	// Actions keep their identity while the user types, so they are safe in
 	// effect dependencies and memoized children.
@@ -132,8 +149,9 @@ export function usePhoneField(): UsePhoneFieldReturnValue {
 			setNumber: (number: string) => {
 				setNumber(number, "replace");
 			},
+			focusInput,
 		}),
-		[getCountry, setCountry, setNumber],
+		[focusInput, getCountry, setCountry, setNumber],
 	);
 
 	return React.useMemo(

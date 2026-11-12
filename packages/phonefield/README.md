@@ -82,6 +82,8 @@ import { PhoneField } from "phonefield/react-aria";
 
 Library conventions carry through: Radix `Country` takes Popover props (`open`, `onOpenChange`, `modal`), React Aria `Country` takes Select props (`isOpen`, `onOpenChange`) and `CountryItem` takes `isDisabled`. In React Aria, Escape first clears a non-empty search, as `SearchField` does, then closes the popup.
 
+Picking a country moves focus to the phone input, with the caret after the digits already typed, so the user can go straight to the number. Closing the picker without picking (Escape, clicking outside) returns focus to the trigger, and typing on the closed trigger keeps it there. Pass `focusInputOnSelect={false}` to `Country` to always return focus to the trigger.
+
 The examples below use the Base UI entry.
 
 ## Labels and errors
@@ -171,7 +173,7 @@ Root's `onFocus` and `onBlur` describe the whole field: `onFocus` runs when focu
 
 ## Custom parts
 
-`usePhoneField()` reads and drives the nearest Root: `{ value, state, country, countries, setCountry, setNumber }`.
+`usePhoneField()` reads and drives the nearest Root: `{ value, state, country, countries, setCountry, setNumber, focusInput }`. Call `focusInput()` when a custom picker closes after a pick, to move focus to the number like the built-in picker does.
 
 ```tsx
 import { usePhoneField } from "phonefield";

@@ -43,9 +43,19 @@ function DefaultCountryAnatomy() {
 	);
 }
 
+/**
+ * Lets `CountryPopup` decide where focus goes on close: to the phone input
+ * after a country is picked, otherwise back to the trigger.
+ */
+const CountryFinalFocusContext = React.createContext<
+	(() => boolean) | undefined
+>(undefined);
+
 function CountryComponent({
 	children,
 	labels,
+	focusInputOnSelect = true,
+	onOpenChange,
 	...props
 }: PhoneField.CountryProps) {
 	const {
@@ -56,13 +66,28 @@ function CountryComponent({
 		disabled,
 		readOnly,
 		setCountry,
+		focusInput,
 	} = usePhoneFieldCountryContext();
+	const focusInputOnCloseRef = React.useRef(false);
+	const focusInputOnClose = React.useCallback(() => {
+		if (!focusInputOnCloseRef.current) return false;
+		focusInputOnCloseRef.current = false;
+		return focusInput();
+	}, [focusInput]);
 
 	return (
 		<Combobox.Root
 			autoHighlight
 			locale={locale}
 			{...props}
+			onOpenChange={(open, eventDetails) => {
+				// Picking a country closes with "item-press", by pointer or Enter.
+				if (open) focusInputOnCloseRef.current = false;
+				else if (focusInputOnSelect && eventDetails.reason === "item-press") {
+					focusInputOnCloseRef.current = true;
+				}
+				onOpenChange?.(open, eventDetails);
+			}}
 			disabled={disabled || props.disabled}
 			readOnly={readOnly || props.readOnly}
 			items={groups ?? availableCountries}
@@ -75,9 +100,11 @@ function CountryComponent({
 				if (next) setCountry(next);
 			}}
 		>
-			<PhoneFieldCountryLabelsContext.Provider value={labels ?? EMPTY_LABELS}>
-				{children ?? <DefaultCountryAnatomy />}
-			</PhoneFieldCountryLabelsContext.Provider>
+			<CountryFinalFocusContext.Provider value={focusInputOnClose}>
+				<PhoneFieldCountryLabelsContext.Provider value={labels ?? EMPTY_LABELS}>
+					{children ?? <DefaultCountryAnatomy />}
+				</PhoneFieldCountryLabelsContext.Provider>
+			</CountryFinalFocusContext.Provider>
 		</Combobox.Root>
 	);
 }
@@ -163,11 +190,22 @@ export const CountryPositioner = withRef(function CountryPositioner(
 	);
 });
 
-/** Popup container. */
+/**
+ * Popup container. After a country is picked, focus moves to the phone input
+ * on close; otherwise it returns to the trigger. Pass `finalFocus` to override.
+ */
 export const CountryPopup = withRef(function CountryPopup(
 	props: PhoneField.CountryPopupProps,
 ) {
-	return <Combobox.Popup data-slot="phone-field-country-popup" {...props} />;
+	const focusInputOnClose = React.useContext(CountryFinalFocusContext);
+	return (
+		<Combobox.Popup
+			data-slot="phone-field-country-popup"
+			// Returning false tells Base UI that focus is already handled.
+			finalFocus={() => !focusInputOnClose?.()}
+			{...props}
+		/>
+	);
 });
 
 /** Search box that filters by name, ISO2 code, or dial code. */

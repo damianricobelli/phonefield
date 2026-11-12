@@ -192,6 +192,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 	} = usePhoneFieldStateContext("PhoneField.Input");
 	const {
 		value,
+		inputRef: rootInputRef,
 		setNumber,
 		accepts,
 		rememberSelection,
@@ -219,8 +220,8 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 	);
 	const mergedRef = React.useCallback(
 		(element: HTMLInputElement | null) =>
-			mergeRefs(forwardedRef, inputRef)(element),
-		[forwardedRef],
+			mergeRefs(forwardedRef, inputRef, rootInputRef)(element),
+		[forwardedRef, rootInputRef],
 	);
 	const readSelection = React.useCallback(() => {
 		const element = inputRef.current;

@@ -79,6 +79,8 @@ type RadixCountryActionsContextValue = {
 	setOpen: (open: boolean) => void;
 	setQuery: (query: string) => void;
 	select: (country: PhoneFieldCountry) => void;
+	/** Focuses the phone input if the popup closed because a country was picked. */
+	focusInputOnClose: () => boolean;
 	highlight: HighlightStore;
 	listId: string;
 	listRef: React.RefObject<HTMLDivElement | null>;
@@ -163,6 +165,7 @@ function CountryComponent({
 	onOpenChange,
 	disabled: disabledProp,
 	readOnly: readOnlyProp,
+	focusInputOnSelect = true,
 	...props
 }: PhoneField.CountryProps) {
 	const {
@@ -172,6 +175,7 @@ function CountryComponent({
 		disabled: fieldDisabled,
 		readOnly: fieldReadOnly,
 		setCountry,
+		focusInput,
 	} = usePhoneFieldCountryContext();
 	const disabled = fieldDisabled || !!disabledProp;
 	const readOnly = fieldReadOnly || !!readOnlyProp;
@@ -184,9 +188,15 @@ function CountryComponent({
 	useIsomorphicLayoutEffect(() => {
 		onOpenChangeRef.current = onOpenChange;
 	});
+	const openRef = React.useRef(open);
+	useIsomorphicLayoutEffect(() => {
+		openRef.current = open;
+	});
+	const focusInputOnCloseRef = React.useRef(false);
 	const setOpen = React.useCallback(
 		(next: boolean) => {
 			if (next && disabled) return;
+			if (next) focusInputOnCloseRef.current = false;
 			setUncontrolledOpen(next);
 			onOpenChangeRef.current?.(next);
 			if (!next) setQuery("");
@@ -221,10 +231,19 @@ function CountryComponent({
 		(country: PhoneFieldCountry) => {
 			if (readOnly) return;
 			if (country.iso2 !== selectedCountry.iso2) setCountry(country);
+			// Typeahead on the closed trigger also selects; focus stays there.
+			if (openRef.current && focusInputOnSelect) {
+				focusInputOnCloseRef.current = true;
+			}
 			setOpen(false);
 		},
-		[readOnly, selectedCountry.iso2, setCountry, setOpen],
+		[focusInputOnSelect, readOnly, selectedCountry.iso2, setCountry, setOpen],
 	);
+	const focusInputOnClose = React.useCallback(() => {
+		if (!focusInputOnCloseRef.current) return false;
+		focusInputOnCloseRef.current = false;
+		return focusInput();
+	}, [focusInput]);
 
 	const state = React.useMemo<RadixCountryStateContextValue>(
 		() => ({ open, query, visibleGroups, isEmpty, disabled, readOnly }),
@@ -235,12 +254,13 @@ function CountryComponent({
 			setOpen,
 			setQuery,
 			select,
+			focusInputOnClose,
 			highlight,
 			listId,
 			listRef,
 			getItemId,
 		}),
-		[getItemId, highlight, listId, select, setOpen],
+		[focusInputOnClose, getItemId, highlight, listId, select, setOpen],
 	);
 
 	return (
@@ -392,11 +412,17 @@ export function CountryPortal(props: PhoneField.CountryPortalProps) {
 
 /**
  * Positioned popup container. Defaults to `side="bottom"`, `align="start"`,
- * `sideOffset={4}`. Focus moves to the search box when it opens.
+ * `sideOffset={4}`. Focus moves to the search box when it opens. On close it
+ * moves to the phone input after a country is picked, otherwise back to the
+ * trigger; call `event.preventDefault()` in `onCloseAutoFocus` to handle it yourself.
  */
-export const CountryContent = withRef(function CountryContent(
-	props: PhoneField.CountryContentProps,
-) {
+export const CountryContent = withRef(function CountryContent({
+	onCloseAutoFocus,
+	...props
+}: PhoneField.CountryContentProps) {
+	const { focusInputOnClose } = useRadixCountryActions(
+		"PhoneField.CountryContent",
+	);
 	return (
 		<Popover.Content
 			side="bottom"
@@ -404,6 +430,11 @@ export const CountryContent = withRef(function CountryContent(
 			sideOffset={4}
 			data-slot="phone-field-country-content"
 			{...props}
+			onCloseAutoFocus={(event) => {
+				onCloseAutoFocus?.(event);
+				if (event.defaultPrevented) return;
+				if (focusInputOnClose()) event.preventDefault();
+			}}
 		/>
 	);
 });
