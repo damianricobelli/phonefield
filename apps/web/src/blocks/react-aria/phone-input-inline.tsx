@@ -67,6 +67,7 @@ export function PhoneInputInline() {
 					</PhoneField.CountryPopover>
 				</PhoneField.Country>
 				<PhoneField.Input
+					data-slot="input-group-control"
 					render={(props) => <InputGroupInput {...props} />}
 					placeholder={(country) => getExampleNumber(country.iso2)}
 					className="h-full px-3"

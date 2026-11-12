@@ -25,6 +25,7 @@ export function PhoneInputPaste() {
 					<SelectedCountry />
 				</InputGroupAddon>
 				<PhoneField.Input
+					data-slot="input-group-control"
 					render={(props) => <InputGroupInput {...props} />}
 					placeholder="Try +54 11 4321 1234"
 					className="h-full px-3"

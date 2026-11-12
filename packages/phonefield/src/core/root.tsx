@@ -21,6 +21,7 @@ import {
 	toCountryGroups,
 	toFormValue,
 } from "../utils.js";
+import { useIsomorphicLayoutEffect } from "./compat.js";
 import {
 	PhoneFieldCountryContext,
 	type PhoneFieldCountryContextValue,
@@ -68,14 +69,30 @@ export type PhoneFieldRootOptions = {
 	required?: boolean;
 	/**
 	 * Marks the field invalid, e.g. for a server or form-library error. Automatic
-	 * validation still applies when `false`.
+	 * validation still applies when `false`, unless `autoInvalid` is `false`.
 	 */
 	invalid?: boolean;
+	/**
+	 * Marks the field invalid on its own once it is touched: an incomplete
+	 * number, or an empty required field. Set to `false` when a form library
+	 * owns validation, so only `invalid` marks the field invalid.
+	 * @default true
+	 */
+	autoInvalid?: boolean;
 };
 
-/** Props every adapter forwards to the rendered root element. */
+/** Focus callbacks for the whole field. */
 type RootFocusHandlers = {
+	/**
+	 * Called when focus enters the field. Moving between the input, the
+	 * country trigger, and the country popup does not call it again.
+	 */
 	onFocus?: React.FocusEventHandler<HTMLElement>;
+	/**
+	 * Called when focus leaves the field, after it has settled outside the
+	 * input, the country trigger, and the country popup. Runs after the event
+	 * is dispatched, so `event.currentTarget` is `null`; use `event.target`.
+	 */
 	onBlur?: React.FocusEventHandler<HTMLElement>;
 };
 
@@ -172,6 +189,7 @@ export function usePhoneFieldRoot(
 		readOnly = false,
 		required = false,
 		invalid,
+		autoInvalid = true,
 		onFocus,
 		onBlur,
 	} = options;
@@ -248,29 +266,38 @@ export function usePhoneFieldRoot(
 
 	// Focus can move between the input, the trigger, and the portaled popup.
 	// React focus events bubble through portals, so a blur followed by a focus
-	// in the same task means focus stayed inside the field.
+	// in the same task means focus stayed inside the field. onFocus and onBlur
+	// fire only when focus enters or leaves the whole field, like a native input.
 	const [focused, setFocused] = React.useState(false);
 	const [touched, setTouched] = React.useState(false);
+	const focusWithinRef = React.useRef(false);
 	const blurTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 	React.useEffect(() => () => clearTimeout(blurTimeoutRef.current), []);
+	const focusCallbacksRef = React.useRef({ onFocus, onBlur });
+	useIsomorphicLayoutEffect(() => {
+		focusCallbacksRef.current = { onFocus, onBlur };
+	});
 	const handleFocus = React.useCallback(
 		(event: React.FocusEvent<HTMLElement>) => {
-			onFocus?.(event);
 			clearTimeout(blurTimeoutRef.current);
+			if (focusWithinRef.current) return;
+			focusWithinRef.current = true;
 			setFocused(true);
+			focusCallbacksRef.current.onFocus?.(event);
 		},
-		[onFocus],
+		[],
 	);
 	const handleBlur = React.useCallback(
 		(event: React.FocusEvent<HTMLElement>) => {
-			onBlur?.(event);
 			clearTimeout(blurTimeoutRef.current);
 			blurTimeoutRef.current = setTimeout(() => {
+				focusWithinRef.current = false;
 				setFocused(false);
 				setTouched(true);
+				focusCallbacksRef.current.onBlur?.(event);
 			}, 0);
 		},
-		[onBlur],
+		[],
 	);
 
 	const markTouched = React.useCallback(() => setTouched(true), []);
@@ -283,7 +310,7 @@ export function usePhoneFieldRoot(
 	// Read the latest callback through a ref so actions keep their identity
 	// even when the parent passes an inline onValueChange.
 	const onValueChangeRef = React.useRef(onValueChange);
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		onValueChangeRef.current = onValueChange;
 	});
 	const applyValue = React.useCallback(
@@ -404,8 +431,9 @@ export function usePhoneFieldRoot(
 			country: normalizedValue.countryIso2,
 			valid: normalizedValue.isValid,
 			invalid:
-				invalid ||
-				(touched &&
+				!!invalid ||
+				(autoInvalid &&
+					touched &&
 					((filled && !normalizedValue.isValid) || (required && !filled))),
 			filled,
 			dirty,
@@ -416,6 +444,7 @@ export function usePhoneFieldRoot(
 			required,
 		}),
 		[
+			autoInvalid,
 			dirty,
 			disabled,
 			filled,
@@ -532,13 +561,13 @@ export function usePhoneFieldRoot(
 	) : null;
 
 	const provide = (element: React.ReactNode) => (
-		<PhoneFieldCountryContext value={countryContextValue}>
-			<PhoneFieldStateContext value={stateContextValue}>
-				<PhoneFieldInputContext value={inputContextValue}>
+		<PhoneFieldCountryContext.Provider value={countryContextValue}>
+			<PhoneFieldStateContext.Provider value={stateContextValue}>
+				<PhoneFieldInputContext.Provider value={inputContextValue}>
 					{element}
-				</PhoneFieldInputContext>
-			</PhoneFieldStateContext>
-		</PhoneFieldCountryContext>
+				</PhoneFieldInputContext.Provider>
+			</PhoneFieldStateContext.Provider>
+		</PhoneFieldCountryContext.Provider>
 	);
 
 	return {
@@ -571,6 +600,7 @@ export function splitRootProps<
 		readOnly,
 		required,
 		invalid,
+		autoInvalid,
 		onFocus,
 		onBlur,
 		...elementProps
@@ -592,6 +622,7 @@ export function splitRootProps<
 			readOnly,
 			required,
 			invalid,
+			autoInvalid,
 			onFocus,
 			onBlur,
 		},

@@ -36,6 +36,7 @@ export function PhoneInputFormData() {
 				>
 					<CountrySelect />
 					<PhoneField.Input
+						data-slot="input-group-control"
 						render={(props) => <InputGroupInput {...props} />}
 						placeholder={(country) => getExampleNumber(country.iso2)}
 						className="h-full px-3"

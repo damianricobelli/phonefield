@@ -152,7 +152,7 @@ const invalid = touched && !phone.isValid;
 ] as const satisfies readonly MigrationStep[];
 
 export const migrationChecklist = [
-	"@base-ui/react is 1.9 or newer",
+	"@base-ui/react is 1.2 or newer",
 	"No classNames, slotProps, positioning, or render* props on Country",
 	"No PhoneField.CountryClassNames, CountrySlotProps, or Render* types",
 	"CSS targets phone-field-country-search, not the old search slots",

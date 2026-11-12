@@ -1,5 +1,6 @@
 import React from "react";
 import type { PhoneFieldState } from "../types.js";
+import { useIsomorphicLayoutEffect } from "./compat.js";
 import { usePhoneFieldStateContext } from "./context.js";
 
 export type DataAttributes = { [key: `data-${string}`]: string | undefined };
@@ -34,7 +35,7 @@ export function useDescriptionId(idProp: string | undefined) {
 	);
 	const generatedId = React.useId();
 	const id = idProp ?? generatedId;
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		setDescriptionId(id);
 		return () => setDescriptionId(undefined);
 	}, [id, setDescriptionId]);
@@ -46,7 +47,7 @@ export function useErrorId(idProp: string | undefined) {
 	const { setErrorId } = usePhoneFieldStateContext("PhoneField.Error");
 	const generatedId = React.useId();
 	const id = idProp ?? generatedId;
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		setErrorId(id);
 		return () => setErrorId(undefined);
 	}, [id, setErrorId]);

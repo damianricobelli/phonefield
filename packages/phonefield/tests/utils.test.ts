@@ -275,6 +275,28 @@ describe("parsePhoneField / isValidPhoneField", () => {
 		expect(isValidPhoneField("123", { defaultCountry: "US" })).toBe(false);
 	});
 
+	it("validates source fields alone, like a form's default value", () => {
+		expect(
+			isValidPhoneField({ countryIso2: "US", nationalNumber: "2025550123" }),
+		).toBe(true);
+		expect(
+			isValidPhoneField({ countryIso2: "US", nationalNumber: "(202) 555" }),
+		).toBe(false);
+		expect(isValidPhoneField({ countryIso2: "US", nationalNumber: "" })).toBe(
+			false,
+		);
+		expect(
+			PhoneFieldUtils.isValid({
+				countryIso2: "AR",
+				nationalNumber: "11 4321-1234",
+			}),
+		).toBe(true);
+		expect(
+			PhoneFieldUtils.parse({ countryIso2: "US", nationalNumber: "2025550123" })
+				?.number,
+		).toBe("+12025550123");
+	});
+
 	it("invalidates values whose detected country differs from countryIso2", () => {
 		expect(
 			isValidPhoneField({

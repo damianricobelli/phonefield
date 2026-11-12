@@ -104,6 +104,7 @@ export function PhoneInputOtp() {
 								<span aria-hidden>🇺🇸</span> +1
 							</InputGroupAddon>
 							<PhoneField.Input
+								data-slot="input-group-control"
 								render={(props) => <InputGroupInput {...props} />}
 								id="otp-phone"
 								placeholder="(202) 555-0123"

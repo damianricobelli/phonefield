@@ -40,7 +40,7 @@ export function hasExplicitLabel(props: {
 
 /** Search copy, honoring `Country`'s `labels`. */
 export function useCountryLabels() {
-	const labels = React.use(PhoneFieldCountryLabelsContext);
+	const labels = React.useContext(PhoneFieldCountryLabelsContext);
 	return {
 		search: labels.search ?? DEFAULT_SEARCH_LABEL,
 		empty: labels.empty ?? DEFAULT_EMPTY_LABEL,

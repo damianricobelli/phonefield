@@ -1,7 +1,6 @@
 "use client";
 
-import type * as LabelPrimitive from "radix-ui/label";
-import type * as Popover from "radix-ui/popover";
+import type { Label as LabelPrimitive, Popover } from "radix-ui";
 import type React from "react";
 import type { PhoneFieldCountryLabels } from "../core/context.js";
 import type { PhoneFieldRootOptions } from "../core/root.js";
@@ -60,6 +59,12 @@ type AsChild = {
 	asChild?: boolean;
 };
 
+/**
+ * `ref` typed as `React.Ref`. React 18's `RefAttributes` also allows legacy
+ * string refs, which PhoneField cannot merge.
+ */
+type RefProp<T> = { ref?: React.Ref<T> };
+
 export namespace PhoneField {
 	/** Country descriptor: iso2, name, dialCode, flag. */
 	export type Country = PhoneFieldCountry;
@@ -89,7 +94,7 @@ export namespace PhoneField {
 	 * or `defaultValue`/`defaultCountry` for uncontrolled. Defaults are only read on mount.
 	 */
 	export type RootProps = Omit<
-		React.ComponentProps<"div">,
+		React.ComponentPropsWithRef<"div">,
 		"defaultValue" | "onChange"
 	> &
 		PhoneFieldRootOptions &
@@ -97,7 +102,7 @@ export namespace PhoneField {
 
 	/** Props for `PhoneField.Input`. The value is owned by `PhoneField.Root`. */
 	export type InputProps = Omit<
-		React.ComponentProps<"input">,
+		React.ComponentPropsWithRef<"input">,
 		"defaultValue" | "name" | "value" | "placeholder"
 	> &
 		AsChild & {
@@ -120,47 +125,47 @@ export namespace PhoneField {
 	/** Default copy used by the country picker parts. */
 	export type CountryLabels = PhoneFieldCountryLabels;
 
-	export type GroupProps = React.ComponentProps<"div"> & AsChild;
+	export type GroupProps = React.ComponentPropsWithRef<"div"> & AsChild;
 	export type LabelProps = Omit<
-		React.ComponentProps<typeof LabelPrimitive.Root>,
+		React.ComponentPropsWithRef<typeof LabelPrimitive.Root>,
 		"htmlFor"
 	>;
-	export type DescriptionProps = React.ComponentProps<"p"> & AsChild;
-	export type ErrorProps = Omit<React.ComponentProps<"p">, "children"> &
+	export type DescriptionProps = React.ComponentPropsWithRef<"p"> & AsChild;
+	export type ErrorProps = Omit<React.ComponentPropsWithRef<"p">, "children"> &
 		AsChild & {
 			/** Message, or a function of the field state. Defaults to a generic English message. */
 			children?: React.ReactNode | ((state: State) => React.ReactNode);
 		};
 
 	export type CountryTriggerProps = Popover.PopoverTriggerProps &
-		React.RefAttributes<HTMLButtonElement>;
+		RefProp<HTMLButtonElement>;
 	export type CountryValueProps = {
 		/** Content, or a function of the selected country. Defaults to flag and dial code. */
 		children?: React.ReactNode | ((country: Country) => React.ReactNode);
 	};
-	export type CountryIconProps = React.ComponentProps<"span"> & AsChild;
+	export type CountryIconProps = React.ComponentPropsWithRef<"span"> & AsChild;
 	export type CountryPortalProps = Popover.PopoverPortalProps;
 	export type CountryContentProps = Popover.PopoverContentProps &
-		React.RefAttributes<HTMLDivElement>;
+		RefProp<HTMLDivElement>;
 	export type CountrySearchProps = Omit<
-		React.ComponentProps<"input">,
+		React.ComponentPropsWithRef<"input">,
 		"value" | "defaultValue"
 	> &
 		AsChild;
-	export type CountryEmptyProps = React.ComponentProps<"div"> & AsChild;
+	export type CountryEmptyProps = React.ComponentPropsWithRef<"div"> & AsChild;
 	export type CountryListProps = Omit<
-		React.ComponentProps<"div">,
+		React.ComponentPropsWithRef<"div">,
 		"children"
 	> & {
 		/** Renders each country. Defaults to `<PhoneField.CountryItem country={country} />`. */
 		children?: (country: Country) => React.ReactNode;
 	};
-	export type CountryItemProps = React.ComponentProps<"div"> &
+	export type CountryItemProps = React.ComponentPropsWithRef<"div"> &
 		AsChild & {
 			country: Country;
 			/** Skipped by keyboard navigation and cannot be selected. */
 			disabled?: boolean;
 		};
-	export type CountryItemIndicatorProps = React.ComponentProps<"span"> &
+	export type CountryItemIndicatorProps = React.ComponentPropsWithRef<"span"> &
 		AsChild;
 }

@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { PhoneField } from "phonefield/radix";
+import { isValid, parse } from "phonefield/utils";
 import * as React from "react";
 import * as z from "zod";
 import {
@@ -15,25 +16,15 @@ import {
 	InputGroupInput,
 } from "@/components/ui/input-group";
 
-const emptyPhone: PhoneField.Value = {
+const emptyPhone: PhoneField.InputValue = {
 	countryIso2: "US",
-	countryDialCode: "+1",
 	nationalNumber: "",
-	e164: null,
-	isValid: false,
 };
 
 const phoneSchema = z.object({
-	phone: z.custom<PhoneField.Value>(
-		(value) =>
-			Boolean(
-				value &&
-					typeof value === "object" &&
-					"isValid" in value &&
-					value.isValid,
-			),
-		"Enter a valid phone number.",
-	),
+	phone: z
+		.custom<PhoneField.InputValue>()
+		.refine((phone) => isValid(phone), "Enter a valid phone number."),
 });
 
 export function PhoneInputTanStackForm() {
@@ -41,7 +32,7 @@ export function PhoneInputTanStackForm() {
 	const form = useForm({
 		defaultValues: { phone: emptyPhone },
 		validators: { onChange: phoneSchema },
-		onSubmit: ({ value }) => setSubmitted(value.phone.e164),
+		onSubmit: ({ value }) => setSubmitted(parse(value.phone)?.number ?? null),
 	});
 
 	return (
@@ -60,7 +51,9 @@ export function PhoneInputTanStackForm() {
 						countries={["US"]}
 						value={field.state.value}
 						onValueChange={field.handleChange}
+						onBlur={field.handleBlur}
 						invalid={!field.state.meta.isValid}
+						autoInvalid={false}
 					>
 						<Field>
 							<PhoneField.Label
@@ -78,8 +71,8 @@ export function PhoneInputTanStackForm() {
 										<span aria-hidden>🇺🇸</span> +1
 									</InputGroupAddon>
 									<PhoneField.Input
+										data-slot="input-group-control"
 										asChild
-										onBlur={field.handleBlur}
 										placeholder="(202) 555-0123"
 										className="h-full px-3"
 									>

@@ -1,6 +1,7 @@
 import { Group as AriaGroup } from "react-aria-components/Group";
 import { Label as AriaLabel } from "react-aria-components/Label";
 import { Text } from "react-aria-components/Text";
+import { withRef } from "../core/compat.js";
 import { usePhoneFieldStateContext } from "../core/context.js";
 import {
 	getStateDataAttributes,
@@ -16,7 +17,7 @@ import type { PhoneField } from "./component.js";
  * Render props receive Group's state (`isHovered`, `isFocusWithin`, …) and the
  * field state (`valid`, `invalid`, `filled`, …).
  */
-export function Group({
+export const Group = withRef(function Group({
 	className,
 	style,
 	children,
@@ -25,6 +26,7 @@ export function Group({
 	const { state } = usePhoneFieldStateContext("PhoneField.Group");
 	return (
 		<AriaGroup
+			data-slot="phone-field-group"
 			{...props}
 			{...getStateDataAttributes(state)}
 			isDisabled={state.disabled}
@@ -40,32 +42,35 @@ export function Group({
 					? (renderProps) => style({ ...renderProps, ...state })
 					: style
 			}
-			data-slot="phone-field-group"
 		>
 			{typeof children === "function"
 				? (renderProps) => children({ ...renderProps, ...state })
 				: children}
 		</AriaGroup>
 	);
-}
+});
 
 /** React Aria Label for the phone input. `htmlFor` follows the input's id automatically. */
-export function Label({ className, style, ...props }: PhoneField.LabelProps) {
+export const Label = withRef(function Label({
+	className,
+	style,
+	...props
+}: PhoneField.LabelProps) {
 	const { state, controlId } = usePhoneFieldStateContext("PhoneField.Label");
 	return (
 		<AriaLabel
+			data-slot="phone-field-label"
 			{...props}
 			{...getStateDataAttributes(state)}
 			className={resolve(className, state)}
 			style={resolve(style, state)}
 			htmlFor={controlId}
-			data-slot="phone-field-label"
 		/>
 	);
-}
+});
 
 /** Help text, linked to the input with `aria-describedby`. */
-export function Description({
+export const Description = withRef(function Description({
 	className,
 	style,
 	id: idProp,
@@ -76,27 +81,29 @@ export function Description({
 	return (
 		<Text
 			elementType="p"
+			data-slot="phone-field-description"
 			{...props}
 			{...getStateDataAttributes(state)}
 			id={id}
 			className={resolve(className, state)}
 			style={resolve(style, state)}
-			data-slot="phone-field-description"
 		/>
 	);
-}
+});
 
 /**
  * Error message, rendered only while the field is invalid and linked to the
  * input with `aria-describedby`. Pass a function child to pick the message
  * from the field state.
  */
-export function ErrorMessage(props: PhoneField.ErrorProps) {
+export const ErrorMessage = withRef(function ErrorMessage(
+	props: PhoneField.ErrorProps,
+) {
 	const { state } = usePhoneFieldStateContext("PhoneField.Error");
 	return state.invalid ? <VisibleError {...props} /> : null;
-}
+});
 
-function VisibleError({
+const VisibleError = withRef(function VisibleError({
 	className,
 	style,
 	id: idProp,
@@ -108,14 +115,14 @@ function VisibleError({
 	return (
 		<Text
 			elementType="p"
+			data-slot="phone-field-error"
 			{...props}
 			{...getStateDataAttributes(state)}
 			id={id}
 			className={resolve(className, state)}
 			style={resolve(style, state)}
-			data-slot="phone-field-error"
 		>
 			{renderErrorChildren(children, state)}
 		</Text>
 	);
-}
+});

@@ -143,7 +143,28 @@ export const rootProperties = [
 		type: "boolean",
 		defaultValue: "false",
 		description:
-			"Marks the field invalid, e.g. invalid={!!serverError}. Automatic validation still applies when false.",
+			"Marks the field invalid, e.g. invalid={!!serverError}. Automatic validation still applies when false, unless autoInvalid is false.",
+	},
+	{
+		name: "autoInvalid",
+		type: "boolean",
+		defaultValue: "true",
+		description:
+			"Marks the field invalid once touched when the number is incomplete, or required and empty. Set to false when a form library owns validation, so only invalid applies.",
+	},
+	{
+		name: "onFocus",
+		type: "(event: FocusEvent) => void",
+		defaultValue: "-",
+		description:
+			"Called when focus enters the field. Moving between the input, the trigger, and the popup does not call it again.",
+	},
+	{
+		name: "onBlur",
+		type: "(event: FocusEvent) => void",
+		defaultValue: "-",
+		description:
+			"Called once focus settles outside the input, the trigger, and the popup, e.g. onBlur={field.onBlur}. Runs after dispatch: read event.target.",
 	},
 	{
 		name: "className",
@@ -192,7 +213,7 @@ export const rootStateAttributes = [
 		key: "invalid",
 		attribute: "data-invalid",
 		description:
-			"Touched and the number is incomplete or invalid, or required and empty. Also set by the invalid prop.",
+			"Touched and the number is incomplete or invalid, or required and empty (unless autoInvalid is false). Also set by the invalid prop.",
 	},
 	{
 		key: "filled",
@@ -539,18 +560,18 @@ export const utilityProperties = [
 	{
 		key: "parse",
 		name: "parse(value, options?)",
-		type: "(string | Value, ParseOptions?) => PhoneNumber | undefined",
+		type: "(string | Value | InputValue, ParseOptions?) => PhoneNumber | undefined",
 		defaultValue: "-",
 		description:
-			"Parse a strict string or Value into libphonenumber's PhoneNumber.",
+			"Parse a strict string, or a value's countryIso2 and nationalNumber, into libphonenumber's PhoneNumber.",
 	},
 	{
 		key: "isValid",
 		name: "isValid(value, options?)",
-		type: "(string | Value, ParseOptions?) => boolean",
+		type: "(string | Value | InputValue, ParseOptions?) => boolean",
 		defaultValue: "-",
 		description:
-			"Validate a strict string, or a Value against its selected country.",
+			"Validate a strict string, or a Value or { countryIso2, nationalNumber } against its selected country. Always revalidates.",
 	},
 	{
 		key: "buildValue",

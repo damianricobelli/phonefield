@@ -51,7 +51,12 @@ function StateField({
 					<InputGroupAddon align="inline-start" className="pr-2">
 						<span aria-hidden>🇺🇸</span> +1
 					</InputGroupAddon>
-					<PhoneField.Input asChild id={id} className="h-full px-3 text-sm">
+					<PhoneField.Input
+						data-slot="input-group-control"
+						asChild
+						id={id}
+						className="h-full px-3 text-sm"
+					>
 						<InputGroupInput />
 					</PhoneField.Input>
 					{state === "loading" && (

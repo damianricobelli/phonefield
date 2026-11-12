@@ -1,5 +1,25 @@
 # Migration guide
 
+## v2.1 to v2.2
+
+No code changes are required. Version 2.2 widens support and fixes how PhoneField composes with design systems and form libraries.
+
+### Wider support
+
+- React and React DOM `>=18 <20`. Every part accepts `ref` on React 18 too.
+- `@base-ui/react >=1.2`, `react-aria-components >=1.18`, `radix-ui >=1.1`. `phonefield/radix` now imports from the `radix-ui` root, which every 1.x version publishes; the `radix-ui/*` subpaths it used before exist only from 1.7.
+- With `@base-ui/react` older than 1.8, Base UI keeps a read-only picker closed. The selection never changes while read-only.
+
+### Behavior changes
+
+- **Root `onFocus` and `onBlur` describe the whole field.** They used to run on every focus move inside the field, so moving from the input to the country picker called `onBlur`. Now `onFocus` runs when focus enters the field and `onBlur` after it settles outside the input, the trigger, and the popup. `onBlur` runs after the event is dispatched: read `event.target`, not `event.currentTarget`. Put `onBlur` on `Input` for the previous per-element behavior.
+- **A `data-slot` you pass wins.** PhoneField used to overwrite it. Components composed with `render` or `asChild` still receive PhoneField's slot as a prop unless you set one on them, for example `render={<InputGroupInput data-slot="input-group-control" />}`.
+
+### New
+
+- `autoInvalid={false}` on Root turns off automatic validation, so only `invalid` marks the field invalid. Use it when a form library owns validation.
+- `parse` and `isValid` accept `{ countryIso2, nationalNumber }` as well as a full `PhoneField.Value`.
+
 ## v1 to v2
 
 Version 2 replaces `PhoneField.Country`'s configuration props with composable parts, and builds field state, labels, errors, and form submit/reset handling into the field. The value model and FormData payload are unchanged, so no phone data migration is required.

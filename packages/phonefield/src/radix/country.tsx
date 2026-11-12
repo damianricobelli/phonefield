@@ -1,6 +1,6 @@
-import * as Popover from "radix-ui/popover";
-import * as Slot from "radix-ui/slot";
+import { Popover, Slot } from "radix-ui";
 import React from "react";
+import { useIsomorphicLayoutEffect, withRef } from "../core/compat.js";
 import {
 	PhoneFieldCountryLabelsContext,
 	usePhoneFieldCountryContext,
@@ -91,7 +91,7 @@ const RadixCountryActionsContext =
 	React.createContext<RadixCountryActionsContextValue | null>(null);
 
 function useRadixCountryState(part: string) {
-	const context = React.use(RadixCountryStateContext);
+	const context = React.useContext(RadixCountryStateContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Country>.`);
 	}
@@ -99,7 +99,7 @@ function useRadixCountryState(part: string) {
 }
 
 function useRadixCountryActions(part: string) {
-	const context = React.use(RadixCountryActionsContext);
+	const context = React.useContext(RadixCountryActionsContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Country>.`);
 	}
@@ -181,7 +181,7 @@ function CountryComponent({
 	const [query, setQuery] = React.useState("");
 	const [highlight] = React.useState(createHighlightStore);
 	const onOpenChangeRef = React.useRef(onOpenChange);
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		onOpenChangeRef.current = onOpenChange;
 	});
 	const setOpen = React.useCallback(
@@ -245,13 +245,15 @@ function CountryComponent({
 
 	return (
 		<Popover.Root {...props} open={open} onOpenChange={setOpen}>
-			<RadixCountryActionsContext value={actions}>
-				<RadixCountryStateContext value={state}>
-					<PhoneFieldCountryLabelsContext value={labels ?? EMPTY_LABELS}>
+			<RadixCountryActionsContext.Provider value={actions}>
+				<RadixCountryStateContext.Provider value={state}>
+					<PhoneFieldCountryLabelsContext.Provider
+						value={labels ?? EMPTY_LABELS}
+					>
 						{children ?? <DefaultCountryAnatomy />}
-					</PhoneFieldCountryLabelsContext>
-				</RadixCountryStateContext>
-			</RadixCountryActionsContext>
+					</PhoneFieldCountryLabelsContext.Provider>
+				</RadixCountryStateContext.Provider>
+			</RadixCountryActionsContext.Provider>
 		</Popover.Root>
 	);
 }
@@ -266,7 +268,7 @@ export const Country = React.memo(CountryComponent);
  * Button that opens the picker. Defaults to the selected flag, dial code, and
  * an icon. Typing on the closed trigger selects a country by name.
  */
-export function CountryTrigger({
+export const CountryTrigger = withRef(function CountryTrigger({
 	children,
 	onKeyDown,
 	...props
@@ -324,8 +326,8 @@ export function CountryTrigger({
 			disabled={disabled}
 			data-disabled={disabled ? "" : undefined}
 			data-readonly={readOnly ? "" : undefined}
-			{...props}
 			data-slot="phone-field-country-trigger"
+			{...props}
 			onKeyDown={(event) => {
 				onKeyDown?.(event);
 				if (event.defaultPrevented) return;
@@ -354,7 +356,7 @@ export function CountryTrigger({
 			)}
 		</Popover.Trigger>
 	);
-}
+});
 
 /** Selected country text. Pass a function child to render it yourself. */
 export function CountryValue({ children }: PhoneField.CountryValueProps) {
@@ -366,7 +368,7 @@ export function CountryValue({ children }: PhoneField.CountryValueProps) {
 }
 
 /** Decorative trigger icon. Defaults to an up/down chevron. */
-export function CountryIcon({
+export const CountryIcon = withRef(function CountryIcon({
 	asChild,
 	children,
 	...props
@@ -375,13 +377,13 @@ export function CountryIcon({
 	return (
 		<Component
 			aria-hidden="true"
-			{...props}
 			data-slot="phone-field-country-icon"
+			{...props}
 		>
 			{children ?? <ChevronUpDownIcon />}
 		</Component>
 	);
-}
+});
 
 /** Portals the content to `document.body`. */
 export function CountryPortal(props: PhoneField.CountryPortalProps) {
@@ -392,17 +394,19 @@ export function CountryPortal(props: PhoneField.CountryPortalProps) {
  * Positioned popup container. Defaults to `side="bottom"`, `align="start"`,
  * `sideOffset={4}`. Focus moves to the search box when it opens.
  */
-export function CountryContent(props: PhoneField.CountryContentProps) {
+export const CountryContent = withRef(function CountryContent(
+	props: PhoneField.CountryContentProps,
+) {
 	return (
 		<Popover.Content
 			side="bottom"
 			align="start"
 			sideOffset={4}
-			{...props}
 			data-slot="phone-field-country-content"
+			{...props}
 		/>
 	);
-}
+});
 
 function moveHighlight(
 	{ highlight, listRef }: RadixCountryActionsContextValue,
@@ -427,7 +431,7 @@ function moveHighlight(
 }
 
 /** Search box that filters by name, ISO2 code, or dial code. */
-export function CountrySearch({
+export const CountrySearch = withRef(function CountrySearch({
 	asChild,
 	placeholder: placeholderProp,
 	onChange,
@@ -459,9 +463,9 @@ export function CountrySearch({
 			aria-activedescendant={highlighted ? getItemId(highlighted) : undefined}
 			placeholder={placeholder}
 			aria-label={props["aria-labelledby"] ? undefined : placeholder}
+			data-slot="phone-field-country-search"
 			{...props}
 			value={query}
-			data-slot="phone-field-country-search"
 			onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
 				onChange?.(event);
 				setQuery(event.currentTarget.value);
@@ -503,10 +507,10 @@ export function CountrySearch({
 			}}
 		/>
 	);
-}
+});
 
 /** Shown when the search has no matches. Announced politely to screen readers. */
-export function CountryEmpty({
+export const CountryEmpty = withRef(function CountryEmpty({
 	asChild,
 	children,
 	...props
@@ -519,20 +523,20 @@ export function CountryEmpty({
 			role="status"
 			aria-live="polite"
 			aria-atomic="true"
-			{...props}
 			data-slot="phone-field-country-empty"
+			{...props}
 		>
 			{isEmpty ? (children ?? labels.empty) : null}
 		</Component>
 	);
-}
+});
 
 /**
  * Filtered country list. Pass a function child to render each country; keys
  * are handled for you. With `preferredCountries`, pinned countries render in
  * a separate `data-slot="phone-field-country-group"` with `data-preferred`.
  */
-export function CountryList({
+export const CountryList = withRef(function CountryList({
 	children,
 	ref,
 	...props
@@ -554,7 +558,7 @@ export function CountryList({
 	// On open, highlight the selected country and bring it into view. The list
 	// mounts each time the content opens.
 	const didHighlightRef = React.useRef(false);
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (didHighlightRef.current) return;
 		didHighlightRef.current = true;
 		const list = listRef.current;
@@ -568,7 +572,7 @@ export function CountryList({
 
 	// While searching, highlight the first match.
 	const previousQueryRef = React.useRef(query);
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (previousQueryRef.current === query) return;
 		previousQueryRef.current = query;
 		const first = getOptions(listRef.current)[0]?.dataset.country ?? null;
@@ -586,10 +590,10 @@ export function CountryList({
 		<div
 			role="listbox"
 			tabIndex={-1}
+			data-slot="phone-field-country-list"
 			{...props}
 			ref={mergedRef}
 			id={listId}
-			data-slot="phone-field-country-list"
 			data-empty={isEmpty ? "" : undefined}
 		>
 			{groups
@@ -607,10 +611,10 @@ export function CountryList({
 				: visibleGroups[0]?.items.map(renderCountry)}
 		</div>
 	);
-}
+});
 
 /** One selectable country. Defaults to flag, name, and dial code. */
-export function CountryItem({
+export const CountryItem = withRef(function CountryItem({
 	asChild,
 	country,
 	disabled = false,
@@ -631,14 +635,14 @@ export function CountryItem({
 	const itemContext = React.useMemo(() => ({ selected }), [selected]);
 	const Component = asChild ? Slot.Root : "div";
 	return (
-		<ItemContext value={itemContext}>
+		<ItemContext.Provider value={itemContext}>
 			<Component
 				role="option"
+				data-slot="phone-field-country-item"
 				{...props}
 				id={getItemId(country.iso2)}
 				aria-selected={selected}
 				aria-disabled={disabled || undefined}
-				data-slot="phone-field-country-item"
 				data-country={country.iso2}
 				data-state={selected ? "checked" : "unchecked"}
 				data-selected={selected ? "" : undefined}
@@ -660,17 +664,17 @@ export function CountryItem({
 			>
 				{children ?? getCountryItemText(country)}
 			</Component>
-		</ItemContext>
+		</ItemContext.Provider>
 	);
-}
+});
 
 /** Rendered inside an item only while it is selected. Defaults to a check mark. */
-export function CountryItemIndicator({
+export const CountryItemIndicator = withRef(function CountryItemIndicator({
 	asChild,
 	children,
 	...props
 }: PhoneField.CountryItemIndicatorProps) {
-	const item = React.use(ItemContext);
+	const item = React.useContext(ItemContext);
 	if (!item) {
 		throw new Error(
 			"PhoneField.CountryItemIndicator must be used inside <PhoneField.CountryItem>.",
@@ -681,10 +685,10 @@ export function CountryItemIndicator({
 	return (
 		<Component
 			aria-hidden="true"
-			{...props}
 			data-slot="phone-field-country-item-indicator"
+			{...props}
 		>
 			{children ?? <CheckIcon />}
 		</Component>
 	);
-}
+});

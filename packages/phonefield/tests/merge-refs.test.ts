@@ -12,7 +12,7 @@ describe("mergeRefs", () => {
 		const cleanup = mergedRef(input);
 		expect(objectRef.current).toBe(input);
 		expect(cleanup).toBeTypeOf("function");
-		if (typeof cleanup === "function") cleanup();
+		cleanup();
 
 		expect(cleanupRef).toHaveBeenCalledTimes(1);
 		expect(callbackRef).toHaveBeenCalledTimes(1);
@@ -24,7 +24,7 @@ describe("mergeRefs", () => {
 		const cleanup = mergeRefs<HTMLInputElement>(callbackRef)(
 			{} as HTMLInputElement,
 		);
-		if (typeof cleanup === "function") cleanup();
+		cleanup();
 		expect(callbackRef).toHaveBeenLastCalledWith(null);
 	});
 });

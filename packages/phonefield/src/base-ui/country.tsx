@@ -1,5 +1,6 @@
 import { Combobox } from "@base-ui/react/combobox";
 import React from "react";
+import { withRef } from "../core/compat.js";
 import {
 	PhoneFieldCountryLabelsContext,
 	usePhoneFieldCountryContext,
@@ -74,9 +75,9 @@ function CountryComponent({
 				if (next) setCountry(next);
 			}}
 		>
-			<PhoneFieldCountryLabelsContext value={labels ?? EMPTY_LABELS}>
+			<PhoneFieldCountryLabelsContext.Provider value={labels ?? EMPTY_LABELS}>
 				{children ?? <DefaultCountryAnatomy />}
-			</PhoneFieldCountryLabelsContext>
+			</PhoneFieldCountryLabelsContext.Provider>
 		</Combobox.Root>
 	);
 }
@@ -88,7 +89,7 @@ function CountryComponent({
 export const Country = React.memo(CountryComponent);
 
 /** Button that opens the picker. Defaults to the selected flag, dial code, and an icon. */
-export function CountryTrigger({
+export const CountryTrigger = withRef(function CountryTrigger({
 	children,
 	...props
 }: PhoneField.CountryTriggerProps) {
@@ -102,8 +103,8 @@ export function CountryTrigger({
 					? undefined
 					: getCountryTriggerLabel(selectedCountry)
 			}
-			{...props}
 			data-slot="phone-field-country-trigger"
+			{...props}
 		>
 			{children ?? (
 				<>
@@ -113,7 +114,7 @@ export function CountryTrigger({
 			)}
 		</Combobox.Trigger>
 	);
-}
+});
 
 /** Selected country text. Pass a function child to render it yourself. */
 export function CountryValue({ children }: PhoneField.CountryValueProps) {
@@ -129,42 +130,48 @@ export function CountryValue({ children }: PhoneField.CountryValueProps) {
 }
 
 /** Decorative trigger icon. Defaults to an up/down chevron. */
-export function CountryIcon({
+export const CountryIcon = withRef(function CountryIcon({
 	children,
 	...props
 }: PhoneField.CountryIconProps) {
 	return (
-		<Combobox.Icon {...props} data-slot="phone-field-country-icon">
+		<Combobox.Icon data-slot="phone-field-country-icon" {...props}>
 			{children ?? <ChevronUpDownIcon />}
 		</Combobox.Icon>
 	);
-}
+});
 
 /** Portals the popup to `document.body`. */
-export function CountryPortal(props: PhoneField.CountryPortalProps) {
+export const CountryPortal = withRef(function CountryPortal(
+	props: PhoneField.CountryPortalProps,
+) {
 	return <Combobox.Portal {...props} />;
-}
+});
 
 /** Positions the popup. Defaults to `side="bottom"`, `align="start"`, `sideOffset={4}`. */
-export function CountryPositioner(props: PhoneField.CountryPositionerProps) {
+export const CountryPositioner = withRef(function CountryPositioner(
+	props: PhoneField.CountryPositionerProps,
+) {
 	return (
 		<Combobox.Positioner
 			side="bottom"
 			align="start"
 			sideOffset={4}
-			{...props}
 			data-slot="phone-field-country-positioner"
+			{...props}
 		/>
 	);
-}
+});
 
 /** Popup container. */
-export function CountryPopup(props: PhoneField.CountryPopupProps) {
-	return <Combobox.Popup {...props} data-slot="phone-field-country-popup" />;
-}
+export const CountryPopup = withRef(function CountryPopup(
+	props: PhoneField.CountryPopupProps,
+) {
+	return <Combobox.Popup data-slot="phone-field-country-popup" {...props} />;
+});
 
 /** Search box that filters by name, ISO2 code, or dial code. */
-export function CountrySearch({
+export const CountrySearch = withRef(function CountrySearch({
 	placeholder: placeholderProp,
 	...props
 }: PhoneField.CountrySearchProps) {
@@ -174,31 +181,31 @@ export function CountrySearch({
 		<Combobox.Input
 			placeholder={placeholder}
 			aria-label={props["aria-labelledby"] ? undefined : placeholder}
-			{...props}
 			data-slot="phone-field-country-search"
+			{...props}
 		/>
 	);
-}
+});
 
 /** Shown when the search has no matches. */
-export function CountryEmpty({
+export const CountryEmpty = withRef(function CountryEmpty({
 	children,
 	...props
 }: PhoneField.CountryEmptyProps) {
 	const labels = useCountryLabels();
 	return (
-		<Combobox.Empty {...props} data-slot="phone-field-country-empty">
+		<Combobox.Empty data-slot="phone-field-country-empty" {...props}>
 			{children ?? labels.empty}
 		</Combobox.Empty>
 	);
-}
+});
 
 /**
  * Filtered country list. Pass a function child to render each country; keys
  * are handled for you. With `preferredCountries`, pinned countries render in
  * a separate `data-slot="phone-field-country-group"` with `data-preferred`.
  */
-export function CountryList({
+export const CountryList = withRef(function CountryList({
 	children,
 	...props
 }: PhoneField.CountryListProps) {
@@ -210,7 +217,7 @@ export function CountryList({
 	);
 
 	return (
-		<Combobox.List {...props} data-slot="phone-field-country-list">
+		<Combobox.List data-slot="phone-field-country-list" {...props}>
 			{groups
 				? (group: { id: "preferred" | "all"; items: PhoneField.Country[] }) => (
 						<Combobox.Group
@@ -225,37 +232,37 @@ export function CountryList({
 				: renderCountry}
 		</Combobox.List>
 	);
-}
+});
 
 /** One selectable country. Defaults to flag, name, and dial code. */
-export function CountryItem({
+export const CountryItem = withRef(function CountryItem({
 	country,
 	children,
 	...props
 }: PhoneField.CountryItemProps) {
 	return (
 		<Combobox.Item
+			data-slot="phone-field-country-item"
 			{...props}
 			value={country}
-			data-slot="phone-field-country-item"
 			data-country={country.iso2}
 		>
 			{children ?? getCountryItemText(country)}
 		</Combobox.Item>
 	);
-}
+});
 
 /** Rendered inside an item only while it is selected. Defaults to a check mark. */
-export function CountryItemIndicator({
+export const CountryItemIndicator = withRef(function CountryItemIndicator({
 	children,
 	...props
 }: PhoneField.CountryItemIndicatorProps) {
 	return (
 		<Combobox.ItemIndicator
-			{...props}
 			data-slot="phone-field-country-item-indicator"
+			{...props}
 		>
 			{children ?? <CheckIcon />}
 		</Combobox.ItemIndicator>
 	);
-}
+});
