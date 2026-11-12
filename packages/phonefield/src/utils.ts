@@ -1,4 +1,4 @@
-import { PhoneNumber as CorePhoneNumber } from "libphonenumber-js/core";
+import { PhoneNumber as CorePhoneNumber } from "libphonenumber-js/core/es6";
 import {
 	AsYouType,
 	type CountryCode,
