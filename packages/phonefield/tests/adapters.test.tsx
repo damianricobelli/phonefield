@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { version as baseUiVersion } from "@base-ui/react/package.json";
 import {
 	act,
 	cleanup,
@@ -20,6 +21,11 @@ afterEach(() => {
 });
 
 type AnyPhoneField = typeof BaseUI.PhoneField;
+
+/** Base UI opens a read-only Combobox since 1.8 (mui/base-ui#5541). */
+const baseUiOpensReadOnly =
+	Number(baseUiVersion.split(".")[0]) > 1 ||
+	Number(baseUiVersion.split(".")[1]) >= 8;
 
 type Adapter = {
 	name: string;
@@ -141,6 +147,11 @@ function UseArgentina() {
 			{state.valid ? "valid" : "invalid"}
 		</button>
 	);
+}
+
+/** Like shadcn/ui's InputGroupInput: its own slot, then the caller's props. */
+function DesignSystemInput(props: React.ComponentProps<"input">) {
+	return <input data-slot="design-system-input" {...props} />;
 }
 
 async function flush() {
@@ -390,6 +401,131 @@ describe.each(adapters)("$name adapter", (adapter) => {
 		).toBeNull();
 	});
 
+	it("keeps the consumer's data-slot on every part", () => {
+		const { container } = render(
+			<PhoneField.Root data-slot="field">
+				<PhoneField.Label data-slot="field-label">Phone</PhoneField.Label>
+				<PhoneField.Group data-slot="input-group">
+					<PhoneField.Country>
+						<PhoneField.CountryTrigger data-slot="input-group-button" />
+					</PhoneField.Country>
+					<PhoneField.Input data-slot="input-group-control" />
+				</PhoneField.Group>
+				<PhoneField.Description data-slot="field-description">
+					Help
+				</PhoneField.Description>
+			</PhoneField.Root>,
+		);
+		for (const slot of [
+			"field",
+			"field-label",
+			"input-group",
+			"input-group-button",
+			"input-group-control",
+			"field-description",
+		]) {
+			expect(
+				container.querySelector(`[data-slot="${slot}"]`),
+				`Expected ${slot} to win over PhoneField's slot`,
+			).toBeTruthy();
+		}
+		for (const slot of [
+			"phone-field",
+			"phone-field-label",
+			"phone-field-group",
+			"phone-field-country-trigger",
+			"phone-field-input",
+			"phone-field-description",
+		]) {
+			expect(container.querySelector(`[data-slot="${slot}"]`)).toBeNull();
+		}
+	});
+
+	it("forwards refs to the rendered elements", async () => {
+		const refs = {
+			root: React.createRef<HTMLDivElement>(),
+			label: React.createRef<HTMLLabelElement>(),
+			group: React.createRef<HTMLDivElement>(),
+			input: React.createRef<HTMLInputElement>(),
+			description: React.createRef<HTMLParagraphElement>(),
+			error: React.createRef<HTMLParagraphElement>(),
+			trigger: React.createRef<HTMLButtonElement>(),
+		};
+		const callbackRef = vi.fn();
+		render(
+			<PhoneField.Root ref={refs.root} invalid>
+				<PhoneField.Label ref={refs.label}>Phone</PhoneField.Label>
+				<PhoneField.Group ref={refs.group}>
+					<PhoneField.Country>
+						<PhoneField.CountryTrigger ref={refs.trigger} />
+					</PhoneField.Country>
+					<PhoneField.Input
+						ref={(element: HTMLInputElement | null) => {
+							callbackRef(element);
+							(
+								refs.input as React.MutableRefObject<HTMLInputElement | null>
+							).current = element;
+						}}
+					/>
+				</PhoneField.Group>
+				<PhoneField.Description ref={refs.description}>
+					Help
+				</PhoneField.Description>
+				<PhoneField.Error ref={refs.error} />
+			</PhoneField.Root>,
+		);
+		expect(refs.root.current?.dataset.slot).toBe("phone-field");
+		expect(refs.label.current?.tagName).toBe("LABEL");
+		expect(refs.group.current?.dataset.slot).toBe("phone-field-group");
+		expect(refs.input.current).toBe(
+			screen.getByRole("textbox", { name: "Phone" }),
+		);
+		expect(callbackRef).toHaveBeenCalledWith(refs.input.current);
+		expect(refs.description.current?.textContent).toBe("Help");
+		expect(refs.error.current?.dataset.slot).toBe("phone-field-error");
+		expect(refs.trigger.current?.dataset.slot).toBe(
+			"phone-field-country-trigger",
+		);
+		// Focusing through the ref is how form libraries focus the first error.
+		act(() => refs.input.current?.focus());
+		expect(document.activeElement).toBe(refs.input.current);
+	});
+
+	it("calls Root onBlur only after focus leaves the field and its popup", async () => {
+		const onFocus = vi.fn();
+		const onBlur = vi.fn();
+		render(
+			<>
+				<PhoneField.Root
+					defaultCountry="AR"
+					countries={["AR", "US"]}
+					onFocus={onFocus}
+					onBlur={onBlur}
+				>
+					<PhoneField.Country />
+					<PhoneField.Input aria-label="Phone number" />
+				</PhoneField.Root>
+				<button type="button">Outside</button>
+			</>,
+		);
+		const input = screen.getByRole("textbox", { name: "Phone number" });
+		act(() => input.focus());
+		await flush();
+
+		const search = await openPicker("Argentina (+54)");
+		await vi.waitFor(() => expect(document.activeElement).toBe(search));
+		fireEvent.keyDown(search, { key: "Escape" });
+		await flush();
+		act(() => input.focus());
+		await flush();
+		expect(onFocus).toHaveBeenCalledTimes(1);
+		expect(onBlur).not.toHaveBeenCalled();
+
+		act(() => screen.getByRole("button", { name: "Outside" }).focus());
+		await flush();
+		expect(onBlur).toHaveBeenCalledTimes(1);
+	});
+
 	it("selects by typing on the closed trigger", async () => {
 		const onValueChange = vi.fn();
 		render(
@@ -427,9 +563,18 @@ describe.each(adapters)("$name adapter", (adapter) => {
 				<PhoneField.Input aria-label="Phone number" />
 			</PhoneField.Root>,
 		);
-		await openPicker("United States (+1)");
-		fireEvent.click(screen.getByRole("option", { name: /Argentina/ }));
-		await flush();
+		if (adapter.name === "base-ui" && !baseUiOpensReadOnly) {
+			// Older Base UI keeps a read-only picker closed.
+			fireEvent.click(
+				screen.getByRole(triggerRole, { name: "United States (+1)" }),
+			);
+			await flush();
+			expect(screen.queryByRole("listbox")).toBeNull();
+		} else {
+			await openPicker("United States (+1)");
+			fireEvent.click(screen.getByRole("option", { name: /Argentina/ }));
+			await flush();
+		}
 		expect(onValueChange).not.toHaveBeenCalled();
 		expect(
 			(
@@ -552,7 +697,7 @@ let fieldPartRenders = 0;
 
 /** Reads only the field state, like Label, Group, Description, and Error. */
 function FieldPart() {
-	React.use(PhoneFieldStateContext);
+	React.useContext(PhoneFieldStateContext);
 	fieldPartRenders++;
 	return null;
 }
@@ -623,6 +768,42 @@ describe("adapter-specific composition", () => {
 		expect(
 			container.querySelector('section[data-slot="phone-field"]'),
 		).toBeTruthy();
+	});
+
+	it("base-ui: keeps a composed component's slot when it is set on the render element", () => {
+		const { container } = render(
+			<BaseUI.PhoneField.Root>
+				<BaseUI.PhoneField.Input
+					aria-label="Phone number"
+					render={<DesignSystemInput data-slot="input-group-control" />}
+				/>
+				<BaseUI.PhoneField.Input
+					aria-label="Default slot"
+					render={<DesignSystemInput />}
+				/>
+			</BaseUI.PhoneField.Root>,
+		);
+		expect(
+			screen.getByRole("textbox", { name: "Phone number" }).dataset.slot,
+		).toBe("input-group-control");
+		// Without it, PhoneField's slot is passed down as a prop and wins.
+		expect(
+			screen.getByRole("textbox", { name: "Default slot" }).dataset.slot,
+		).toBe("phone-field-input");
+		expect(container.querySelector("input[data-slot]")).toBeTruthy();
+	});
+
+	it("radix: keeps a composed component's slot when it is set on the child", () => {
+		render(
+			<Radix.PhoneField.Root>
+				<Radix.PhoneField.Input asChild aria-label="Phone number">
+					<DesignSystemInput data-slot="input-group-control" />
+				</Radix.PhoneField.Input>
+			</Radix.PhoneField.Root>,
+		);
+		expect(
+			screen.getByRole("textbox", { name: "Phone number" }).dataset.slot,
+		).toBe("input-group-control");
 	});
 
 	it("radix: merges Root and parts into the child with asChild", () => {

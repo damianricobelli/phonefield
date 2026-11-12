@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useRenderProps } from "react-aria-components/useRenderProps";
+import { withRef } from "../core/compat.js";
 import { type DataAttributes, getStateDataAttributes } from "../core/field.js";
 import { splitRootProps, usePhoneFieldRoot } from "../core/root.js";
 import type { PhoneField } from "./component.js";
@@ -11,7 +12,7 @@ import type { PhoneField } from "./component.js";
  * Renders a `<div>`; `className`, `style`, `children`, and `render` accept
  * functions of the field state, like any React Aria component.
  */
-export function Root(props: PhoneField.RootProps) {
+export const Root = withRef(function Root(props: PhoneField.RootProps) {
 	const { options, elementProps } = splitRootProps(props);
 	const { className, style, children, render, ref, ...rest } = elementProps;
 	const { state, mergedRootRef, hiddenInput, focusHandlers, provide } =
@@ -27,6 +28,7 @@ export function Root(props: PhoneField.RootProps) {
 		values: state,
 	});
 	const domProps: React.ComponentProps<"div"> & DataAttributes = {
+		"data-slot": "phone-field",
 		...rest,
 		...getStateDataAttributes(state),
 		...focusHandlers,
@@ -39,7 +41,6 @@ export function Root(props: PhoneField.RootProps) {
 				{hiddenInput}
 			</>
 		),
-		"data-slot": "phone-field",
 	};
 
 	return provide(
@@ -49,4 +50,4 @@ export function Root(props: PhoneField.RootProps) {
 			<div {...domProps} />
 		),
 	);
-}
+});

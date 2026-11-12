@@ -31,6 +31,7 @@ export function PhoneInputExtension() {
 							<span aria-hidden>🇺🇸</span> +1
 						</InputGroupAddon>
 						<PhoneField.Input
+							data-slot="input-group-control"
 							render={(props) => <InputGroupInput {...props} />}
 							placeholder="(202) 555-0123"
 							className="h-full px-3"

@@ -1,6 +1,12 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+	act,
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+} from "@testing-library/react";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PhoneField, usePhoneField } from "../src";
@@ -819,12 +825,9 @@ describe("PhoneField", () => {
 
 	it("exposes stable data slots for CSS styling", async () => {
 		const { container } = render(
-			<PhoneField.Root name="phone" data-slot="consumer-root">
+			<PhoneField.Root name="phone">
 				<CountryPicker open />
-				<PhoneField.Input
-					aria-label="Phone number"
-					data-slot="consumer-input"
-				/>
+				<PhoneField.Input aria-label="Phone number" />
 			</PhoneField.Root>,
 		);
 
@@ -1389,6 +1392,74 @@ describe("PhoneField", () => {
 		await vi.waitFor(() => {
 			expect(input.getAttribute("aria-invalid")).toBe("true");
 		});
+	});
+
+	it("leaves validity to invalid when autoInvalid is false", async () => {
+		const { container, rerender } = render(
+			<PhoneField.Root autoInvalid={false} required defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" />
+				<PhoneField.Error />
+			</PhoneField.Root>,
+		);
+		const root = container.firstElementChild as HTMLElement;
+		const input = screen.getByRole("textbox", { name: "Phone number" });
+		fireEvent.focus(input);
+		fireEvent.change(input, { target: { value: "202" } });
+		fireEvent.blur(input);
+		await vi.waitFor(() => {
+			expect(root.hasAttribute("data-touched")).toBe(true);
+		});
+		expect(root.hasAttribute("data-invalid")).toBe(false);
+		expect(input.hasAttribute("aria-invalid")).toBe(false);
+		expect(screen.queryByText("Enter a valid phone number.")).toBeNull();
+
+		rerender(
+			<PhoneField.Root autoInvalid={false} invalid required defaultCountry="US">
+				<PhoneField.Input aria-label="Phone number" />
+				<PhoneField.Error />
+			</PhoneField.Root>,
+		);
+		expect(root.hasAttribute("data-invalid")).toBe(true);
+		expect(input.getAttribute("aria-invalid")).toBe("true");
+		expect(screen.getByText("Enter a valid phone number.")).toBeTruthy();
+	});
+
+	it("calls Root onFocus and onBlur once per visit to the whole field", async () => {
+		const onFocus = vi.fn();
+		const onBlur = vi.fn();
+		render(
+			<>
+				<PhoneField.Root defaultCountry="US" onFocus={onFocus} onBlur={onBlur}>
+					<CountryPicker />
+					<PhoneField.Input aria-label="Phone number" />
+				</PhoneField.Root>
+				<button type="button">Outside</button>
+			</>,
+		);
+		const input = screen.getByRole("textbox", { name: "Phone number" });
+		const trigger = screen.getByRole("combobox", { name: "Country" });
+		const settle = () =>
+			act(async () => {
+				await new Promise((resolve) => setTimeout(resolve, 0));
+			});
+
+		act(() => input.focus());
+		await settle();
+		act(() => trigger.focus());
+		await settle();
+		act(() => input.focus());
+		await settle();
+		expect(onFocus).toHaveBeenCalledTimes(1);
+		expect(onBlur).not.toHaveBeenCalled();
+
+		act(() => screen.getByRole("button", { name: "Outside" }).focus());
+		await settle();
+		expect(onBlur).toHaveBeenCalledTimes(1);
+		expect(onBlur.mock.calls[0]?.[0].target).toBe(input);
+
+		act(() => trigger.focus());
+		await settle();
+		expect(onFocus).toHaveBeenCalledTimes(2);
 	});
 
 	it("translates the default picker copy with labels", async () => {

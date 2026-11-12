@@ -8,6 +8,26 @@ export type ToFormValue = typeof Utils.toFormValue;
 export type GetCountries = typeof Utils.getCountries;
 export type Countries = typeof Utils.countries;
 
+// Form libraries start from source fields; validate them without building a Value.
+declare const isValid: typeof Utils.isValid;
+declare const parse: typeof Utils.parse;
+export const validatesInputValue: boolean = isValid({
+	countryIso2: "US",
+	nationalNumber: "",
+});
+export const parsesInputValue = parse({
+	countryIso2: "US",
+	nationalNumber: "2025550123",
+});
+// A complete Value literal still type-checks.
+export const validatesValue: boolean = isValid({
+	countryIso2: "US",
+	countryDialCode: "+1",
+	nationalNumber: "2025550123",
+	e164: "+12025550123",
+	isValid: true,
+});
+
 // @ts-expect-error Internal locale normalization is not part of phonefield/utils.
 export type InternalNormalizeLang = typeof Utils.normalizeLang;
 // @ts-expect-error Internal digit handling is not part of phonefield/utils.

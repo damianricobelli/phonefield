@@ -75,7 +75,7 @@ export const PhoneFieldInputContext =
 	React.createContext<PhoneFieldInputContextValue | null>(null);
 
 export function usePhoneFieldCountryContext(part = "PhoneField.Country") {
-	const context = React.use(PhoneFieldCountryContext);
+	const context = React.useContext(PhoneFieldCountryContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}
@@ -83,7 +83,7 @@ export function usePhoneFieldCountryContext(part = "PhoneField.Country") {
 }
 
 export function usePhoneFieldStateContext(part: string) {
-	const context = React.use(PhoneFieldStateContext);
+	const context = React.useContext(PhoneFieldStateContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}
@@ -91,7 +91,7 @@ export function usePhoneFieldStateContext(part: string) {
 }
 
 export function usePhoneFieldInputContext(part = "PhoneField.Input") {
-	const context = React.use(PhoneFieldInputContext);
+	const context = React.useContext(PhoneFieldInputContext);
 	if (!context) {
 		throw new Error(`${part} must be used inside <PhoneField.Root>.`);
 	}

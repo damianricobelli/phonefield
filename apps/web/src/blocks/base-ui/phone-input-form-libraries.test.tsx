@@ -32,9 +32,18 @@ describe.each([
 		const inputGroup = save.closest('[data-slot="phone-field-group"]');
 
 		expect(inputGroup?.className).toContain(
-			"has-[[data-input-group-control]:disabled]:opacity-50",
+			"has-[[data-slot=input-group-control]:disabled]:opacity-50",
 		);
 		expect(inputGroup?.className).not.toContain("has-disabled:opacity-50");
+	});
+
+	it("keeps InputGroup's control slot, so its focus ring applies", () => {
+		render(<Example />);
+		const input = screen.getByRole("textbox", { name: "Phone number" });
+		expect(input.dataset.slot).toBe("input-group-control");
+		expect(
+			input.closest('[data-slot="phone-field-group"]')?.className,
+		).toContain("has-[[data-slot=input-group-control]:focus-visible]:ring-3");
 	});
 
 	it("validates while typing and submits the canonical number", async () => {

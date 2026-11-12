@@ -51,6 +51,7 @@ function StateField({
 					<span aria-hidden>🇺🇸</span> +1
 				</InputGroupAddon>
 				<PhoneField.Input
+					data-slot="input-group-control"
 					render={(props) => <InputGroupInput {...props} />}
 					id={id}
 					className="h-full px-3 text-sm"

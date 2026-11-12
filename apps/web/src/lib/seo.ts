@@ -101,7 +101,7 @@ export const softwareJsonLd = {
 			url: absoluteUrl("/"),
 			codeRepository: REPOSITORY_URL,
 			programmingLanguage: ["TypeScript", "React"],
-			runtimePlatform: "React 19",
+			runtimePlatform: ["React 18", "React 19"],
 			license: "https://opensource.org/licenses/MIT",
 			version: "2.0.0",
 			image: OG_IMAGE.url,

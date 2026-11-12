@@ -65,6 +65,7 @@ export function PhoneInputInline() {
 					</PhoneField.CountryPortal>
 				</PhoneField.Country>
 				<PhoneField.Input
+					data-slot="input-group-control"
 					render={<InputGroupInput />}
 					placeholder={(country) => getExampleNumber(country.iso2)}
 					className="h-full px-3"

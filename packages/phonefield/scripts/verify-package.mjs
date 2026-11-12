@@ -84,6 +84,23 @@ for (const [entry, pattern] of Object.entries(adapterImports)) {
 		`phonefield/${entry} must import its own primitives`,
 	);
 }
+// libphonenumber-js ships two builds: `core` and `min` load `es6/`, while
+// `core/es6` and `min/es6` load `es6-modern/`. Mixing them bundles both copies
+// (+5.6 KB gzip per entry), so every entry stays on the `es6-modern` family.
+const libphonenumberSubpaths =
+	/^libphonenumber-js\/(?:core\/es6|min\/es6|min\/metadata|mobile\/examples)$/;
+for (const entry of ["index", "base-ui", "radix", "react-aria", "utils"]) {
+	const imports = [...externalImports(`${entry}.js`)].filter((specifier) =>
+		specifier.startsWith("libphonenumber-js"),
+	);
+	for (const specifier of imports) {
+		assert.match(
+			specifier,
+			libphonenumberSubpaths,
+			`dist/${entry}.js imports ${specifier}, which loads a second libphonenumber-js build`,
+		);
+	}
+}
 assert.deepEqual(
 	Object.keys(utilitiesModule).sort(),
 	[

@@ -1,5 +1,6 @@
 import React from "react";
 import type { PhoneFieldCountry } from "../types.js";
+import { useIsomorphicLayoutEffect } from "./compat.js";
 import {
 	usePhoneFieldCountryContext,
 	usePhoneFieldInputContext,
@@ -90,9 +91,19 @@ function replaceSelection(
 	return value.slice(0, selection.start) + text + value.slice(selection.end);
 }
 
+/**
+ * `onBeforeInput` is typed as `InputEventHandler` by React 19's types and as
+ * `FormEventHandler` by React 18's. Read it from the installed types.
+ */
+type BeforeInputHandler = NonNullable<
+	React.DOMAttributes<HTMLInputElement>["onBeforeInput"]
+>;
+type BeforeInputEvent = Parameters<BeforeInputHandler>[0];
+
 /** Native input props PhoneField composes with its own behavior. */
 export type PhoneFieldNativeInputProps = {
 	ref?: React.Ref<HTMLInputElement>;
+	"data-slot"?: string;
 	id?: string;
 	placeholder?: string | ((country: PhoneFieldCountry) => string | undefined);
 	type?: React.HTMLInputTypeAttribute;
@@ -106,7 +117,7 @@ export type PhoneFieldNativeInputProps = {
 	onBlur?: React.FocusEventHandler<HTMLInputElement>;
 	onChange?: React.ChangeEventHandler<HTMLInputElement>;
 	onInvalid?: React.FormEventHandler<HTMLInputElement>;
-	onBeforeInput?: React.InputEventHandler<HTMLInputElement>;
+	onBeforeInput?: BeforeInputHandler;
 	onInputCapture?: React.FormEventHandler<HTMLInputElement>;
 	onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
 	onPaste?: React.ClipboardEventHandler<HTMLInputElement>;
@@ -132,7 +143,7 @@ export type PhoneFieldInputElementProps = {
 	onChange: React.ChangeEventHandler<HTMLInputElement>;
 	onInvalid: React.FormEventHandler<HTMLInputElement>;
 	onBlur: React.FocusEventHandler<HTMLInputElement>;
-	onBeforeInput: React.InputEventHandler<HTMLInputElement>;
+	onBeforeInput: BeforeInputHandler;
 	onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
 	onInputCapture: React.FormEventHandler<HTMLInputElement>;
 	onSelect: React.ReactEventHandler<HTMLInputElement>;
@@ -149,6 +160,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 ): Omit<P, keyof PhoneFieldNativeInputProps> & PhoneFieldInputElementProps {
 	const {
 		ref: forwardedRef,
+		"data-slot": dataSlot = "phone-field-input",
 		id: idProp,
 		placeholder,
 		type = "tel",
@@ -190,7 +202,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 	const { selectedCountry } = usePhoneFieldCountryContext("PhoneField.Input");
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	// A custom id becomes the field's control id so PhoneField.Label follows it.
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		setControlId(idProp);
 		return () => setControlId(undefined);
 	}, [idProp, setControlId]);
@@ -217,7 +229,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 			end: element?.selectionEnd ?? 0,
 		};
 	}, []);
-	React.useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		const pendingRestore = pendingRestoreRef.current;
 		const element = inputRef.current;
 		if (!pendingRestore || !element) return;
@@ -252,7 +264,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 
 	const inputProps: PhoneFieldInputElementProps = {
 		ref: mergedRef,
-		"data-slot": "phone-field-input",
+		"data-slot": dataSlot,
 		id: idProp ?? controlId,
 		"aria-describedby": describedBy,
 		type,
@@ -279,7 +291,7 @@ export function usePhoneFieldInput<P extends PhoneFieldNativeInputProps>(
 			onBlur?.(event);
 			if (!event.defaultPrevented) breakHistoryGroup();
 		},
-		onBeforeInput: (event: React.InputEvent<HTMLInputElement>) => {
+		onBeforeInput: (event: BeforeInputEvent) => {
 			onBeforeInput?.(event);
 			const nativeEvent = event.nativeEvent as InputEvent;
 			if (event.defaultPrevented) return;

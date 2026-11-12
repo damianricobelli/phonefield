@@ -83,6 +83,12 @@ type StateRenderProps<State> = {
 	style?: Style<State>;
 };
 
+/**
+ * `ref` typed as `React.Ref`. React 18's `RefAttributes` also allows legacy
+ * string refs, which PhoneField cannot merge.
+ */
+type RefProp<T> = { ref?: React.Ref<T> };
+
 export namespace PhoneField {
 	/** Country descriptor: iso2, name, dialCode, flag. */
 	export type Country = PhoneFieldCountry;
@@ -112,7 +118,7 @@ export namespace PhoneField {
 	 * or `defaultValue`/`defaultCountry` for uncontrolled. Defaults are only read on mount.
 	 */
 	export type RootProps = Omit<
-		React.ComponentProps<"div">,
+		React.ComponentPropsWithRef<"div">,
 		"className" | "style" | "children" | "defaultValue" | "onChange"
 	> &
 		PhoneFieldRootOptions &
@@ -128,9 +134,9 @@ export namespace PhoneField {
 	/** Props for `PhoneField.Input`: React Aria's Input. The value is owned by `PhoneField.Root`. */
 	export type InputProps = Omit<
 		AriaInputProps,
-		"defaultValue" | "name" | "value" | "placeholder"
+		"defaultValue" | "name" | "value" | "placeholder" | "ref"
 	> &
-		React.RefAttributes<HTMLInputElement> & {
+		RefProp<HTMLInputElement> & {
 			/** A string, or a function of the selected country (see `getExampleNumber`). */
 			placeholder?: string | ((country: Country) => string | undefined);
 		};
@@ -180,13 +186,13 @@ export namespace PhoneField {
 	> &
 		StateRenderProps<State>;
 	export type DescriptionProps = Omit<
-		React.ComponentProps<"p">,
+		React.ComponentPropsWithRef<"p">,
 		"className" | "style"
 	> &
 		StateRenderProps<State> &
 		Pick<TextProps, "render">;
 	export type ErrorProps = Omit<
-		React.ComponentProps<"p">,
+		React.ComponentPropsWithRef<"p">,
 		"className" | "style" | "children"
 	> &
 		StateRenderProps<State> &
@@ -195,8 +201,7 @@ export namespace PhoneField {
 			children?: React.ReactNode | ((state: State) => React.ReactNode);
 		};
 
-	export type CountryTriggerProps = ButtonProps &
-		React.RefAttributes<HTMLButtonElement>;
+	export type CountryTriggerProps = ButtonProps & RefProp<HTMLButtonElement>;
 	export type CountryValueProps = Omit<
 		SelectValueProps<Country>,
 		"children"
@@ -204,13 +209,12 @@ export namespace PhoneField {
 		/** Content, or a function of the selected country. Defaults to flag and dial code. */
 		children?: React.ReactNode | ((country: Country) => React.ReactNode);
 	};
-	export type CountryIconProps = React.ComponentProps<"span">;
-	export type CountryPopoverProps = PopoverProps &
-		React.RefAttributes<HTMLElement>;
+	export type CountryIconProps = React.ComponentPropsWithRef<"span">;
+	export type CountryPopoverProps = PopoverProps & RefProp<HTMLElement>;
 	export type CountrySearchProps = SearchFieldProps;
-	export type CountrySearchInputProps = AriaInputProps &
-		React.RefAttributes<HTMLInputElement>;
-	export type CountryEmptyProps = React.ComponentProps<"div">;
+	export type CountrySearchInputProps = Omit<AriaInputProps, "ref"> &
+		RefProp<HTMLInputElement>;
+	export type CountryEmptyProps = React.ComponentPropsWithRef<"div">;
 	export type CountryListProps = Omit<
 		ListBoxProps<Country>,
 		"children" | "items" | "selectionMode"

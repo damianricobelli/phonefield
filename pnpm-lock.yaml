@@ -330,10 +330,10 @@ importers:
         specifier: ^1.13.15
         version: 1.13.15
       react:
-        specifier: '>=19 <20'
+        specifier: '>=18 <20'
         version: 19.3.1
       react-dom:
-        specifier: '>=19 <20'
+        specifier: '>=18 <20'
         version: 19.3.1(react@19.3.1)
     devDependencies:
       '@base-ui/react':

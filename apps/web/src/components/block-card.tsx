@@ -106,7 +106,7 @@ export function BlockCard({
 					<TabsContent
 						value="code"
 						id={codeId}
-						className="min-h-56 flex-1 flex-col bg-slate-950 data-active:flex"
+						className="flex min-h-56 flex-1 flex-col bg-slate-950"
 					>
 						<div className="flex h-11 items-center justify-between border-b border-white/10 px-4">
 							<span className="font-mono text-[11px] text-slate-500">
@@ -120,7 +120,9 @@ export function BlockCard({
 						</div>
 						<HighlightedCode
 							code={displayedSource}
-							className="max-h-44 rounded-none"
+							// Fill the panel so both scrollbars sit on its edges. The card
+							// has a fixed height from lg; below that, cap the code instead.
+							className="min-h-0 flex-1 max-h-80 rounded-none lg:max-h-none"
 						/>
 					</TabsContent>
 				</Tabs>

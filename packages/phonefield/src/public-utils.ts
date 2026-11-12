@@ -11,17 +11,24 @@ import {
 	toFormValue as serializePhoneFieldValue,
 } from "./utils.js";
 
-/** Parse a strict phone string or PhoneField value into libphonenumber data. */
+/**
+ * Parse a strict phone string, or a value's `countryIso2` and `nationalNumber`,
+ * into libphonenumber data. Accepts `PhoneField.Value` and `PhoneField.InputValue`.
+ */
 export function parse(
-	value: string | PhoneField.Value,
+	value: string | PhoneField.Value | PhoneField.InputValue,
 	options?: PhoneField.ParseOptions,
 ): PhoneNumber | undefined {
 	return parsePhoneField(value, options);
 }
 
-/** Validate a strict phone string or a PhoneField value against its selected country. */
+/**
+ * Validate a strict phone string, or a value against its selected country.
+ * Accepts `PhoneField.Value` and `PhoneField.InputValue` (`{ countryIso2,
+ * nationalNumber }`), and revalidates instead of trusting `isValid`.
+ */
 export function isValid(
-	value: string | PhoneField.Value,
+	value: string | PhoneField.Value | PhoneField.InputValue,
 	options?: PhoneField.ParseOptions,
 ): boolean {
 	return isValidPhoneField(value, options);

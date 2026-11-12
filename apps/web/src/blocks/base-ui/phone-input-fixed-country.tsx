@@ -32,6 +32,7 @@ export function PhoneInputFixedCountry() {
 					<span>+1</span>
 				</InputGroupAddon>
 				<PhoneField.Input
+					data-slot="input-group-control"
 					render={<InputGroupInput />}
 					placeholder="(202) 555-0123"
 					className="h-full px-3"

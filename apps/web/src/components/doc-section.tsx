@@ -129,13 +129,13 @@ export function DocSection() {
 						packageName="phonefield @base-ui/react"
 					/>
 					<p className="mt-4 max-w-3xl text-sm text-slate-600">
-						Peer dependencies: <code>react &gt;=19 &lt;20</code>,{" "}
-						<code>react-dom &gt;=19 &lt;20</code>, and one primitives library:{" "}
-						<code>@base-ui/react &gt;=1.9 &lt;2</code> for{" "}
+						Peer dependencies: <code>react &gt;=18 &lt;20</code>,{" "}
+						<code>react-dom &gt;=18 &lt;20</code>, and one primitives library:{" "}
+						<code>@base-ui/react &gt;=1.2 &lt;2</code> for{" "}
 						<code>phonefield</code>,{" "}
-						<code>react-aria-components &gt;=1.22 &lt;2</code> for{" "}
+						<code>react-aria-components &gt;=1.18 &lt;2</code> for{" "}
 						<code>phonefield/react-aria</code>, or{" "}
-						<code>radix-ui &gt;=1.4 &lt;2</code> for{" "}
+						<code>radix-ui &gt;=1.1 &lt;2</code> for{" "}
 						<code>phonefield/radix</code>. Building the package requires Node.js
 						22.18 or newer.
 					</p>
@@ -298,9 +298,14 @@ export function DocSection() {
 						Base UI state attributes compose with these slots. For example,
 						style an open trigger with <code>[data-popup-open]</code> and a
 						highlighted country with <code>[data-highlighted]</code>. Field
-						state attributes are listed in the Component API. With{" "}
-						<code>render</code>, PhoneField's <code>data-slot</code> replaces
-						the rendered component's own.
+						state attributes are listed in the Component API. A{" "}
+						<code>data-slot</code> you pass wins over PhoneField's. A component
+						composed with <code>render</code> receives PhoneField's slot as a
+						prop, so set the one your design system styles on it, e.g.{" "}
+						<code>
+							{'render={<InputGroupInput data-slot="input-group-control" />}'}
+						</code>
+						.
 					</p>
 					<dl className="mt-5 grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2">
 						{STYLING_SLOTS.map(([slot, purpose]) => (
@@ -391,12 +396,12 @@ export function DocSection() {
 							<p className="mt-1 text-sm leading-6 text-emerald-900/80">
 								Removed Country props fail the typecheck, so most steps are
 								found for you. Two steps change behavior without a type error
-								and are flagged below. <code>@base-ui/react</code> must be 1.9
-								or newer; React 18 remains unsupported. No phone data migration
-								is required.
+								and are flagged below. <code>@base-ui/react</code> 1.2 or newer
+								and React 18 or 19 are supported. No phone data migration is
+								required.
 							</p>
 							<code className="mt-3 inline-flex rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs text-emerald-950 shadow-sm">
-								pnpm add phonefield@^2 @base-ui/react@^1.9
+								pnpm add phonefield@^2 @base-ui/react@^1
 							</code>
 						</div>
 					</div>

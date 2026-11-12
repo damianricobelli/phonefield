@@ -29,6 +29,7 @@ export function PhoneInputDrawer() {
 					<InputGroup>
 						<CountryDrawer />
 						<PhoneField.Input
+							data-slot="input-group-control"
 							asChild
 							placeholder={(country) => getExampleNumber(country.iso2)}
 							className="h-full px-3"

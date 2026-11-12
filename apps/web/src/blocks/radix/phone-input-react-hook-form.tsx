@@ -1,5 +1,6 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { PhoneField } from "phonefield/radix";
+import { isValid, parse } from "phonefield/utils";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
@@ -16,25 +17,15 @@ import {
 	InputGroupInput,
 } from "@/components/ui/input-group";
 
-const emptyPhone: PhoneField.Value = {
+const emptyPhone: PhoneField.InputValue = {
 	countryIso2: "US",
-	countryDialCode: "+1",
 	nationalNumber: "",
-	e164: null,
-	isValid: false,
 };
 
 const phoneSchema = z.object({
-	phone: z.custom<PhoneField.Value>(
-		(value) =>
-			Boolean(
-				value &&
-					typeof value === "object" &&
-					"isValid" in value &&
-					value.isValid,
-			),
-		"Enter a valid phone number.",
-	),
+	phone: z
+		.custom<PhoneField.InputValue>()
+		.refine((phone) => isValid(phone), "Enter a valid phone number."),
 });
 
 export function PhoneInputReactHookForm() {
@@ -48,7 +39,9 @@ export function PhoneInputReactHookForm() {
 	return (
 		<form
 			className="w-full max-w-md"
-			onSubmit={form.handleSubmit(({ phone }) => setSubmitted(phone.e164))}
+			onSubmit={form.handleSubmit(({ phone }) =>
+				setSubmitted(parse(phone)?.number ?? null),
+			)}
 		>
 			<Controller
 				name="phone"
@@ -59,7 +52,9 @@ export function PhoneInputReactHookForm() {
 						countries={["US"]}
 						value={field.value}
 						onValueChange={field.onChange}
+						onBlur={field.onBlur}
 						invalid={fieldState.invalid}
+						autoInvalid={false}
 					>
 						<Field>
 							<PhoneField.Label
@@ -77,9 +72,9 @@ export function PhoneInputReactHookForm() {
 										<span aria-hidden>🇺🇸</span> +1
 									</InputGroupAddon>
 									<PhoneField.Input
+										data-slot="input-group-control"
 										asChild
 										ref={field.ref}
-										onBlur={field.onBlur}
 										placeholder="(202) 555-0123"
 										className="h-full px-3"
 									>

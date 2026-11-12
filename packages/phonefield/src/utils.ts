@@ -1,4 +1,4 @@
-import { PhoneNumber as CorePhoneNumber } from "libphonenumber-js/core";
+import { PhoneNumber as CorePhoneNumber } from "libphonenumber-js/core/es6";
 import {
 	AsYouType,
 	type CountryCode,
@@ -13,6 +13,7 @@ import type {
 	PhoneFieldCountryCode,
 	PhoneFieldCountryMap,
 	PhoneFieldFormValue,
+	PhoneFieldInputValue,
 	PhoneFieldLang,
 	PhoneFieldParseOptions,
 	PhoneFieldValue,
@@ -388,11 +389,12 @@ export function defaultCountrySearchText(country: PhoneFieldCountry) {
 }
 
 /**
- * Parses a PhoneFieldValue or E.164 string into a libphonenumber PhoneNumber.
+ * Parses an E.164 string, or a value's `countryIso2` and `nationalNumber`, into a
+ * libphonenumber PhoneNumber. Derived fields (`e164`, `isValid`) are ignored.
  * Use for formatNational(), formatInternational(), getURI(). Options.defaultCountry for national-number strings.
  */
 export function parsePhoneField(
-	value: string | PhoneFieldValue,
+	value: string | PhoneFieldValue | PhoneFieldInputValue,
 	options?: PhoneFieldParseOptions,
 ) {
 	if (typeof value === "string") {
@@ -414,11 +416,12 @@ export function parsePhoneField(
 }
 
 /**
- * Returns whether the value is a valid phone number. Accepts PhoneFieldValue or E.164 string.
- * Options.defaultCountry for national-number strings.
+ * Returns whether the value is a valid phone number. Accepts an E.164 string, a
+ * PhoneFieldValue, or just its source fields (`countryIso2`, `nationalNumber`),
+ * and always revalidates them. Options.defaultCountry for national-number strings.
  */
 export function isValidPhoneField(
-	value: string | PhoneFieldValue,
+	value: string | PhoneFieldValue | PhoneFieldInputValue,
 	options?: PhoneFieldParseOptions,
 ) {
 	const parsed = parsePhoneField(value, options);

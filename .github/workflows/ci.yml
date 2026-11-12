@@ -46,3 +46,58 @@ jobs:
 
       - name: Build workspace and verify package
         run: pnpm build
+
+  # The published peer ranges are tested at both ends: the oldest React and
+  # primitives versions PhoneField supports, and React 18 with current primitives.
+  compatibility:
+    name: Compatibility (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: React 18.0, minimum primitives
+            packages: >-
+              react@18.0.0 react-dom@18.0.0
+              @types/react@^18.3.0 @types/react-dom@^18.3.0
+              @base-ui/react@1.2.0 react-aria-components@1.18.0 radix-ui@1.1.0
+          - name: React 19.0, minimum primitives
+            packages: >-
+              react@19.0.0 react-dom@19.0.0
+              @types/react@~19.0.0 @types/react-dom@~19.0.0
+              @base-ui/react@1.2.0 react-aria-components@1.18.0 radix-ui@1.1.0
+          - name: React 18, latest primitives
+            packages: >-
+              react@^18 react-dom@^18
+              @types/react@^18.3.0 @types/react-dom@^18.3.0
+              @base-ui/react@^1 react-aria-components@^1 radix-ui@^1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the versions under test
+        run: pnpm --filter ./packages/phonefield add -D ${{ matrix.packages }}
+
+      - name: Typecheck package
+        run: pnpm --filter ./packages/phonefield typecheck
+
+      - name: Test phonefield package
+        run: pnpm --filter ./packages/phonefield test
+
+      # Also checks the published declarations against these @types/react versions.
+      - name: Build and verify package
+        run: pnpm --filter ./packages/phonefield build

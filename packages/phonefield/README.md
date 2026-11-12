@@ -14,7 +14,7 @@ Install PhoneField with the primitives library your design system uses:
 | React Aria | `pnpm add phonefield react-aria-components` | `phonefield/react-aria` |
 | Radix UI | `pnpm add phonefield radix-ui` | `phonefield/radix` |
 
-Peer dependencies: `react >=19 <20`, `react-dom >=19 <20`, and one of `@base-ui/react >=1.9 <2`, `react-aria-components >=1.22 <2`, or `radix-ui >=1.4 <2`. Each entry imports only its own library.
+Peer dependencies: `react >=18 <20`, `react-dom >=18 <20`, and one of `@base-ui/react >=1.2 <2`, `react-aria-components >=1.18 <2`, or `radix-ui >=1.1 <2`. Each entry imports only its own library. CI tests both ends of every range, on React 18 and 19.
 
 ## Quick start
 
@@ -139,6 +139,18 @@ To translate only the picker copy, skip composition: `<PhoneField.Country labels
 
 The popup is portaled, so style its parts directly. Every part also has a stable `data-slot` (`phone-field`, `phone-field-input`, `phone-field-country-trigger`, `phone-field-country-popup`, `phone-field-country-item`, …) for global CSS.
 
+### Design systems that use `data-slot`
+
+A `data-slot` you pass wins over PhoneField's. Design systems such as shadcn/ui style parts through their own slots (`InputGroup` draws its focus ring from `[data-slot=input-group-control]`), and their components set the slot before spreading your props. Composed with `render` or `asChild`, such a component receives PhoneField's slot as a prop, so set the slot you need on the element itself:
+
+```tsx
+<PhoneField.Group render={<InputGroup />}>
+  <PhoneField.Input render={<InputGroupInput data-slot="input-group-control" />} />
+</PhoneField.Group>
+```
+
+`<PhoneField.Input data-slot="input-group-control" render={<InputGroupInput />} />` works too. With Radix, put it on the `asChild` child.
+
 ## Field state
 
 Root, Group, Label, Description, and Error mirror the field state as data attributes: `data-country`, `data-valid`, `data-invalid`, `data-filled`, `data-dirty`, `data-touched`, `data-focused`, `data-disabled`, `data-readonly`, `data-required`. Style the shell on `Group`:
@@ -153,7 +165,9 @@ Root, Group, Label, Description, and Error mirror the field state as data attrib
 </PhoneField.Root>;
 ```
 
-After blur or form submit, the field is invalid when the number is incomplete or invalid, or required and empty. Input gets `aria-invalid` automatically. `invalid` adds an external error (server, form library); automatic validation still applies when it is `false`. A form `reset` restores an uncontrolled field's initial value.
+After blur or form submit, the field is invalid when the number is incomplete or invalid, or required and empty. Input gets `aria-invalid` automatically. `invalid` adds an external error (server, form library); automatic validation still applies when it is `false`. Pass `autoInvalid={false}` to turn it off, so only `invalid` marks the field invalid. A form `reset` restores an uncontrolled field's initial value.
+
+Root's `onFocus` and `onBlur` describe the whole field: `onFocus` runs when focus enters it, and `onBlur` once focus settles outside the input, the country trigger, and the popup. Moving between them calls neither. `onBlur` runs after the event is dispatched, so read `event.target`, not `event.currentTarget`. For per-element events, put `onFocus` or `onBlur` on `Input`.
 
 ## Custom parts
 
@@ -188,7 +202,48 @@ import { fromFormData } from "phonefield/utils";
 const phone = fromFormData(formData, "phone"); // PhoneField.Value | null
 ```
 
-`phonefield/utils` runs on client and server: `parse`, `isValid`, `buildValue`, `fromFormData`, `toFormValue`, `getCountries`, `countries`, and `getExampleNumber`.
+`phonefield/utils` runs on client and server: `parse`, `isValid`, `buildValue`, `fromFormData`, `toFormValue`, `getCountries`, `countries`, and `getExampleNumber`. `parse` and `isValid` accept a string, a `PhoneField.Value`, or just `{ countryIso2, nationalNumber }`, and always revalidate.
+
+### Form libraries
+
+Keep the value in the form, validate it with `isValid`, and let the form library own the error:
+
+```tsx
+import { PhoneField } from "phonefield";
+import { isValid } from "phonefield/utils";
+import * as z from "zod";
+
+const schema = z.object({
+  phone: z
+    .custom<PhoneField.InputValue>()
+    .refine((phone) => isValid(phone), "Enter a valid phone number."),
+});
+
+const form = useForm({
+  defaultValues: { phone: { countryIso2: "US", nationalNumber: "" } },
+  resolver: standardSchemaResolver(schema),
+});
+
+<Controller
+  name="phone"
+  control={form.control}
+  render={({ field, fieldState }) => (
+    <PhoneField.Root
+      value={field.value}
+      onValueChange={field.onChange}
+      onBlur={field.onBlur}
+      invalid={fieldState.invalid}
+      autoInvalid={false}
+    >
+      <PhoneField.Country />
+      <PhoneField.Input ref={field.ref} />
+      <PhoneField.Error>{fieldState.error?.message}</PhoneField.Error>
+    </PhoneField.Root>
+  )}
+/>;
+```
+
+`ref` on `Input` lets the form focus the field on a failed submit. Root's `onBlur` marks the field touched only once focus leaves the number and the picker. The form holds `{ countryIso2, nationalNumber }` until the user types, then the full `PhoneField.Value`; `parse(phone)?.number` gives the E.164 string either way.
 
 ## Behavior
 
@@ -197,6 +252,7 @@ const phone = fromFormData(formData, "phone"); // PhoneField.Value | null
 - `Cmd/Ctrl+Z` and `Cmd/Ctrl+Shift+Z` (or `Ctrl+Y`) undo and redo number and country changes as native-style transactions.
 - `isValid` is `false` when the number belongs to a different country than the selected one.
 - Country names come from `Intl.DisplayNames`, which can differ between Node and browsers for a few regions. Server-rendering every name (a native `<select>`) can cause hydration warnings.
-- With `render={<YourComponent />}`, PhoneField's `data-slot` replaces the component's own.
+- A `data-slot` you pass to a part wins over PhoneField's. A component composed with `render` or `asChild` receives PhoneField's slot as a prop, unless you set one on it.
+- With `@base-ui/react` older than 1.8, Base UI keeps a read-only picker closed. From 1.8 it opens for browsing. The selection never changes while read-only.
 
 See the [documentation](https://phonefield.vercel.app) for the full API reference.
