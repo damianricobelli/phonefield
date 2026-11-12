@@ -64,11 +64,14 @@ describe("BlockCard", () => {
 		expect(
 			screen.getByRole("tab", { name: "Code" }).getAttribute("aria-selected"),
 		).toBe("true");
-		expect(document.querySelector("pre")?.className).toContain("max-h-44");
-		expect(document.querySelector("pre")?.className).not.toContain("max-h-40");
-		expect(document.querySelector("pre")?.className).not.toContain(
-			"max-h-[32rem]",
-		);
+		// The code fills its panel, so both scrollbars sit on the panel's edges.
+		const pre = document.querySelector("pre");
+		const panel = pre?.closest('[role="tabpanel"]');
+		expect(panel?.className).toMatch(/(^| )flex( |$)/);
+		expect(panel?.className).toContain("flex-col");
+		expect(pre?.className).toContain("flex-1");
+		expect(pre?.className).toContain("min-h-0");
+		expect(pre?.className).not.toContain("max-h-[32rem]");
 	});
 
 	it("loads source only when the code tab is opened", async () => {
