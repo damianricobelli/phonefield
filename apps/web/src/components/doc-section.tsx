@@ -298,9 +298,14 @@ export function DocSection() {
 						Base UI state attributes compose with these slots. For example,
 						style an open trigger with <code>[data-popup-open]</code> and a
 						highlighted country with <code>[data-highlighted]</code>. Field
-						state attributes are listed in the Component API. With{" "}
-						<code>render</code>, PhoneField's <code>data-slot</code> replaces
-						the rendered component's own.
+						state attributes are listed in the Component API. A{" "}
+						<code>data-slot</code> you pass wins over PhoneField's. A component
+						composed with <code>render</code> receives PhoneField's slot as a
+						prop, so set the one your design system styles on it, e.g.{" "}
+						<code>
+							{'render={<InputGroupInput data-slot="input-group-control" />}'}
+						</code>
+						.
 					</p>
 					<dl className="mt-5 grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2">
 						{STYLING_SLOTS.map(([slot, purpose]) => (

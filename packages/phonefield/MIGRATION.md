@@ -27,11 +27,11 @@ Version 2 replaces `PhoneField.Country`'s configuration props with composable pa
 ### Before you start
 
 ```bash
-pnpm add phonefield@^2 @base-ui/react@^1.9
+pnpm add phonefield@^2 @base-ui/react@^1
 ```
 
-- `@base-ui/react` must be `>=1.9.0 <2` (was `>=1.6`).
-- React and React DOM stay at `>=19 <20`. The internal React 18 ref fallback is gone, and components take `ref` as a regular prop.
+- `@base-ui/react` must be `>=1.2.0 <2` from 2.2 (2.0 and 2.1 required `>=1.9`), so a v1 project's Base UI 1.6 keeps working.
+- React and React DOM `>=18 <20` from 2.2 (2.0 and 2.1 required React 19). Components take `ref` as a regular prop on both versions.
 - Building the repository requires Node.js 22.18 or newer.
 
 Removed `Country` props and types fail the typecheck, so start there. Two changes affect behavior without a type error: see [Behavior changes](#behavior-changes).
@@ -110,7 +110,7 @@ Remove manual touched, `aria-invalid`, and error-message wiring. Root is now a p
 
 The field now behaves like a native form control: submitting its form marks it touched, so errors show without a prior blur, and a form `reset` restores an uncontrolled field's initial value.
 
-New Root props: `preferredCountries`, `disabled`, `readOnly`, `required`, `invalid`, `form`, `limitMaxLength`, and `render`. `className` and `style` accept a function of `PhoneField.State`. With `render={<YourComponent />}`, PhoneField's `data-slot` replaces the component's own.
+New Root props: `preferredCountries`, `disabled`, `readOnly`, `required`, `invalid`, `form`, `limitMaxLength`, and `render`. `className` and `style` accept a function of `PhoneField.State`. A `data-slot` you pass to a part wins over PhoneField's (from 2.2). A component composed with `render={<YourComponent />}` receives PhoneField's slot as a prop unless you set one on it.
 
 ### `onValueChange` details
 
@@ -130,7 +130,7 @@ New Root props: `preferredCountries`, `disabled`, `readOnly`, `required`, `inval
 
 ### Checklist
 
-- `@base-ui/react` is 1.9 or newer.
+- `@base-ui/react` is 1.2 or newer.
 - No `classNames`, `slotProps`, `positioning`, `icon`, copy, or `render*` props on `Country`.
 - No removed `PhoneField.Country*` / `Render*` types.
 - CSS uses `phone-field-country-search` instead of the old search slots, and styles the shell on `phone-field-group`.
